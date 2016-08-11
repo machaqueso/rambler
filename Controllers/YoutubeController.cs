@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Rambler.Models;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Rambler.Controllers
 {
@@ -24,31 +25,36 @@ namespace Rambler.Controllers
             Configuration = builder.Build();
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             using (var db = new DataContext())
             {
-                var user = db.Users.FirstOrDefault();
+                var user = await db.Users.FirstOrDefaultAsync();
                 if (user == null)
                 {
                     user = new User();
                     db.Users.Add(user);
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                 }
 
-                user = db.Users.FirstOrDefault();
+                user = await db.Users.FirstOrDefaultAsync();
                 if (string.IsNullOrEmpty(Request.Cookies["UserId"]))
                 {
                     Response.Cookies.Append("UserId", user.Id.ToString());
                 }
                 else
                 {
-                    user = db.Users.Include(x => x.GoogleToken).First(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+                    user = await db.Users.Include(x => x.GoogleToken).FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
                 }
 
                 if (user.GoogleToken == null)
                 {
                     return Authorize();
+                }
+
+                if (user.GoogleToken.ExpirationDate > DateTime.Now)
+                {
+                    await GoogleRefresh(user);
                 }
 
                 return View(user);
@@ -122,6 +128,29 @@ namespace Rambler.Controllers
                 }
 
                 return responseContent;
+            }
+        }
+
+        private async Task GoogleRefresh(User user)
+        {
+            var data = new List<KeyValuePair<string, string>>{
+                new KeyValuePair<string,string>("client_id",Configuration["Authentication:Google:ClientId"]),
+                new KeyValuePair<string,string>("client_secret",Configuration["Authentication:Google:ClientSecret"]),
+                new KeyValuePair<string,string>("refresh_token", user.GoogleToken.refresh_token),
+                new KeyValuePair<string,string>("grant_type","refresh_token")
+            };
+
+            var response = await Post("https://accounts.google.com/o/oauth2/token", data);
+
+            var googleToken = JsonConvert.DeserializeObject<GoogleToken>(response);
+
+            using (var db = new DataContext())
+            {
+                var currentUser = db.Users.First(x => x.Id == user.Id);
+                user.GoogleToken.access_token = googleToken.access_token;
+                user.GoogleToken.expires_in = googleToken.expires_in;
+                user.GoogleToken.token_type = googleToken.token_type;
+                await db.SaveChangesAsync();
             }
 
         }
