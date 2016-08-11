@@ -1,12 +1,14 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Rambler
+namespace Rambler.Models
 {
 
     public class GoogleToken
     {
         private int _expiresIn;
 
+        public int Id { get; set; }
         public string access_token { get; set; }
         public string token_type { get; set; }
         public int expires_in
@@ -20,6 +22,20 @@ namespace Rambler
         }
         public string refresh_token { get; set; }
         public DateTime ExpirationDate { get; set; }
+
+        public int UserId {get;set;}
+        [ForeignKey("UserId")]
+        public virtual User User{get;set;}
     }
+
+    public class User
+    {
+        public int Id { get; set; }
+
+        public int? GoogleTokenId { get; set; }
+        [ForeignKey("GoogleTokenId")]
+        public virtual GoogleToken GoogleToken { get; set; }
+    }
+
 
 }

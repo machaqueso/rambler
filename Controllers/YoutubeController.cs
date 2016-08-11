@@ -5,6 +5,9 @@ using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System.Net;
 using Newtonsoft.Json;
+using Rambler.Models;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Rambler.Controllers
 {
@@ -23,7 +26,34 @@ namespace Rambler.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            using (var db = new DataContext())
+            {
+                var user = db.Users.FirstOrDefault();
+                if (user == null)
+                {
+                    user = new User();
+                    db.Users.Add(user);
+                    db.SaveChanges();
+                }
+
+                user = db.Users.FirstOrDefault();
+                if (string.IsNullOrEmpty(Request.Cookies["UserId"]))
+                {
+                    Response.Cookies.Append("UserId", user.Id.ToString());
+                }
+                else
+                {
+                    user = db.Users.Include(x => x.GoogleToken).First(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+                }
+
+                if (user.GoogleToken == null)
+                {
+                    return Authorize();
+                }
+
+                return View(user);
+            }
+
         }
 
         public async Task<IActionResult> Callback(string code)
@@ -39,6 +69,15 @@ namespace Rambler.Controllers
             var response = await Post("https://accounts.google.com/o/oauth2/token", data);
 
             var googleToken = JsonConvert.DeserializeObject<GoogleToken>(response);
+
+            using (var db = new DataContext())
+            {
+                var user = db.Users.First(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+                googleToken.UserId = user.Id;
+                user.GoogleToken = googleToken;
+                await db.SaveChangesAsync();
+            }
+
             return View(googleToken);
         }
 
