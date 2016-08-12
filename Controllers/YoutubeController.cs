@@ -9,6 +9,7 @@ using Rambler.Models;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Net.Http.Headers;
 
 namespace Rambler.Controllers
 {
@@ -52,7 +53,7 @@ namespace Rambler.Controllers
                     return Authorize();
                 }
 
-                if (user.GoogleToken.ExpirationDate > DateTime.Now)
+                if (DateTime.Now > user.GoogleToken.ExpirationDate)
                 {
                     await GoogleRefresh(user);
                 }
@@ -98,9 +99,66 @@ namespace Rambler.Controllers
             return Redirect(oauthRequest);
         }
 
+        public async Task<IActionResult> Broadcast()
+        {
+            User user;
+
+            using (var db = new DataContext())
+            {
+                user = await db.Users.Include(x => x.GoogleToken).FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+
+                if (DateTime.Now > user.GoogleToken.ExpirationDate)
+                {
+                    await GoogleRefresh(user);
+                }
+            }
+
+            var result = await Get("https://www.googleapis.com/youtube/v3/liveBroadcasts?part=id%2Csnippet&broadcastType=persistent&mine=true", user.GoogleToken.access_token);
+            var liveBroadcastList = JsonConvert.DeserializeObject<LiveBroadcastList>(result);
+
+            return View("Broadcast", liveBroadcastList);
+        }
+
+        public async Task<IActionResult> Messages(string id)
+        {
+            User user;
+
+            using (var db = new DataContext())
+            {
+                user = await db.Users.Include(x => x.GoogleToken).FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+
+                if (DateTime.Now > user.GoogleToken.ExpirationDate)
+                {
+                    await GoogleRefresh(user);
+                }
+            }
+
+            var result = await Get($"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id%2Csnippet", user.GoogleToken.access_token);
+            var liveChatMessageList = JsonConvert.DeserializeObject<LiveChatMessageList>(result);
+
+            return View("Messages", liveChatMessageList);
+        }
+
+
         private async Task<string> Get(string request)
         {
+            return await Get(request, string.Empty);
+        }
+
+        private async Task<string> Get(string request, string accessToken)
+        {
             var client = new HttpClient();
+            var httpRequest = new HttpRequestMessage()
+            {
+                RequestUri = new Uri(request),
+                Method = HttpMethod.Get,
+            };
+
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            }
+
             var response = await client.GetAsync(request);
 
             if (!response.IsSuccessStatusCode)
@@ -115,7 +173,6 @@ namespace Rambler.Controllers
         {
             using (var client = new HttpClient())
             {
-                //client.BaseAddress = new Uri("http://localhost:6740");
                 var content = new FormUrlEncodedContent(data);
 
                 var response = await client.PostAsync(url, content);
@@ -147,9 +204,9 @@ namespace Rambler.Controllers
             using (var db = new DataContext())
             {
                 var currentUser = db.Users.First(x => x.Id == user.Id);
-                user.GoogleToken.access_token = googleToken.access_token;
-                user.GoogleToken.expires_in = googleToken.expires_in;
-                user.GoogleToken.token_type = googleToken.token_type;
+                currentUser.GoogleToken.access_token = googleToken.access_token;
+                currentUser.GoogleToken.expires_in = googleToken.expires_in;
+                currentUser.GoogleToken.token_type = googleToken.token_type;
                 await db.SaveChangesAsync();
             }
 
