@@ -1,29 +1,25 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Net.Http;
-using System.Net;
 using Newtonsoft.Json;
 using Rambler.Models;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Net.Http.Headers;
 
 namespace Rambler.Controllers
 {
     public class YoutubeController : Controller
     {
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
-        public YoutubeController()
+        public YoutubeController(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder();
-            builder.AddUserSecrets();
-
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
         public async Task<IActionResult> Index()
@@ -45,7 +41,10 @@ namespace Rambler.Controllers
                 }
                 else
                 {
-                    user = await db.Users.Include(x => x.GoogleToken).FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+                    user =
+                        await
+                            db.Users.Include(x => x.GoogleToken)
+                                .FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
                 }
 
                 if (user.GoogleToken == null)
@@ -60,17 +59,18 @@ namespace Rambler.Controllers
 
                 return View(user);
             }
-
         }
 
         public async Task<IActionResult> Callback(string code)
         {
-            var data = new List<KeyValuePair<string, string>>{
-                new KeyValuePair<string,string>("code",code),
-                new KeyValuePair<string,string>("client_id",Configuration["Authentication:Google:ClientId"]),
-                new KeyValuePair<string,string>("client_secret",Configuration["Authentication:Google:ClientSecret"]),
-                new KeyValuePair<string,string>("redirect_uri",Url.Action("Callback", "Youtube", null, Request.Scheme, null)),
-                new KeyValuePair<string,string>("grant_type","authorization_code")
+            var data = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("code", code),
+                new KeyValuePair<string, string>("client_id", Configuration["Authentication:Google:ClientId"]),
+                new KeyValuePair<string, string>("client_secret", Configuration["Authentication:Google:ClientSecret"]),
+                new KeyValuePair<string, string>("redirect_uri",
+                    Url.Action("Callback", "Youtube", null, Request.Scheme, null)),
+                new KeyValuePair<string, string>("grant_type", "authorization_code")
             };
 
             var response = await Post("https://accounts.google.com/o/oauth2/token", data);
@@ -93,8 +93,14 @@ namespace Rambler.Controllers
             var clientId = Configuration["Authentication:Google:ClientId"];
             var clientSecret = Configuration["Authentication:Google:ClientSecret"];
 
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new InvalidOperationException("Authentication:Google:ClientId not configured");
+            }
+
             var redirectUrl = WebUtility.UrlEncode(Url.Action("Callback", "Youtube", null, Request.Scheme, null));
-            var oauthRequest = $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUrl}&scope=https://www.googleapis.com/auth/youtube&response_type=code&access_type=offline";
+            var oauthRequest =
+                $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUrl}&scope=https://www.googleapis.com/auth/youtube&response_type=code&access_type=offline";
 
             return Redirect(oauthRequest);
         }
@@ -105,7 +111,10 @@ namespace Rambler.Controllers
 
             using (var db = new DataContext())
             {
-                user = await db.Users.Include(x => x.GoogleToken).FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+                user =
+                    await
+                        db.Users.Include(x => x.GoogleToken)
+                            .FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
 
                 if (DateTime.Now > user.GoogleToken.ExpirationDate)
                 {
@@ -113,7 +122,11 @@ namespace Rambler.Controllers
                 }
             }
 
-            var result = await Get("https://www.googleapis.com/youtube/v3/liveBroadcasts?part=id%2Csnippet&broadcastType=persistent&mine=true", user.GoogleToken.access_token);
+            var result =
+                await
+                    Get(
+                        "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=id%2Csnippet&broadcastType=persistent&mine=true",
+                        user.GoogleToken.access_token);
             var liveBroadcastList = JsonConvert.DeserializeObject<LiveBroadcastList>(result);
 
             return View("Broadcast", liveBroadcastList);
@@ -125,7 +138,10 @@ namespace Rambler.Controllers
 
             using (var db = new DataContext())
             {
-                user = await db.Users.Include(x => x.GoogleToken).FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+                user =
+                    await
+                        db.Users.Include(x => x.GoogleToken)
+                            .FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
 
                 if (DateTime.Now > user.GoogleToken.ExpirationDate)
                 {
@@ -133,7 +149,10 @@ namespace Rambler.Controllers
                 }
             }
 
-            var result = await Get($"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id%2Csnippet", user.GoogleToken.access_token);
+            var result =
+                await
+                    Get($"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id%2Csnippet",
+                        user.GoogleToken.access_token);
             var liveChatMessageList = JsonConvert.DeserializeObject<LiveChatMessageList>(result);
 
             return View("Messages", liveChatMessageList);
@@ -180,7 +199,6 @@ namespace Rambler.Controllers
 
                 if (!response.IsSuccessStatusCode)
                 {
-
                     throw new HttpRequestException($"POST failed with code: {response.StatusCode}: {responseContent}");
                 }
 
@@ -190,11 +208,12 @@ namespace Rambler.Controllers
 
         private async Task GoogleRefresh(User user)
         {
-            var data = new List<KeyValuePair<string, string>>{
-                new KeyValuePair<string,string>("client_id",Configuration["Authentication:Google:ClientId"]),
-                new KeyValuePair<string,string>("client_secret",Configuration["Authentication:Google:ClientSecret"]),
-                new KeyValuePair<string,string>("refresh_token", user.GoogleToken.refresh_token),
-                new KeyValuePair<string,string>("grant_type","refresh_token")
+            var data = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", Configuration["Authentication:Google:ClientId"]),
+                new KeyValuePair<string, string>("client_secret", Configuration["Authentication:Google:ClientSecret"]),
+                new KeyValuePair<string, string>("refresh_token", user.GoogleToken.refresh_token),
+                new KeyValuePair<string, string>("grant_type", "refresh_token")
             };
 
             var response = await Post("https://accounts.google.com/o/oauth2/token", data);
@@ -209,8 +228,6 @@ namespace Rambler.Controllers
                 currentUser.GoogleToken.token_type = googleToken.token_type;
                 await db.SaveChangesAsync();
             }
-
         }
-
     }
 }
