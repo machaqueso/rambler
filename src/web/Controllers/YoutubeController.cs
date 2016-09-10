@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rambler.Models;
 
-namespace Rambler.Controllers
+namespace Rambler.Web.Controllers
 {
     public class YoutubeController : Controller
     {
