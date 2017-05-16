@@ -32,6 +32,7 @@ namespace Rambler.Web
             // Add framework services.
             services.AddMvc();
             services.AddSingleton<IConfiguration>(Configuration);
+            services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,6 +59,7 @@ namespace Rambler.Web
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+            app.UseSignalR();
         }
     }
 }

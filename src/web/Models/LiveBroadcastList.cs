@@ -72,5 +72,4 @@ namespace Rambler.Models
     {
         public string messageText { get; set; }
     }
-
 }

@@ -1,10 +1,12 @@
 @model Rambler.Models.LiveChatMessageList
 
-<br/>
-<br/>
+<br />
+<br />
 
 <ul>
-@foreach(var item in Model.items){
+    @foreach (var item in Model.items)
+    {
         <li>@item.snippet.publishedAt: @item.snippet.displayMessage</li>
-}
+    }
 </ul>
+

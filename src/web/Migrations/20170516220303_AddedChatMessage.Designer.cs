@@ -7,9 +7,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Rambler.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20170516220303_AddedChatMessage")]
+    partial class AddedChatMessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2");
