@@ -2,6 +2,16 @@
     ViewData["Title"] = "Home Page";
 }
 
+<style>
+    #messages .author:not(:empty):before {
+        content: " - "
+    }
+
+    #messages .message:not(:empty):before {
+        content: ": "
+    }
+</style>
+
 <div class="panel panel-default">
     <div class="panel-heading">Mensajes</div>
     <div class="panel-body">

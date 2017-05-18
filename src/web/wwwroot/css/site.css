@@ -1,0 +1,7 @@
+#messages .author:not(:empty):before {
+    content: " - "
+}
+
+#messages .message:not(:empty):before {
+    content: ": "
+}
