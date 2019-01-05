@@ -41,10 +41,9 @@ namespace Rambler.Web.Controllers
                 }
                 else
                 {
-                    user =
-                        await
-                            db.Users.Include(x => x.GoogleToken)
-                                .FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+                    user = await db.Users
+                        .Include(x => x.GoogleToken)
+                        .FirstAsync(x => x.Id == Convert.ToInt32(Request.Cookies["UserId"]));
                 }
 
                 if (user.GoogleToken == null)
@@ -100,7 +99,7 @@ namespace Rambler.Web.Controllers
 
             var redirectUrl = WebUtility.UrlEncode(Url.Action("Callback", "Youtube", null, Request.Scheme, null));
             var oauthRequest =
-                $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUrl}&scope=https://www.googleapis.com/auth/youtube&response_type=code&access_type=offline";
+                $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUrl}&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline";
 
             return Redirect(oauthRequest);
         }
@@ -122,11 +121,17 @@ namespace Rambler.Web.Controllers
                 }
             }
 
-            var result = await Get(
+            var response = await Get(
                 "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastType=persistent&mine=true",
                 user.GoogleToken.access_token);
-            var liveBroadcastList = JsonConvert.DeserializeObject<LiveBroadcastList>(result);
 
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, content);
+            }
+
+            var liveBroadcastList = JsonConvert.DeserializeObject<LiveBroadcastList>(content);
             return View("Broadcast", liveBroadcastList);
         }
 
@@ -136,9 +141,7 @@ namespace Rambler.Web.Controllers
 
             using (var db = new DataContext())
             {
-                user =
-                    await
-                        db.Users.Include(x => x.GoogleToken)
+                user = await db.Users.Include(x => x.GoogleToken)
                             .FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
 
                 if (DateTime.Now > user.GoogleToken.ExpirationDate)
@@ -147,22 +150,27 @@ namespace Rambler.Web.Controllers
                 }
             }
 
-            var result =
-                await
-                    Get($"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id%2Csnippet",
+            var response = await Get($"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id%2Csnippet",
                         user.GoogleToken.access_token);
-            var liveChatMessageList = JsonConvert.DeserializeObject<LiveChatMessageList>(result);
+
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, content);
+            }
+
+            var liveChatMessageList = JsonConvert.DeserializeObject<LiveChatMessageList>(content);
 
             return View("Messages", liveChatMessageList);
         }
 
 
-        private async Task<string> Get(string request)
+        private async Task<HttpResponseMessage> Get(string request)
         {
             return await Get(request, string.Empty);
         }
 
-        private async Task<string> Get(string request, string accessToken)
+        private async Task<HttpResponseMessage> Get(string request, string accessToken)
         {
             var client = new HttpClient();
             var httpRequest = new HttpRequestMessage()
@@ -177,13 +185,7 @@ namespace Rambler.Web.Controllers
             }
 
             var response = await client.GetAsync(request);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException($"Request failed with code: {response.StatusCode}");
-            }
-
-            return await response.Content.ReadAsStringAsync();
+            return response;
         }
 
         private async Task<string> Post(string url, IList<KeyValuePair<string, string>> data)
