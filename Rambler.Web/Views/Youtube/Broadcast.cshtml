@@ -1,0 +1,8 @@
+@model Rambler.Web.Models.LiveBroadcastList
+
+@foreach(var item in Model.items){
+        <div class="row"><label>Title</label>: @item.snippet.title</div>
+        <div class="row"><label>Description</label>: @item.snippet.description</div>
+        <p>@Html.ActionLink("Chat Messages","Messages", new { id = item.snippet.liveChatId })</p>
+}
+
