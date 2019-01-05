@@ -1,0 +1,89 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="xenon-header.html">
+<!--
+`<xenon-dialog>` creates a popup.
+
+Example:
+
+    <xenon-dialog heading="It can have headings">
+        <actions>
+            <iron-icon icon="add"></iron-icon>
+        </actions>
+        <main>
+            The main content goes here. 
+        </main>
+        <buttons>
+            <paper-button>And Buttons</paper-button>
+        </buttons>
+    </xenon-dialog>
+
+@element xenon-dialog
+@demo demo/index.html
+-->
+<dom-module id="xenon-dialog">
+    <template>
+        <div id="scrim" on-click="_taphide" style="cursor:pointer; z-index:10000; position:fixed; display:flex; top:0px; left:0px; width:100%; height:100%; background-color: rgba(0,0,0,0.6)">
+            <div id="card" style$="display:flex; flex-direction:column; box-sizing:border-box; flex:1 1 auto; margin:auto; background-color:white; min-width:320px; max-width:600px; max-height:96%; {{style}}">
+                <xenon-header heading="{{heading}}" style="margin:32px">
+                    <actions>
+                        <content select="actions"></content>
+                    </actions>
+                </xenon-header>
+                <div style="overflow-y:auto; flex:1 1 auto; padding:0px 32px 0px 32px;">
+                    <content select="main"></content>
+                </div>
+                <div id="buttonarea" style="display:flex; flex:1 0 auto; padding:32px">
+                    <div style="flex:1 1 auto"></div>
+                    <content select="buttons"></content>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "xenon-dialog",
+            properties: {
+                /* Enable to allow user to click outside the popover to close it */
+                tapToHide: { type: Boolean, value: false },
+
+                /* elevation */
+                zIndex: { type: String, value: "10000", observer: "_onZIndexChange" }, 
+
+                /* style pass through to effect the card */
+                style: String,
+
+                /* flag to control if the dialog pops when the page loads */
+                auto: { type:Boolean, value: false },
+
+                /* heading for the dialog card */
+                heading: { type:String }
+            },
+            ready: function () {
+                if(!this.auto) this.hidden = true;
+            },
+            _onZIndexChange: function(zIndex) {
+                this.$.scrim.style.zIndex = zIndex;
+            },
+            _scrollableChange: function() {
+                this.toggleClass("scrollable", this.scrollable, this.$.card);
+            },
+            _taphide: function () {
+                if(this.tapToHide) this.hidden = true;
+            },
+            /* Call hide to close the popover. */
+            hide: function () {
+                this.hidden = true;
+            },
+            close: function () {
+                this.hidden = true;
+            },
+            /* Call show to open the popover and show it. */
+            show: function () {
+                this.hidden = false;
+            }, 
+            open: function () {
+                this.hidden = false;
+            }
+        });
+    </script>
+</dom-module>

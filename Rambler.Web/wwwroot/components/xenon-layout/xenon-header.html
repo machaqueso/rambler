@@ -1,0 +1,33 @@
+<link rel="import" href="../polymer/polymer.html" />
+<dom-module id="xenon-header">
+    <template>
+        <style is="custom-style">
+            #heading {  display:flex; align-items:center;  }
+            #headerText { font-size: 18pt; @apply(--paper-card-header-text); }
+            #subheading { color: grey; @apply(--xenon-subheading-theme); }
+            #actionarea ::content actions { color: gray; cursor: pointer; }
+
+            @media (max-width: 600px) {
+                :host { flex-direction: column-reverse; }
+            }
+        </style>
+        <div id="heading">
+            <div id="headerText">[[heading]]</div>
+            <div style="flex:1 1 auto"></div>
+            <div id="actionarea"><content select="actions"></content></div>
+        </div>
+        <div id="subheading">[[subHeading]]</div>
+    </template>
+    <script>
+        Polymer({
+            is: "xenon-header",
+            properties: {
+                /* Sets a heading for the card. This heading will have appropriate style. */
+                heading: String,
+
+                /* Sets a subHeading for the card. The subHeading is 50% grey and smaller by spec. It is not visible unless a heading is provided also. */
+                subHeading: String
+            }
+        });
+    </script>
+</dom-module>

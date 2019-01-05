@@ -1,0 +1,37 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+`<xenon-empty>` this element has docs
+Example:
+    <xenon-empty></xenon-empty>
+@element xenon-empty
+@demo demo/index.html
+-->
+<dom-module id="xenon-empty">
+    <template>
+        <content></content>
+    </template>
+    <script>
+		Polymer({
+			is: "xenon-empty",
+			properties: {
+				/* This is an example property */
+				items: { type: Array }
+            },
+            ready: function () {
+                this.hidden = true;
+            },
+            observers: [
+                "_onChange(items.*)"
+            ],
+			/* fired when example property changes */
+			_onChange: function (changerec) {
+                if (this.items == null || this.items == undefined || this.items.length == 0) {
+                    this.hidden = false; 
+                } else {
+                    this.hidden = true;
+                }
+			}
+		});
+    </script>
+</dom-module>
+

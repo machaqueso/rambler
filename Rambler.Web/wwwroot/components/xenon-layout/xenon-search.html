@@ -1,0 +1,54 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../iron-icons/iron-icons.html"/>
+<link rel="import" href="../iron-icon/iron-icon.html"/>
+<dom-module id="xenon-search">
+    <template>
+        <style>
+            #searchbox { margin: 0px; transition: width 0.5s; width: 200px; animation: slidein 1s; height: 30px; padding: 0px 8px 0px 8px; font-size: 10pt; background-color: rgba(255,255,255,0.2); border: none; border-radius: 4px; color: white; }
+            #searchbox:focus { outline:none; }
+            #searchbox::-webkit-input-placeholder { color: lightgray; }
+            @keyframes slidein {
+                from { width: 0px; opacity:0 }
+                to { width: 200px; opacity:1 }
+            }
+        </style>
+        <input id="searchbox" placeholder="search" hidden on-keypress="_key" />
+        <iron-icon icon="search" on-click="_toggle"></iron-icon>
+    </template>
+    <script>
+    Polymer({
+        is:"xenon-search",
+        properties: {
+            shortcutEnabled: { type: Boolean, value: true }
+        },
+        ready: function() {
+            this.listen(document, "keydown", "_winkey");
+        },
+        _winkey: function(e) {
+            if(e.ctrlKey == true && e.code == "KeyF" && this.shortcutEnabled) {
+                this._toggle();
+            }
+        },
+        _key: function(e) {
+            if(e.code == "Enter" || e.keyCode == 13) {
+                this.fire("xenon-layout-search", this.$.searchbox.value);
+                this.$.searchbox.value = "";
+            }
+        },
+        _toggle: function() {
+            if(!this.$.searchbox.hidden) {
+                this.hide();
+            } else {
+                this.show(); 
+            }
+        }, 
+        hide: function() {
+            this.$.searchbox.hidden = true; 
+        }, 
+        show: function() {
+            this.$.searchbox.hidden = false;
+            this.$.searchbox.focus();
+        }
+    });
+    </script>
+</dom-module>

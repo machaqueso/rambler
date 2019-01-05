@@ -1,0 +1,88 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../xenon-layout/xenon-header.html">
+<link rel="import" href="../paper-styles/shadow.html">
+<link rel="import" href="../paper-material/paper-material-shared-styles.html">
+<dom-module id="xenon-photo-card">
+    <template>
+        <style include="paper-material-shared-styles"></style>
+        <style>
+            :host([animated]) { @apply(--shadow-transition); }
+            :host { display:flex; margin:0px 4px 8px 4px; box-sizing:border-box; background-color:white; }
+            xenon-header { padding: 16px 16px 0px 16px; }
+            #frame { flex: 1 1 600px; display:flex; flex-direction:column; box-sizing:border-box; }
+            #photo { flex: 1 1 200px; border-bottom-right-radius: 2px; border-top-right-radius: 2px; background-size: cover; background-position-x: center; background-position-y: center; }
+            #body { flex: 1 1 auto; }
+            #body ::content main { padding:0px 16px 0px 16px; }
+            #body ::content main > * { margin: 16px 0px 16px 0px; }
+            #footer ::content buttons { display:flex; align-items:center; padding:8px 16px 16px 16px; }
+            #footer ::content buttons > * { flex:0 0 auto; margin:0px; font-size: small; }
+            #footer ::content buttons spacer { flex: 1 1 auto; }
+            @media (max-width: 600px) {
+                :host { flex-direction: column-reverse; }
+                #photo { flex: 0 1 150px; border-bottom-right-radius: 0px; border-top-left-radius: 2px; }
+                #frame { flex: 1 1 auto }
+            }
+        </style>
+        <div id="frame">
+            <template is="dom-if" if="{{heading}}">
+                <xenon-header heading="{{heading}}" sub-heading="{{subHeading}}">
+                    <actions>
+                        <content select="actions"></content>
+                    </actions>
+                </xenon-header>
+            </template>
+            <paper-progress style="width:100%;" hidden="[[!loading]]" indeterminate></paper-progress>
+            <div id="body">
+                <content select="main"></content>
+            </div>
+            <div id="footer">
+                <content select="buttons"></content>
+            </div>
+        </div>
+        <div id="photo" hidden></div>
+    </template>
+    <script>
+    Polymer({
+        is:"xenon-photo-card",
+        properties: {
+            /* Sets a heading for the card. This heading will have appropriate style. */
+            heading: String, 
+
+            /* Sets a subHeading for the card. The subHeading is 50% grey and smaller by spec. It is not visible unless a heading is provided also. */
+            subHeading: String, 
+
+            /* Sets a url for the card image. */
+            src: { type: String, observer: "_srcChange" },
+
+            /**
+            * The z-depth of this element, from 0-5. Setting to 0 will remove the
+            * shadow, and each increasing number greater than 0 will be "deeper"
+            * than the last.
+            *
+            * @attribute elevation
+            * @type number
+            * @default 1
+            */
+            elevation: { type: Number, reflectToAttribute: true, value: 1 },
+
+            /**
+            * Set this to true to animate the shadow when setting a new
+            * `elevation` value.
+            *
+            * @attribute animated
+            * @type boolean
+            * @default false
+            */
+            animated: { type: Boolean, reflectToAttribute: true, value: false },
+            /* Sets whether the loading bar should be displayed. */
+            loading: { type: Boolean, notify: true, value: false }
+    },
+        _srcChange: function() {
+            this.$.photo.hidden = false;
+            this.$.photo.style.backgroundImage = "url('" + this.src + "')"
+        }
+    });
+    </script>
+</dom-module>

@@ -1,0 +1,142 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../iron-icons/iron-icons.html"/>
+<link rel="import" href="../iron-icon/iron-icon.html"/>
+<!--
+`<xenon-layout>` provides simple responsive page layout. Use the special children elements 
+`<header>`, `<nav>`, `<main>`, and `<footer>` to layout the page. Inside the nav element, the 
+`<nav-item>` element can be used to make navigation links. 
+
+Example:
+    <style is="custom-style">
+        :root { --xenon-layout-background-color:purple; --xenon-layout-color:white; }
+    </style>
+    <xenon-layout heading="This Is A Test">
+        <header><iron-icon icon="add-circle"></iron-icon></header>
+        <nav style="display:flex; flex-direction:column;">
+            <nav-item icon="settings">Menu Item One</nav-item>    
+            <nav-item icon="add">Menu Item Two</nav-item>    
+            <nav-item icon="cancel">Menu Item Three</nav-item>  
+            <div style="flex: 1 1 auto"></div>
+            <div style="align-self:center;">bottom logo here</div>  
+        </nav>
+        <main style="max-width:1200px;">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+        </main>
+        <footer style="text-align:right">hello footer</footer>
+    </xenon-layout>
+	
+@group Xenon Elements
+@element xenon-layout
+-->
+<dom-module id="xenon-layout">
+    <template>
+        <style>
+            #bodywrap { display: flex; flex-direction:column; height:100%; background-color:whitesmoke; }
+            #headitems { flex:1 1 auto; @apply(--paper-card-header-text); align-items: center; display: flex; box-sizing:border-box; padding: 0px 8px 0px 8px; }
+            #heading { flex:1 1 auto; }
+            #main { padding-left: 240px; flex: 1 1 auto; overflow-y:scroll;-webkit-overflow-scrolling: touch;}
+            #main ::content { height:inherit; }
+            #main ::content > * { height:inherit; display:flex; flex-direction:column; }
+            #main ::content > main > spacer { flex: 1 1 auto; }
+            #header { background-color: var(--primary-color,slategray); color: var(--text-primary-color, white); box-sizing: border-box; display:flex; align-items:center; justify-content:center; z-index: 100; flex: 0 0 60px; box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.5); }
+            #headitems > * { padding: 4px; }
+            #nav { z-index: 100; position:absolute; top:60px; width:240px; bottom: 0px; background-color:whitesmoke }
+            #nav ::content spacer { flex: 1 1 auto; }
+            #nav ::content nav { height:100%; display:flex; flex-direction:column;  }
+            #content ::content main > * { margin:auto; }
+            .constrain { max-width: 1000px; padding: 0px 16px 0px 0px; }
+        </style> 
+        <div id="nav">
+            <content select="nav"></content>
+        </div>
+        <div id="bodywrap">
+            <div id="header">
+                <div id="headitems">
+                    <iron-icon id="icon" icon="menu" on-click="toggleNav"></iron-icon>
+                    <img id="logo" style="height:50px; margin:0px; padding:0px;" src="{{src}}" />
+                    <div id="heading">{{heading}}</div>
+                    <content select="header"></content>
+                </div>
+            </div>
+            <div id="main">
+                <content select="main"></content>
+            </div>
+            <div id="foot">
+                <content select="footer"></content>
+            </div>
+        </div>
+    </template>
+    <script>
+    Polymer({
+        is:"xenon-layout", 
+        properties: {
+            /* Text to include in the title bar of the app */
+            heading: String, 
+
+            /* Keep the nav floating instead of always visible */
+            floatNav: { type: Boolean, value: false }, 
+
+            /* constrain the header to the width of xenon-section */
+            constrain: { type: Boolean, value:false, observer:"_constrainChange" }
+        },
+        /* listen for nav clicks from nav-item children */
+        listeners: {
+            "xenon-layout-navigate" : "toggleNav", 
+            "xenon-scroll-top" : "onScrollTop"
+        },
+        /* trigger a redraw when the window loads */
+        ready: function() {
+            this.listen(window, "resize", "redraw");
+            this.redraw();
+        },
+        /* Show the left nav when in mobile mode. */
+        showNav: function() {
+            this.$.nav.style.display = "block";
+        }, 
+        /* Show the left nav when in mobile mode. */
+        hideNav: function() {
+            this.$.nav.style.display = "none";
+        },
+        /* Private method to trigger hiding the nav */
+        toggleNav: function() {
+            if(this.$.nav.style.display == "block" && (window.innerWidth < 650 || this.floatNav)) {
+                this.hideNav();
+            } else {
+                this.showNav();
+            }
+        },
+        onScrollTop: function () {
+            this.$.main.scrollTo(0, 0);
+        },
+        /* Method to repaint the navigation and detect mobile or desktop layout. */
+        redraw: function() {
+            var hasNav = Polymer.dom(this).querySelector("nav") != null;
+            if(this.floatNav) {
+                this.$.icon.style.display = hasNav ? "block" : "none";
+                this.$.nav.style.boxShadow = "0px 0px 4px rgba(0, 0, 0, 0.5)";
+                this.$.main.style.paddingLeft = "0px";
+                this.$.foot.style.paddingLeft = "0px";
+                this.hideNav();
+            } else {
+                if(window.innerWidth < 800) {
+                    this.$.icon.style.display = hasNav ? "block" : "none";
+                    this.$.nav.style.boxShadow = "0px 0px 4px rgba(0, 0, 0, 0.5)";
+                    this.$.main.style.paddingLeft = "0px";
+                    this.$.foot.style.paddingLeft = "0px";
+                    this.hideNav();
+                } else {
+                    this.$.icon.style.display = "none";
+                    this.$.nav.style.boxShadow = "none";
+                    this.$.main.style.paddingLeft = "240px";
+                    this.$.foot.style.paddingLeft = "240px";
+                    this.showNav();
+                }
+            }
+        }, 
+        /* update classes to constrain the width to xenon-section width */
+        _constrainChange: function (constrain) {
+            this.toggleClass("constrain", constrain, this.$.headitems);
+        }
+    });
+    </script>
+</dom-module>

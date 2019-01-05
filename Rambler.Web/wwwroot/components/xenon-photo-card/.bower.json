@@ -1,0 +1,39 @@
+{
+  "name": "xenon-photo-card",
+  "description": "Creates a material designed card",
+  "authors": [
+    "ACA[X]Labs"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "paper"
+  ],
+  "main": "xenon-photo-card.html",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/acaxlabs/xenon-photo-card.git"
+  },
+  "license": "https://github.com/acaxlabs/xenon-photo-card/blob/master/LICENSE",
+  "homepage": "https://github.com/acaxlabs/xenon-photo-card",
+  "ignore": [],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0",
+    "paper-material": "PolymerElements/paper-material#^1.x.x",
+    "paper-progress": "PolymerElements/paper-progress#^1.x.x",
+    "paper-styles": "PolymerElements/paper-styles#^1.x.x",
+    "xenon-layout": "https://github.com/acaxlabs/xenon-layout.git"
+  },
+  "devDependencies": {},
+  "_release": "f56968ce9f",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "f56968ce9f9f087001beb8c434a6948d9f7a6681"
+  },
+  "_source": "https://github.com/acaxlabs/xenon-photo-card.git",
+  "_target": "*",
+  "_originalSource": "https://github.com/acaxlabs/xenon-photo-card.git",
+  "_direct": true
+}

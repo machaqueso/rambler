@@ -1,0 +1,31 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<dom-module id="xenon-section">
+    <template>
+        <style>
+            #section { background-size:cover; background-position: center; display:flex; justify-content: center; align-items:center; height:inherit; }
+            #wrap { box-sizing: border-box; padding:4px; display:flex; max-width:1000px; flex-wrap:wrap; flex-direction:row; width:100%; }
+            #wrap ::content > * { flex:1 1 340px; margin:4px; box-sizing: border-box; }
+        </style>
+        <div id="section" style="{{style}}"> <!-- full width wrapper -->     
+            <div id="wrap"> <!-- content area limited width -->
+                <content></content>
+            </div>
+        </div>
+    </template>
+    <script>
+    Polymer({
+        is:"xenon-section", 
+        properties: { 
+            /* style for the wrapper element */
+            style: { type:String },
+
+            /* src background image */
+            src: { type:String, observer:"_setSrc" }
+        }, 
+        /* set the background image */
+        _setSrc: function(value) {
+            this.$.section.style.backgroundImage = "url('" + value + "')";
+        }
+    });
+    </script>
+</dom-module>

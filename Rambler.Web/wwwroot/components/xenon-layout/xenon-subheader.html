@@ -1,0 +1,45 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+`<xenon-subheader>` this element has docs
+Example:
+    <xenon-subheader heading="This is a subhead">
+        <actions>
+            <iron-icon icon="add" title="Add Item" on-tap="_onAddItemTap"></iron-icon>
+        </actions>
+    </xenon-subheader>
+@element xenon-subheader
+@demo demo/index.html
+-->
+<dom-module id="xenon-subheader">
+    <template>
+        <style>
+            #heading { margin: 8px 0px 8px 0px; background-color:whitesmoke; height:2.4em; display:flex; align-items:center; padding:0px 8px 0px 8px; }
+            #actionarea { color:darkgray; }
+        </style>
+        <div id="heading">
+            <div id="headerText">
+                <template is="dom-if" if="{{showHeading}}">
+                    <a href="[[href]]">[[heading]]</a>
+                </template>
+                <template is="dom-if" if="{{!showHeading}}">
+                  [[heading]]
+                </template>
+            </div>
+            <div style="flex:1 1 auto"></div>
+            <div id="actionarea"><content select="actions"></content></div>
+        </div>
+    </template>
+    <script>
+		Polymer({
+			is: "xenon-subheader",
+			properties: {
+                heading: { type: String, reflectToAttribute: true },
+                href: { type: String, reflectToAttribute: true, observer: "inlineCheck" },
+                showHeading: { type: Boolean, value: false }
+            },
+            inlineCheck: function (href) {
+                this.set("showHeading", true);
+            }
+		});
+    </script>
+</dom-module>

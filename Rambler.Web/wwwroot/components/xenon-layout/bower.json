@@ -1,0 +1,35 @@
+{
+  "name": "xenon-layout",
+  "homepage": "https://github.com/acaxlabs/xenon-layout",
+  "_release": "7fe2e2a708",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "7fe2e2a708aac19f373986ce8f269111038d2795"
+  },
+  "_source": "https://github.com/acaxlabs/xenon-layout.git",
+  "_target": "*",
+  "_originalSource": "acaxlabs/xenon-layout",
+  "_direct": true,
+  "authors": [
+    "don.archer@acaexpress.com"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "Content/components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#1",
+    "iron-icons": "PolymerElements/iron-icons#1",
+    "iron-icon": "PolymerElements/iron-icon#1"
+  }
+}
+
+

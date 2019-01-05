@@ -4,70 +4,67 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Rambler.Web</title>
+    <script src="~/components/webcomponentsjs/webcomponents.js"></script>
+    
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/bootstrap-tables.css" />
 
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="~/css/site.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
-    </environment>
+    <link rel="import" href="~/components/polymer/polymer.html" />
+    <link rel="import" href="~/components/iron-icons/iron-icons.html" />
+    <link rel="import" href="~/components/iron-icons/hardware-icons.html" />
+    <link rel="import" href="~/components/iron-icon/iron-icon.html" />
+    <link rel="import" href="~/components/xenon-layout/nav-item.html" />
+    <link rel="import" href="~/components/xenon-layout/xenon-search.html" />
+    <link rel="import" href="~/components/xenon-layout/xenon-section.html" />
+    <link rel="import" href="~/components/xenon-layout/xenon-field-group.html" />
+    <link rel="import" href="~/components/xenon-layout/xenon-layout.html" />
+    <link rel="import" href="~/components/xenon-photo-card/xenon-photo-card.html" />
+    <link rel="import" href="~/components/paper-button/paper-button.html" />
+    <link rel="import" href="~/components/paper-menu-button/paper-menu-button.html" />
+    <link rel="import" href="~/components/paper-item/paper-item.html" />
+    <link rel="import" href="~/components/paper-icon-button/paper-icon-button.html" />
+    <link rel="import" href="~/components/paper-input/paper-input.html" />
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Rambler.Web</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <dom-module id="page-module">
+        <template>
+            <xenon-layout heading="@ViewData["Title"]">
+                <header>
+                    <xenon-search></xenon-search>
+                </header>
+                <nav>
+                    <nav-item icon="home" href="/">Home</nav-item>
+                    <nav-item icon="hardware:tv" href="/Youtube">Youtube</nav-item>
+                    <nav-item icon="settings" href="/Config">Settings</nav-item>
+                    <spacer></spacer>
+                    <img style="align-self:center;" src="ramblerlogo.png" />
+                </nav>
+                <main>
+                    @RenderBody()
+                    <div style="flex:1 1 auto"></div>
+                    <xenon-section>
+                        <footer>
+                            <p>&copy; 2019 - Rambler.Web</p>
+                        </footer>
+                    </xenon-section>
+                </main>
+            </xenon-layout>
+        </template>
+        <script>
+            HTMLImports.whenReady(function () {
+                Polymer({
+                    is: "page-module",
+                    properties: {
 
-    <partial name="_CookieConsentPartial" />
+                    },
+                    ready: function () {
 
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; 2019 - Rambler.Web</p>
-        </footer>
-    </div>
-
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-        <script src="~/js/site.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
-                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
-                asp-fallback-test="window.jQuery"
-                crossorigin="anonymous"
-                integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
+                    }
+                });
+            });
         </script>
-        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
-                crossorigin="anonymous"
-                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
-        </script>
-        <script src="~/js/site.min.js" asp-append-version="true"></script>
-    </environment>
+    </dom-module>
+    <page-module></page-module>
 
     @RenderSection("Scripts", required: false)
 </body>

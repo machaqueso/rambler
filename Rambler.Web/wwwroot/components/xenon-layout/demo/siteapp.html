@@ -1,0 +1,125 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html>
+    <head>
+        <style is="custom-style">
+            :root { --xenon-layout-background-color:#3e5b43; --primary-color:#3e5b43 }
+            .primary { background-color:var(--primary-color); color:white; }
+            body { margin: 0px; font-family: "Roboto", Arial, Helvetica, sans-serif }
+        </style>
+        <script src="../../webcomponentsjs/webcomponents.js"></script>
+        <link rel="import" href="../../polymer/polymer.html"/>
+        <link rel="import" href="../../iron-icons/iron-icons.html"/>
+        <link rel="import" href="../../iron-icon/iron-icon.html"/>
+        <link rel="import" href="../nav-item.html"/>
+        <link rel="import" href="../xenon-search.html"/>
+        <link rel="import" href="../xenon-section.html"/>
+        <link rel="import" href="../xenon-field-group.html"/>
+        <link rel="import" href="../xenon-layout.html"/>
+        <link rel="import" href="../../xenon-photo-card/xenon-photo-card.html"/>
+        <link rel="import" href="../../paper-button/paper-button.html"/>
+        <link rel="import" href="../../paper-menu-button/paper-menu-button.html"/>
+        <link rel="import" href="../../paper-item/paper-item.html"/>
+        <link rel="import" href="../../paper-icon-button/paper-icon-button.html"/>
+        <link rel="import" href="../../paper-input/paper-input.html"/>
+    </head>
+    <body>
+        <dom-module id="demo-element">
+            <template>
+                <xenon-layout heading="Zen Products">
+                    <header>
+                        <xenon-search></xenon-search>
+                    </header>
+                    <nav>
+                        <nav-item icon="settings" href="#products">Products</nav-item>    
+                        <nav-item icon="add">Menu Item Two</nav-item>    
+                        <nav-item icon="cancel">Menu Item Three</nav-item>  
+                        <spacer></spacer>
+                        <img style="align-self:center;" src="zenlogo.png"/>
+                    </nav>
+                    <main>
+                        <xenon-section id="products">
+                            <xenon-photo-card heading="Interesting Info" sub-heading="This card has a subhead." src="http://lorempixel.com/600/400/sports/">
+                                <main>Now is the time for all good men to come to the aid of their country.</main>
+                                <buttons>
+                                    <spacer></spacer>
+                                    <paper-button class="primary">Primary Action</paper-button>
+                                </buttons>
+                            </xenon-photo-card>
+                            <xenon-photo-card heading="Dazzling Details" sub-heading="This card has a subhead." src="http://lorempixel.com/600/400/abstract/">
+                                <main>Now is the time for all good men to come to the aid of their country.</main>
+                                <buttons>
+                                    <spacer></spacer>
+                                    <paper-button class="primary">Primary Action</paper-button>
+                                </buttons>
+                            </xenon-photo-card>
+                            <xenon-photo-card heading="Eye Catcher" sub-heading="This card has a subhead." src="http://lorempixel.com/600/400/business/">
+                                <main>Now is the time for all good men to come to the aid of their country.</main>
+                                <buttons>
+                                    <spacer></spacer>
+                                    <paper-button class="primary">Primary Action</paper-button>
+                                </buttons>
+                            </xenon-photo-card>
+                        </xenon-section>
+                        <xenon-section>
+                            <p>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse facilisis ex velit, ut efficitur ipsum auctor quis. Nam vitae urna vitae diam iaculis tempor sit amet et est. Sed ut ligula diam. Vivamus a diam posuere, viverra metus quis, luctus tortor. Nam sagittis vehicula lacus eu aliquam. Mauris eu pharetra mi, in consectetur mi. Nulla ut sapien porta, pulvinar mauris vel, fringilla nisl. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+                            </p>
+                        </xenon-section>
+                        <xenon-section>
+                            <xenon-photo-card heading="Example Form">
+                                <main>
+                                    <xenon-field-group>
+                                        <paper-input label="First Name"></paper-input>
+                                        <paper-input label="Last Name"></paper-input>
+                                        <paper-input label="Address"></paper-input>
+                                        <paper-input label="City"></paper-input>
+                                        <paper-input label="Zip"></paper-input>
+                                        <paper-input label="Country"></paper-input>
+                                        <paper-input label="Phone"></paper-input>
+                                        <paper-input label="Email"></paper-input>
+                                    </xenon-field-group>
+                                </main>
+                                <buttons>
+                                    <spacer></spacer>
+                                    <paper-button class="primary">Primary Action</paper-button>
+                                </buttons>
+                            </xenon-photo-card>
+                        </xenon-section>
+                        <!-- this is a spacer to stick the footer to the bottom -->
+                        <div style="flex:1 1 auto"></div>
+                        <xenon-section style="background-color:gainsboro; color:gray">
+                            <ul>
+                                <li>Sticky Footer!</li>
+                                <li>Privacy Policy</li>
+                                <li>User Agreement</li>
+                            </ul>
+                            <ul>
+                                <li>About Us</li>
+                                <li>Employment Opportunities</li>
+                            </ul>
+                            <ul>
+                                <li>Facebook</li>
+                                <li>Twitter</li>
+                                <li>Pintrest</li>
+                            </ul>
+                        </xenon-section>
+                    </main>
+                </xenon-layout>
+            </template>
+            <script>
+            HTMLImports.whenReady( function(){
+                Polymer({
+                    is:"demo-element", 
+                    properties: {
+                        items: { type:Array, value:[] }
+                    }, 
+                    ready: function() {
+                        this.items = [{"lastName":"Archer","firstName":"Don","food":"Pizza","age":"45"},{"lastName":"Archer","firstName":"Alicia","food":"Sushi","age":"33"},{"lastName":"Archer","firstName":"Jezzabelle","food":"What chu got?","age":"10"}];
+                    }
+                });
+            });
+            </script>
+        </dom-module>
+        <demo-element></demo-element>
+    </body>
+</html>
