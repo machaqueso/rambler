@@ -122,11 +122,9 @@ namespace Rambler.Web.Controllers
                 }
             }
 
-            var result =
-                await
-                    Get(
-                        "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=id%2Csnippet&broadcastType=persistent&mine=true",
-                        user.GoogleToken.access_token);
+            var result = await Get(
+                "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastType=persistent&mine=true",
+                user.GoogleToken.access_token);
             var liveBroadcastList = JsonConvert.DeserializeObject<LiveBroadcastList>(result);
 
             return View("Broadcast", liveBroadcastList);
