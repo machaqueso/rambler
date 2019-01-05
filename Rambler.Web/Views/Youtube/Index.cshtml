@@ -1,0 +1,31 @@
+﻿
+@{
+    ViewData["Title"] = "Youtube Integration";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+
+<dom-module id="page-module">
+    <template>
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <main>
+            </main>
+        </xenon-photo-card>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: "page-module",
+            properties: {
+            },
+            observers: [
+            ],
+            ready: function () {
+            }
+        });
+    </script>
+</dom-module>
+
+<page-module></page-module>
+

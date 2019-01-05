@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Rambler.Web</title>
+    <title>Rambler: @ViewData["Title"]</title>
     <script src="~/components/webcomponentsjs/webcomponents.js"></script>
     
     <link rel="stylesheet" href="~/css/site.css" />
@@ -26,9 +26,9 @@
     <link rel="import" href="~/components/paper-input/paper-input.html" />
 </head>
 <body>
-    <dom-module id="page-module">
+    <dom-module id="layout-module">
         <template>
-            <xenon-layout heading="@ViewData["Title"]">
+            <xenon-layout heading="Rambler: @ViewData["Title"]">
                 <header>
                     <xenon-search></xenon-search>
                 </header>
@@ -44,7 +44,7 @@
                     <div style="flex:1 1 auto"></div>
                     <xenon-section>
                         <footer>
-                            <p>&copy; 2019 - Rambler.Web</p>
+                            <p>&copy; 2019 - Machaqueso</p>
                         </footer>
                     </xenon-section>
                 </main>
@@ -53,7 +53,7 @@
         <script>
             HTMLImports.whenReady(function () {
                 Polymer({
-                    is: "page-module",
+                    is: "layout-module",
                     properties: {
 
                     },
@@ -64,7 +64,7 @@
             });
         </script>
     </dom-module>
-    <page-module></page-module>
+    <layout-module></layout-module>
 
     @RenderSection("Scripts", required: false)
 </body>
