@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rambler: @ViewData["Title"]</title>
     <script src="~/components/webcomponentsjs/webcomponents.js"></script>
-    
+
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/bootstrap-tables.css" />
 
@@ -26,45 +26,27 @@
     <link rel="import" href="~/components/paper-input/paper-input.html" />
 </head>
 <body>
-    <dom-module id="layout-module">
-        <template>
-            <xenon-layout heading="Rambler: @ViewData["Title"]">
-                <header>
-                    <xenon-search></xenon-search>
-                </header>
-                <nav>
-                    <nav-item icon="home" href="/">Home</nav-item>
-                    <nav-item icon="hardware:tv" href="/Youtube">Youtube</nav-item>
-                    <nav-item icon="settings" href="/Config">Settings</nav-item>
-                    <spacer></spacer>
-                    <img style="align-self:center;" src="ramblerlogo.png" />
-                </nav>
-                <main>
-                    @RenderBody()
-                    <div style="flex:1 1 auto"></div>
-                    <xenon-section>
-                        <footer>
-                            <p>&copy; 2019 - Machaqueso</p>
-                        </footer>
-                    </xenon-section>
-                </main>
-            </xenon-layout>
-        </template>
-        <script>
-            HTMLImports.whenReady(function () {
-                Polymer({
-                    is: "layout-module",
-                    properties: {
-
-                    },
-                    ready: function () {
-
-                    }
-                });
-            });
-        </script>
-    </dom-module>
-    <layout-module></layout-module>
+    <xenon-layout heading="Rambler: @ViewData["Title"]">
+        <header>
+            <xenon-search></xenon-search>
+        </header>
+        <nav>
+            <nav-item icon="home" href="/">Home</nav-item>
+            <nav-item icon="hardware:tv" href="/Youtube">Youtube</nav-item>
+            <nav-item icon="settings" href="/Config">Settings</nav-item>
+            <spacer></spacer>
+            <img style="align-self:center;" src="ramblerlogo.png" />
+        </nav>
+        <main>
+            @RenderBody()
+            <div style="flex:1 1 auto"></div>
+            <xenon-section>
+                <footer>
+                    <p>&copy; 2019 - Machaqueso</p>
+                </footer>
+            </xenon-section>
+        </main>
+    </xenon-layout>
 
     @RenderSection("Scripts", required: false)
 </body>
