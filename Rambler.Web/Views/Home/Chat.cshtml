@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "Chat";
+}
+
+<script src="~/lib/signalr/dist/browser/signalr.js"></script>
+
+<link rel="import" href="/components/polymer/polymer.html" />
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/iron-form/iron-form.html" />
+<link rel="import" href="/components/paper-input/paper-input.html" />
+<link rel="import" href="/components/paper-button/paper-button.html" />
+
+<dom-module id="page-module">
+    <template>
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <main>
+                <form id="form" is="iron-form">
+                    <paper-input label="User" value="{{message.user}}"></paper-input>
+                    <paper-input label="Message" value="{{message.message}}"></paper-input>
+                    <paper-button on-tap="_send">Send</paper-button>
+                </form>
+                <hr />
+                <div>Messages:</div>
+                <template is="dom-repeat" items="{{messages}}" restamp>
+                    <div style="display: flex">
+                        <div>{{item.user}}</div>
+                        <div>{{item.message}}</div>
+                    </div>
+                </template>
+            </main>
+        </xenon-photo-card>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: "page-module",
+            properties: {
+                messages: { Type: Array, notify: true, value: [] },
+                message: { Type: Object, value: {} },
+                connection: { Type: Object, value: {} },
+            },
+            observers: [
+                "_onMessagesChanged(messages)"
+            ],
+            _send: function () {
+                this.connection.invoke("SendMessage", this.message.user, this.message.message)
+                    .catch(function (err) {
+                        return console.error(err.toString());
+                    });
+            },
+            _onMessageReceived: function (user, message) {
+                console.log("received: user", user, "message", message, "messages");
+
+                if (!user) return;
+                if (!message) return;
+
+                var msg = { "user": user, "message": message };
+                this.push("messages", msg);
+                console.log("messages:", this.messages);
+            },
+            _onMessagesChanged: function () {
+                console.log("_onMessagesChanged");
+            },
+            ready: function () {
+                var that = this;
+                this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+                this.connection.on("ReceiveMessage", function (user, message) {
+                    that._onMessageReceived(user, message);
+                });
+
+                this.connection.start().catch(function (err) {
+                    return console.error(err.toString());
+                });
+            }
+        });
+    </script>
+</dom-module>
+
+<page-module></page-module>
