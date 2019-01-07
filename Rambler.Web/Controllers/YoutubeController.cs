@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -15,6 +13,7 @@ using Rambler.Web.Hubs;
 using Rambler.Web.Models;
 using Rambler.Web.Models.Youtube.LiveBroadcast;
 using Rambler.Web.Models.Youtube.LiveChat;
+using Rambler.Web.Services;
 
 namespace Rambler.Web.Controllers
 {
@@ -22,11 +21,14 @@ namespace Rambler.Web.Controllers
     {
         public IConfiguration Configuration { get; }
         private readonly IHubContext<ChatHub> chatHubContext;
+        private readonly YoutubeService youtubeService;
 
-        public YoutubeController(IConfiguration configuration, IHubContext<ChatHub> chatHubContext)
+        public YoutubeController(IConfiguration configuration, IHubContext<ChatHub> chatHubContext,
+            YoutubeService youtubeService)
         {
             Configuration = configuration;
             this.chatHubContext = chatHubContext;
+            this.youtubeService = youtubeService;
         }
 
         public async Task<IActionResult> Index()
@@ -79,7 +81,7 @@ namespace Rambler.Web.Controllers
                 new KeyValuePair<string, string>("grant_type", "authorization_code")
             };
 
-            var response = await Post("https://accounts.google.com/o/oauth2/token", data);
+            var response = await youtubeService.Post("https://accounts.google.com/o/oauth2/token", data);
 
             var googleToken = JsonConvert.DeserializeObject<GoogleToken>(response);
 
@@ -128,14 +130,14 @@ namespace Rambler.Web.Controllers
                 }
             }
 
-            var response = await Get(
+            var response = await youtubeService.Get(
                 "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastType=persistent&mine=true",
                 user.GoogleToken.access_token);
 
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                return StatusCode((int)response.StatusCode, content);
+                return StatusCode((int) response.StatusCode, content);
             }
 
             var liveBroadcastList = JsonConvert.DeserializeObject<List>(content);
@@ -149,7 +151,7 @@ namespace Rambler.Web.Controllers
             using (var db = new DataContext())
             {
                 user = await db.Users.Include(x => x.GoogleToken)
-                            .FirstAsync(x => x.Id == Convert.ToInt32(Request.Cookies["UserId"]));
+                    .FirstAsync(x => x.Id == Convert.ToInt32(Request.Cookies["UserId"]));
 
                 if (DateTime.Now > user.GoogleToken.ExpirationDate)
                 {
@@ -157,65 +159,25 @@ namespace Rambler.Web.Controllers
                 }
             }
 
-            var response = await Get($"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id,snippet,authorDetails",
-                        user.GoogleToken.access_token);
+            var response = await youtubeService.Get(
+                $"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id,snippet,authorDetails",
+                user.GoogleToken.access_token);
 
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                return StatusCode((int)response.StatusCode, content);
+                return StatusCode((int) response.StatusCode, content);
             }
 
             var liveChatMessageList = JsonConvert.DeserializeObject<MessageList>(content);
 
-            foreach (var item in liveChatMessageList.items.Where(x=>x.snippet.hasDisplayContent))
+            foreach (var item in liveChatMessageList.items.Where(x => x.snippet.hasDisplayContent))
             {
-                await chatHubContext.Clients.All.SendAsync("ReceiveMessage", item.AuthorDetails.displayName, item.snippet.displayMessage);
+                await chatHubContext.Clients.All.SendAsync("ReceiveMessage", item.AuthorDetails.displayName,
+                    item.snippet.displayMessage);
             }
 
             return View("Messages", liveChatMessageList);
-        }
-
-
-        private async Task<HttpResponseMessage> Get(string request)
-        {
-            return await Get(request, string.Empty);
-        }
-
-        private async Task<HttpResponseMessage> Get(string request, string accessToken)
-        {
-            var client = new HttpClient();
-            var httpRequest = new HttpRequestMessage()
-            {
-                RequestUri = new Uri(request),
-                Method = HttpMethod.Get,
-            };
-
-            if (!string.IsNullOrEmpty(accessToken))
-            {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            }
-
-            var response = await client.GetAsync(request);
-            return response;
-        }
-
-        private async Task<string> Post(string url, IList<KeyValuePair<string, string>> data)
-        {
-            using (var client = new HttpClient())
-            {
-                var content = new FormUrlEncodedContent(data);
-
-                var response = await client.PostAsync(url, content);
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException($"POST failed with code: {response.StatusCode}: {responseContent}");
-                }
-
-                return responseContent;
-            }
         }
 
         private async Task GoogleRefresh(User user)
@@ -228,7 +190,7 @@ namespace Rambler.Web.Controllers
                 new KeyValuePair<string, string>("grant_type", "refresh_token")
             };
 
-            var response = await Post("https://accounts.google.com/o/oauth2/token", data);
+            var response = await youtubeService.Post("https://accounts.google.com/o/oauth2/token", data);
 
             var googleToken = JsonConvert.DeserializeObject<GoogleToken>(response);
 

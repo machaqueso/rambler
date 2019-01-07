@@ -16,7 +16,7 @@
                 </div>
                 <template is="dom-repeat" items="{{messages}}" restamp>
                     <div class="chat-row">
-                        <div class="sender">{{item.user}}</div>
+                        <div class="sender">{{item.author}}</div>
                         <div>{{item.message}}</div>
                     </div>
                 </template>
@@ -31,19 +31,16 @@
                 messages: { Type: Array, notify: true, value: [] },
                 connection: { Type: Object, value: {} }
             },
-            _onMessageReceived: function (user, message) {
-                if (!user) return;
+            _onMessageReceived: function (message) {
                 if (!message) return;
-
-                var msg = { "user": user, "message": message };
-                this.push("messages", msg);
+                this.push("messages", message);
             },
             ready: function () {
                 var that = this;
                 this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
-                this.connection.on("ReceiveMessage", function (user, message) {
-                    that._onMessageReceived(user, message);
+                this.connection.on("ReceiveMessage", function (message) {
+                    that._onMessageReceived(message);
                 });
 
                 this.connection.start().catch(function (err) {
