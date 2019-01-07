@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rambler.Web.Data;
+using Rambler.Web.Hubs;
 using Rambler.Web.Models;
 
 namespace Rambler.Web.Controllers
@@ -17,10 +18,12 @@ namespace Rambler.Web.Controllers
     public class YoutubeController : Controller
     {
         public IConfiguration Configuration { get; }
+        private readonly ChatHub chatHub;
 
-        public YoutubeController(IConfiguration configuration)
+        public YoutubeController(IConfiguration configuration, ChatHub chatHub)
         {
             Configuration = configuration;
+            this.chatHub = chatHub;
         }
 
         public async Task<IActionResult> Index()
@@ -161,6 +164,13 @@ namespace Rambler.Web.Controllers
             }
 
             var liveChatMessageList = JsonConvert.DeserializeObject<LiveChatMessageList>(content);
+
+            foreach (var item in liveChatMessageList.items)
+            {
+                await chatHub.SendMessage("youtube", item.snippet.textMessageDetails.messageText);
+            }
+
+            //return RedirectToAction("Chat", "Home");
 
             return View("Messages", liveChatMessageList);
         }
