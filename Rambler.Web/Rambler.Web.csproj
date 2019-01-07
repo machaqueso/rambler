@@ -14,8 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Youtube\LiveChat\" />
-    <Folder Include="Models\Youtube\LiveBroadcast\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 

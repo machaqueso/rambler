@@ -13,18 +13,20 @@ using Newtonsoft.Json;
 using Rambler.Web.Data;
 using Rambler.Web.Hubs;
 using Rambler.Web.Models;
+using Rambler.Web.Models.Youtube.LiveBroadcast;
+using Rambler.Web.Models.Youtube.LiveChat;
 
 namespace Rambler.Web.Controllers
 {
     public class YoutubeController : Controller
     {
         public IConfiguration Configuration { get; }
-        private readonly ChatHub chatHub;
+        private readonly IHubContext<ChatHub> chatHubContext;
 
-        public YoutubeController(IConfiguration configuration, ChatHub chatHub)
+        public YoutubeController(IConfiguration configuration, IHubContext<ChatHub> chatHubContext)
         {
             Configuration = configuration;
-            this.chatHub = chatHub;
+            this.chatHubContext = chatHubContext;
         }
 
         public async Task<IActionResult> Index()
@@ -136,7 +138,7 @@ namespace Rambler.Web.Controllers
                 return StatusCode((int)response.StatusCode, content);
             }
 
-            var liveBroadcastList = JsonConvert.DeserializeObject<LiveBroadcastList>(content);
+            var liveBroadcastList = JsonConvert.DeserializeObject<List>(content);
             return View("Broadcast", liveBroadcastList);
         }
 
@@ -147,7 +149,7 @@ namespace Rambler.Web.Controllers
             using (var db = new DataContext())
             {
                 user = await db.Users.Include(x => x.GoogleToken)
-                            .FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
+                            .FirstAsync(x => x.Id == Convert.ToInt32(Request.Cookies["UserId"]));
 
                 if (DateTime.Now > user.GoogleToken.ExpirationDate)
                 {
@@ -164,11 +166,11 @@ namespace Rambler.Web.Controllers
                 return StatusCode((int)response.StatusCode, content);
             }
 
-            var liveChatMessageList = JsonConvert.DeserializeObject<LiveChatMessageList>(content);
+            var liveChatMessageList = JsonConvert.DeserializeObject<MessageList>(content);
 
-            foreach (var item in liveChatMessageList.items)
+            foreach (var item in liveChatMessageList.items.Where(x=>x.snippet.hasDisplayContent))
             {
-                await chatHub.Clients.All.SendAsync("ReceiveMessage", "youtube", item.snippet.textMessageDetails.messageText);
+                await chatHubContext.Clients.All.SendAsync("ReceiveMessage", item.AuthorDetails.displayName, item.snippet.displayMessage);
             }
 
             return View("Messages", liveChatMessageList);
