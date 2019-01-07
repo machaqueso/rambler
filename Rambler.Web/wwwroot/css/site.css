@@ -8,3 +8,19 @@ body {
     background-color: #3e5b43;
     color: white;
 }
+
+.chat {
+}
+
+.xenon-photo-card-0 #body.xenon-photo-card main .chat-row {
+    display: flex;
+    margin: 4px 0px 4px 0px;
+}
+    .chat-row .sender {
+        padding-right: 2px;
+        font-weight: bolder;
+    }
+
+        .chat-row .sender:after {
+            content: ":";
+        }

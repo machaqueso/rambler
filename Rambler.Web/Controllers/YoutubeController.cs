@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -154,7 +155,7 @@ namespace Rambler.Web.Controllers
                 }
             }
 
-            var response = await Get($"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id%2Csnippet",
+            var response = await Get($"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id,snippet,authorDetails",
                         user.GoogleToken.access_token);
 
             var content = await response.Content.ReadAsStringAsync();
@@ -167,10 +168,8 @@ namespace Rambler.Web.Controllers
 
             foreach (var item in liveChatMessageList.items)
             {
-                await chatHub.SendMessage("youtube", item.snippet.textMessageDetails.messageText);
+                await chatHub.Clients.All.SendAsync("ReceiveMessage", "youtube", item.snippet.textMessageDetails.messageText);
             }
-
-            //return RedirectToAction("Chat", "Home");
 
             return View("Messages", liveChatMessageList);
         }
