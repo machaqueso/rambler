@@ -20,13 +20,21 @@ namespace Rambler.Web.Api
         {
             var users = userService.GetUsers();
 
-            return Ok(users.Select(x=>new
+            return Ok(users.Select(x => new
             {
                 x.Id,
                 x.GoogleTokenId,
-                HasValidToken = (x.GoogleToken!=null),
+                HasValidToken = (x.GoogleToken != null),
                 x.GoogleToken
             }));
+        }
+
+        [Route("token")]
+        public IActionResult GetTokens()
+        {
+            var users = userService.GetUsers();
+
+            return Ok(users.SelectMany(x => x.AccessTokens));
         }
     }
 }

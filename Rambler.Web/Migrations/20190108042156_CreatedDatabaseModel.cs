@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Rambler.Web.Migrations
 {
-    public partial class InitialMigration : Migration
+    public partial class CreatedDatabaseModel : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,7 +15,11 @@ namespace Rambler.Web.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Date = table.Column<DateTime>(nullable: false),
                     Author = table.Column<string>(nullable: true),
-                    Message = table.Column<string>(nullable: true)
+                    Message = table.Column<string>(nullable: true),
+                    Source = table.Column<string>(nullable: true),
+                    SourceMessageId = table.Column<string>(nullable: true),
+                    SourceAuthorId = table.Column<string>(nullable: true),
+                    PollingInterval = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -36,23 +40,25 @@ namespace Rambler.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GoogleTokens",
+                name: "AccessTokens",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    ApiSource = table.Column<string>(nullable: true),
                     access_token = table.Column<string>(nullable: true),
                     token_type = table.Column<string>(nullable: true),
                     expires_in = table.Column<int>(nullable: false),
                     refresh_token = table.Column<string>(nullable: true),
                     ExpirationDate = table.Column<DateTime>(nullable: false),
-                    UserId = table.Column<int>(nullable: false)
+                    UserId = table.Column<int>(nullable: false),
+                    Discriminator = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GoogleTokens", x => x.Id);
+                    table.PrimaryKey("PK_AccessTokens", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GoogleTokens_Users_UserId",
+                        name: "FK_AccessTokens_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -60,8 +66,8 @@ namespace Rambler.Web.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_GoogleTokens_UserId",
-                table: "GoogleTokens",
+                name: "IX_AccessTokens_UserId",
+                table: "AccessTokens",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -70,10 +76,10 @@ namespace Rambler.Web.Migrations
                 column: "GoogleTokenId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Users_GoogleTokens_GoogleTokenId",
+                name: "FK_Users_AccessTokens_GoogleTokenId",
                 table: "Users",
                 column: "GoogleTokenId",
-                principalTable: "GoogleTokens",
+                principalTable: "AccessTokens",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
         }
@@ -81,8 +87,8 @@ namespace Rambler.Web.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_GoogleTokens_Users_UserId",
-                table: "GoogleTokens");
+                name: "FK_AccessTokens_Users_UserId",
+                table: "AccessTokens");
 
             migrationBuilder.DropTable(
                 name: "Messages");
@@ -91,7 +97,7 @@ namespace Rambler.Web.Migrations
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "GoogleTokens");
+                name: "AccessTokens");
         }
     }
 }

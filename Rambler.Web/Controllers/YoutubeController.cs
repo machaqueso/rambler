@@ -22,51 +22,30 @@ namespace Rambler.Web.Controllers
         public IConfiguration Configuration { get; }
         private readonly IHubContext<ChatHub> chatHubContext;
         private readonly YoutubeService youtubeService;
+        private readonly UserService userService;
 
         public YoutubeController(IConfiguration configuration, IHubContext<ChatHub> chatHubContext,
-            YoutubeService youtubeService)
+            YoutubeService youtubeService, UserService userService)
         {
             Configuration = configuration;
             this.chatHubContext = chatHubContext;
             this.youtubeService = youtubeService;
+            this.userService = userService;
         }
 
         public async Task<IActionResult> Index()
         {
-            using (var db = new DataContext())
+            var token = await youtubeService.GetToken();
+            if (token == null)
             {
-                var user = await db.Users.FirstOrDefaultAsync();
-                if (user == null)
-                {
-                    user = new User();
-                    db.Users.Add(user);
-                    await db.SaveChangesAsync();
-                }
-
-                user = await db.Users.FirstOrDefaultAsync();
-                if (string.IsNullOrEmpty(Request.Cookies["UserId"]))
-                {
-                    Response.Cookies.Append("UserId", user.Id.ToString());
-                }
-                else
-                {
-                    user = await db.Users
-                        .Include(x => x.GoogleToken)
-                        .FirstAsync(x => x.Id == Convert.ToInt32(Request.Cookies["UserId"]));
-                }
-
-                if (user.GoogleToken == null)
-                {
-                    return Authorize();
-                }
-
-                if (DateTime.Now > user.GoogleToken.ExpirationDate)
-                {
-                    await GoogleRefresh(user);
-                }
-
-                return View(user);
+                return Authorize();
             }
+            if (DateTime.UtcNow > token.ExpirationDate)
+            {
+                await GoogleRefresh(token);
+            }
+
+            return View(token);
         }
 
         public async Task<IActionResult> Callback(string code)
@@ -82,16 +61,21 @@ namespace Rambler.Web.Controllers
             };
 
             var response = await youtubeService.Post("https://accounts.google.com/o/oauth2/token", data);
-
-            var googleToken = JsonConvert.DeserializeObject<GoogleToken>(response);
-
-            using (var db = new DataContext())
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
             {
-                var user = db.Users.First(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
-                googleToken.UserId = user.Id;
-                user.GoogleToken = googleToken;
-                await db.SaveChangesAsync();
+                return StatusCode((int)response.StatusCode, content);
             }
+
+            var token = JsonConvert.DeserializeObject<AccessToken>(content);
+
+            var user = await userService.GetUsers().FirstOrDefaultAsync();
+            if (user == null)
+            {
+                user = new User();
+                await userService.Create(user);
+            }
+            await userService.AddToken(user.Id, ApiSource.Youtube, token);
 
             return RedirectToAction("Index");
         }
@@ -115,29 +99,24 @@ namespace Rambler.Web.Controllers
 
         public async Task<IActionResult> Broadcast()
         {
-            User user;
-
-            using (var db = new DataContext())
+            var token = await youtubeService.GetToken();
+            if (token == null)
             {
-                user =
-                    await
-                        db.Users.Include(x => x.GoogleToken)
-                            .FirstAsync(x => x.Id == System.Convert.ToInt32(Request.Cookies["UserId"]));
-
-                if (DateTime.Now > user.GoogleToken.ExpirationDate)
-                {
-                    await GoogleRefresh(user);
-                }
+                return Authorize();
+            }
+            if (DateTime.UtcNow > token.ExpirationDate)
+            {
+                await GoogleRefresh(token);
             }
 
             var response = await youtubeService.Get(
                 "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastType=persistent&mine=true",
-                user.GoogleToken.access_token);
+                token.access_token);
 
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                return StatusCode((int) response.StatusCode, content);
+                return StatusCode((int)response.StatusCode, content);
             }
 
             var liveBroadcastList = JsonConvert.DeserializeObject<List>(content);
@@ -146,27 +125,24 @@ namespace Rambler.Web.Controllers
 
         public async Task<IActionResult> Messages(string id)
         {
-            User user;
-
-            using (var db = new DataContext())
+            var token = await youtubeService.GetToken();
+            if (token == null)
             {
-                user = await db.Users.Include(x => x.GoogleToken)
-                    .FirstAsync(x => x.Id == Convert.ToInt32(Request.Cookies["UserId"]));
-
-                if (DateTime.Now > user.GoogleToken.ExpirationDate)
-                {
-                    await GoogleRefresh(user);
-                }
+                return Authorize();
+            }
+            if (DateTime.UtcNow > token.ExpirationDate)
+            {
+                await GoogleRefresh(token);
             }
 
             var response = await youtubeService.Get(
                 $"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id,snippet,authorDetails",
-                user.GoogleToken.access_token);
+                token.access_token);
 
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                return StatusCode((int) response.StatusCode, content);
+                return StatusCode((int)response.StatusCode, content);
             }
 
             var liveChatMessageList = JsonConvert.DeserializeObject<MessageList>(content);
@@ -180,28 +156,27 @@ namespace Rambler.Web.Controllers
             return View("Messages", liveChatMessageList);
         }
 
-        private async Task GoogleRefresh(User user)
+        private async Task GoogleRefresh(AccessToken token)
         {
             var data = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("client_id", Configuration["Authentication:Google:ClientId"]),
                 new KeyValuePair<string, string>("client_secret", Configuration["Authentication:Google:ClientSecret"]),
-                new KeyValuePair<string, string>("refresh_token", user.GoogleToken.refresh_token),
+                new KeyValuePair<string, string>("refresh_token", token.refresh_token),
                 new KeyValuePair<string, string>("grant_type", "refresh_token")
             };
 
             var response = await youtubeService.Post("https://accounts.google.com/o/oauth2/token", data);
+            var content = await response.Content.ReadAsStringAsync();
 
-            var googleToken = JsonConvert.DeserializeObject<GoogleToken>(response);
-
-            using (var db = new DataContext())
+            if (!response.IsSuccessStatusCode)
             {
-                var currentUser = db.Users.First(x => x.Id == user.Id);
-                currentUser.GoogleToken.access_token = googleToken.access_token;
-                currentUser.GoogleToken.expires_in = googleToken.expires_in;
-                currentUser.GoogleToken.token_type = googleToken.token_type;
-                await db.SaveChangesAsync();
+                throw new InvalidOperationException($"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}");
             }
+
+            var accessToken = JsonConvert.DeserializeObject<AccessToken>(content);
+            accessToken.Id = token.Id;
+            await userService.RefreshToken(accessToken);
         }
     }
 }

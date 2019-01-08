@@ -11,10 +11,10 @@
     <template>
         <iron-ajax id="ajax"
                    auto
-                   url="/api/user"
+                   url="/api/user/token"
                    handle-as="json"
                    loading="{{loading}}"
-                   last-response="{{users}}"
+                   last-response="{{tokens}}"
                    debounce-duration="300"></iron-ajax>
 
         <xenon-photo-card heading="@ViewData["Title"]">
@@ -23,18 +23,20 @@
                     <thead>
                         <tr>
                             <th>Id</th>
-                            <th>Google Token?</th>
-                            <th>Expires in</th>
+                            <th>Source</th>
+                            <th>Type</th>
                             <th>Expiration Date</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template is="dom-repeat" items="{{users}}">
+                        <template is="dom-repeat" items="{{tokens}}">
                             <tr>
                                 <td>{{item.id}}</td>
-                                <td>{{item.hasValidToken}}</td>
-                                <td>{{item.googleToken.expires_in}}</td>
-                                <td>{{item.googleToken.expirationDate}}</td>
+                                <td>{{item.apiSource}}</td>
+                                <td>{{item.token_type}}</td>
+                                <td>{{item.expirationDate}}</td>
+                                <td>{{item.status}}</td>
                             </tr>
                         </template>
                     </tbody>

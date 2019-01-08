@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Rambler.Web.Models;
 using Rambler.Web.Models.Youtube.LiveChat;
@@ -39,21 +38,14 @@ namespace Rambler.Web.Services
             return response;
         }
 
-        public async Task<string> Post(string url, IList<KeyValuePair<string, string>> data)
+        public async Task<HttpResponseMessage> Post(string url, IList<KeyValuePair<string, string>> data)
         {
             using (var client = new HttpClient())
             {
                 var content = new FormUrlEncodedContent(data);
 
                 var response = await client.PostAsync(url, content);
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException($"POST failed with code: {response.StatusCode}: {responseContent}");
-                }
-
-                return responseContent;
+                return response;
             }
         }
 
@@ -82,7 +74,8 @@ namespace Rambler.Web.Services
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Youtube API error: {response.StatusCode} - {response.ReasonPhrase}");
+                throw new InvalidOperationException(
+                    $"Youtube API error: {response.StatusCode} - {response.ReasonPhrase}");
             }
 
             var liveChatMessageList = JsonConvert.DeserializeObject<MessageList>(content);
@@ -99,6 +92,24 @@ namespace Rambler.Web.Services
                     SourceAuthorId = x.AuthorDetails.channelId,
                     PollingInterval = liveChatMessageList.pollingIntervalMillis
                 });
+        }
+
+        public async Task<AccessToken> GetToken()
+        {
+            var user = await userService.GetUsers()
+                .Include(x => x.AccessTokens)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                user = new User();
+                await userService.Create(user);
+            }
+
+            var token = user.AccessTokens
+                .FirstOrDefault(x => x.ApiSource == ApiSource.Youtube);
+
+            return token;
         }
 
     }

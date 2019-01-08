@@ -1,4 +1,4 @@
-﻿@model User
+﻿@model AccessToken
 
 @{
     ViewData["Title"] = "Youtube Integration";
@@ -12,9 +12,9 @@
         <xenon-photo-card heading="@ViewData["Title"]">
             <main>
                 <div class="flex">
-                    <div>Token Type : @Model.GoogleToken.token_type</div>
-                    <div>Expires in : @Model.GoogleToken.expires_in</div>
-                    <div>Expiration Date : @Model.GoogleToken.ExpirationDate</div>
+                    <div>Token Type : @Model.token_type</div>
+                    <div>Expires in : @Model.expires_in</div>
+                    <div>Expiration Date : @Model.ExpirationDate</div>
                 </div>
                 @Html.ActionLink("Broadcast", "Broadcast")
                 @Html.ActionLink("Live chat messages", "Messages")

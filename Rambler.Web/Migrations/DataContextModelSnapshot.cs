@@ -16,26 +16,15 @@ namespace Rambler.Web.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
 
-            modelBuilder.Entity("Rambler.Web.Models.ChatMessage", b =>
+            modelBuilder.Entity("Rambler.Web.Models.AccessToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Author");
+                    b.Property<string>("ApiSource");
 
-                    b.Property<DateTime>("Date");
-
-                    b.Property<string>("Message");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Messages");
-                });
-
-            modelBuilder.Entity("Rambler.Web.Models.GoogleToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                    b.Property<string>("Discriminator")
+                        .IsRequired();
 
                     b.Property<DateTime>("ExpirationDate");
 
@@ -53,7 +42,33 @@ namespace Rambler.Web.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("GoogleTokens");
+                    b.ToTable("AccessTokens");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("AccessToken");
+                });
+
+            modelBuilder.Entity("Rambler.Web.Models.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Author");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<string>("Message");
+
+                    b.Property<int>("PollingInterval");
+
+                    b.Property<string>("Source");
+
+                    b.Property<string>("SourceAuthorId");
+
+                    b.Property<string>("SourceMessageId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("Rambler.Web.Models.User", b =>
@@ -72,8 +87,18 @@ namespace Rambler.Web.Migrations
 
             modelBuilder.Entity("Rambler.Web.Models.GoogleToken", b =>
                 {
+                    b.HasBaseType("Rambler.Web.Models.AccessToken");
+
+
+                    b.ToTable("GoogleToken");
+
+                    b.HasDiscriminator().HasValue("GoogleToken");
+                });
+
+            modelBuilder.Entity("Rambler.Web.Models.AccessToken", b =>
+                {
                     b.HasOne("Rambler.Web.Models.User", "User")
-                        .WithMany()
+                        .WithMany("AccessTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

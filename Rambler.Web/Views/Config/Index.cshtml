@@ -1,0 +1,65 @@
+﻿
+@{
+    ViewData["Title"] = "Configuration";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/iron-ajax/iron-ajax.html" />
+
+<dom-module id="page-module">
+    <template>
+        <iron-ajax id="ajax"
+                   auto
+                   url="/api/token"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{tokens}}"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-section id="section">
+            <xenon-photo-card heading="">
+                <main>
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Source</th>
+                                <th>Type</th>
+                                <th>Expiration Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template is="dom-repeat" items="{{tokens}}">
+                                <tr>
+                                    <td>{{item.id}}</td>
+                                    <td>{{item.apiSource}}</td>
+                                    <td>{{item.token_type}}</td>
+                                    <td>{{item.expirationDate}}</td>
+                                    <td>{{item.status}}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </main>
+            </xenon-photo-card>
+        </xenon-section>
+
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: "page-module",
+            properties: {
+            },
+            observers: [
+            ],
+            ready: function () {
+            }
+        });
+    </script>
+</dom-module>
+
+<page-module></page-module>
+
