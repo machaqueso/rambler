@@ -27,15 +27,4 @@ namespace Rambler.Web.Models
         [ForeignKey("UserId")]
         public virtual User User{get;set;}
     }
-
-    public class User
-    {
-        public int Id { get; set; }
-
-        public int? GoogleTokenId { get; set; }
-        [ForeignKey("GoogleTokenId")]
-        public virtual GoogleToken GoogleToken { get; set; }
-    }
-
-
 }

@@ -1,55 +1,58 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Rambler: @ViewData["Title"]</title>
     <script src="~/components/webcomponentsjs/webcomponents.js"></script>
 
-    <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="stylesheet" href="~/css/bootstrap-tables.css" />
+    <link rel="stylesheet" href="~/css/site.css"/>
+    <link rel="stylesheet" href="~/css/bootstrap-tables.css"/>
 
-    <link rel="import" href="~/components/polymer/polymer.html" />
-    <link rel="import" href="~/components/iron-icons/iron-icons.html" />
-    <link rel="import" href="~/components/iron-icons/hardware-icons.html" />
-    <link rel="import" href="~/components/iron-icons/communication-icons.html" />
-    <link rel="import" href="~/components/iron-icon/iron-icon.html" />
-    <link rel="import" href="~/components/xenon-layout/nav-item.html" />
-    <link rel="import" href="~/components/xenon-layout/xenon-search.html" />
-    <link rel="import" href="~/components/xenon-layout/xenon-section.html" />
-    <link rel="import" href="~/components/xenon-layout/xenon-field-group.html" />
-    <link rel="import" href="~/components/xenon-layout/xenon-layout.html" />
-    <link rel="import" href="~/components/xenon-photo-card/xenon-photo-card.html" />
-    <link rel="import" href="~/components/paper-button/paper-button.html" />
-    <link rel="import" href="~/components/paper-menu-button/paper-menu-button.html" />
-    <link rel="import" href="~/components/paper-item/paper-item.html" />
-    <link rel="import" href="~/components/paper-icon-button/paper-icon-button.html" />
-    <link rel="import" href="~/components/paper-input/paper-input.html" />
+    <link rel="import" href="~/components/polymer/polymer.html"/>
+    <link rel="import" href="~/components/iron-icons/iron-icons.html"/>
+    <link rel="import" href="~/components/iron-icons/hardware-icons.html"/>
+    <link rel="import" href="~/components/iron-icons/communication-icons.html"/>
+    <link rel="import" href="~/components/iron-icons/social-icons.html"/>
+    <link rel="import" href="~/components/iron-icon/iron-icon.html"/>
+    <link rel="import" href="~/components/xenon-layout/nav-item.html"/>
+    <link rel="import" href="~/components/xenon-layout/xenon-search.html"/>
+    <link rel="import" href="~/components/xenon-layout/xenon-section.html"/>
+    <link rel="import" href="~/components/xenon-layout/xenon-field-group.html"/>
+    <link rel="import" href="~/components/xenon-layout/xenon-layout.html"/>
+    <link rel="import" href="~/components/xenon-photo-card/xenon-photo-card.html"/>
+    <link rel="import" href="~/components/paper-button/paper-button.html"/>
+    <link rel="import" href="~/components/paper-menu-button/paper-menu-button.html"/>
+    <link rel="import" href="~/components/paper-item/paper-item.html"/>
+    <link rel="import" href="~/components/paper-icon-button/paper-icon-button.html"/>
+    <link rel="import" href="~/components/paper-input/paper-input.html"/>
 </head>
 <body>
-    <xenon-layout heading="Rambler: @ViewData["Title"]">
-        <header>
-            <xenon-search></xenon-search>
-        </header>
-        <nav>
-            <nav-item icon="home" href="/">Home</nav-item>
-            <nav-item icon="communication:chat" href="@Url.Action("Chat", "Home")">Chat</nav-item>
-            <nav-item icon="hardware:tv" href="/Youtube">Youtube</nav-item>
-            <nav-item icon="settings" href="/Config">Settings</nav-item>
-            <spacer></spacer>
-            <img style="align-self:center;" src="ramblerlogo.png" />
-        </nav>
-        <main>
+<xenon-layout heading="Rambler: @ViewData["Title"]">
+    <header>
+        <xenon-search></xenon-search>
+    </header>
+    <nav>
+        <nav-item icon="home" href="/">Home</nav-item>
+        <nav-item icon="communication:chat" href="@Url.Action("Chat", "Home")">Chat</nav-item>
+        <nav-item icon="social:people" href="@Url.Action("Index", "User")">Users</nav-item>
+        <hr/>
+        <nav-item icon="hardware:tv" href="/Youtube">Youtube</nav-item>
+        <nav-item icon="settings" href="/Config">Settings</nav-item>
+        <spacer></spacer>
+        <img style="align-self: center;" src="ramblerlogo.png"/>
+    </nav>
+    <main>
+        <div style="display: flex; align-content: stretch; flex-direction: column;">
             @RenderBody()
-            <div style="flex:1 1 auto"></div>
-            <xenon-section>
-                <footer>
-                    <p>&copy; 2019 - Machaqueso</p>
-                </footer>
-            </xenon-section>
-        </main>
-    </xenon-layout>
+            <div style="flex: 1 1 auto;"></div>
+            <footer>
+                <p>&copy; 2019 - Machaqueso</p>
+            </footer>
+        </div>
+    </main>
+</xenon-layout>
 
-    @RenderSection("Scripts", required: false)
+@RenderSection("Scripts", required: false)
 </body>
 </html>

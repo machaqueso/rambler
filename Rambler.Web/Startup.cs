@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rambler.Web.Data;
 using Rambler.Web.Hubs;
+using Rambler.Web.Services;
 
 namespace Rambler.Web
 {
@@ -32,6 +29,10 @@ namespace Rambler.Web
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddTransient<DataContext>();
+            services.AddTransient<UserService>();
+            services.AddTransient<YoutubeService>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSignalR();
         }
@@ -52,10 +53,7 @@ namespace Rambler.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<ChatHub>("/chatHub");
-            });
+            app.UseSignalR(routes => { routes.MapHub<ChatHub>("/chatHub"); });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

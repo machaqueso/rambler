@@ -24,3 +24,7 @@ body {
         .chat-row .sender:after {
             content: ":";
         }
+
+.xenon-layout-0 #main.xenon-layout {
+    height: 100%;
+}

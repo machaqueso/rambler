@@ -1,0 +1,60 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/iron-ajax/iron-ajax.html" />
+
+<dom-module id="page-module">
+    <template>
+        <iron-ajax id="ajax"
+                   auto
+                   url="/api/user"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{users}}"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <main>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Google Token?</th>
+                            <th>Expires in</th>
+                            <th>Expiration Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="{{users}}">
+                            <tr>
+                                <td>{{item.id}}</td>
+                                <td>{{item.hasValidToken}}</td>
+                                <td>{{item.googleToken.expires_in}}</td>
+                                <td>{{item.googleToken.expirationDate}}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </main>
+        </xenon-photo-card>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: "page-module",
+            properties: {
+            },
+            observers: [
+            ],
+            ready: function () {
+            }
+        });
+    </script>
+</dom-module>
+
+<page-module></page-module>
+
