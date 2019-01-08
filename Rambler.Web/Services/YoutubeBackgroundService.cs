@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+// Details on how to complete this at:
+// https://blogs.msdn.microsoft.com/cesardelatorre/2017/11/18/implementing-background-tasks-in-microservices-with-ihostedservice-and-the-backgroundservice-class-net-core-2-x/
+
 namespace Rambler.Web.Services
 {
     public class YoutubeBackgroundService : BackgroundService
