@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Rambler.Web.Models.Youtube.LiveChat
 {
-    public class MessageList
+    public class LiveChatMessageList
     {
         public string kind { get; set; }
         public string etag { get; set; }
@@ -11,19 +11,19 @@ namespace Rambler.Web.Models.Youtube.LiveChat
         public int pollingIntervalMillis { get; set; }
 
         public PageInfo pageInfo { get; set; }
-        public IEnumerable<Message> items { get; set; }
+        public IEnumerable<LiveChatMessage> items { get; set; }
     }
 
-    public class Message
+    public class LiveChatMessage
     {
         public string kind { get; set; }
         public string etag { get; set; }
         public string id { get; set; }
-        public Snippet snippet { get; set; }
+        public LiveChatSnippet snippet { get; set; }
         public AuthorDetails AuthorDetails { get; set; }
     }
 
-    public class Snippet
+    public class LiveChatSnippet
     {
         public string type { get; set; }
         public string liveChatId { get; set; }

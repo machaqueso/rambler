@@ -4,9 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rambler.Web.Models;
+using Rambler.Web.Models.Youtube.LiveBroadcast;
 using Rambler.Web.Models.Youtube.LiveChat;
 
 namespace Rambler.Web.Services
@@ -14,10 +15,12 @@ namespace Rambler.Web.Services
     public class YoutubeService
     {
         private readonly UserService userService;
+        private readonly ILogger<YoutubeService> logger;
 
-        public YoutubeService(UserService userService)
+        public YoutubeService(UserService userService, ILogger<YoutubeService> logger)
         {
             this.userService = userService;
+            this.logger = logger;
         }
 
         public async Task<HttpResponseMessage> Get(string request)
@@ -49,62 +52,9 @@ namespace Rambler.Web.Services
             }
         }
 
-        public async Task<User> GetCurrentUser(int id)
-        {
-            var user = await userService.GetUsers()
-                .Include(x => x.GoogleToken)
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-            if (DateTime.UtcNow > user.GoogleToken.ExpirationDate)
-            {
-                return null;
-            }
-
-            return user;
-        }
-
-        public async Task<IEnumerable<ChatMessage>> GetLiveChatMessages(int id)
-        {
-            var user = await GetCurrentUser(id);
-
-            var response = await Get(
-                $"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id,snippet,authorDetails",
-                user.GoogleToken.access_token);
-
-            var content = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException(
-                    $"Youtube API error: {response.StatusCode} - {response.ReasonPhrase}");
-            }
-
-            var liveChatMessageList = JsonConvert.DeserializeObject<MessageList>(content);
-
-            return liveChatMessageList.items
-                .Where(x => x.snippet.hasDisplayContent)
-                .Select(x => new ChatMessage
-                {
-                    Author = x.AuthorDetails.displayName,
-                    Message = x.snippet.displayMessage,
-                    Date = x.snippet.publishedAt,
-                    Source = "Youtube",
-                    SourceMessageId = x.id,
-                    SourceAuthorId = x.AuthorDetails.channelId,
-                    PollingInterval = liveChatMessageList.pollingIntervalMillis
-                });
-        }
-
         public async Task<AccessToken> GetToken()
         {
-            var user = await userService.GetUsers()
-                .Include(x => x.AccessTokens)
-                .FirstOrDefaultAsync();
-
-            if (user == null)
-            {
-                user = new User();
-                await userService.Create(user);
-            }
+            var user = await userService.GetCurrentUser();
 
             var token = user.AccessTokens
                 .FirstOrDefault(x => x.ApiSource == ApiSource.Youtube);
@@ -112,5 +62,85 @@ namespace Rambler.Web.Services
             return token;
         }
 
+        public bool IsValidToken(AccessToken token)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return token.Status == AccessTokenStatus.Ok
+                   && !string.IsNullOrEmpty(token.access_token);
+        }
+
+        public async Task<LiveChatMessageList> GetLiveChatMessages(string liveChatId)
+        {
+            if (string.IsNullOrEmpty(liveChatId))
+            {
+                throw new ArgumentNullException(liveChatId);
+            }
+
+            var token = await GetToken();
+            if (!IsValidToken(token))
+            {
+                return null;
+            }
+
+            var response = await Get(
+                $"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={liveChatId}&part=id,snippet,authorDetails",
+                token.access_token);
+
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogError($"GetLiveChatMessages error: {(int)response.StatusCode} - {response.ReasonPhrase}",
+                    response);
+                return null;
+            }
+
+            var liveChatMessageList = JsonConvert.DeserializeObject<LiveChatMessageList>(content);
+            return liveChatMessageList;
+        }
+
+        public ChatMessage MapToChatMessage(LiveChatMessage item)
+        {
+            return new ChatMessage
+            {
+                Author = item.AuthorDetails.displayName,
+                Message = item.snippet.displayMessage,
+                Date = item.snippet.publishedAt,
+                Source = "Youtube",
+                SourceMessageId = item.id,
+                SourceAuthorId = item.AuthorDetails.channelId
+            };
+        }
+
+        public async Task<LiveBroadcastItem> GetLiveBroadcast()
+        {
+            var token = await GetToken();
+            if (!IsValidToken(token))
+            {
+                return null;
+            }
+
+            var response = await Get(
+                "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastType=persistent&mine=true",
+                token.access_token);
+
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogError($"GetLiveBroadcast error: {(int)response.StatusCode} - {response.ReasonPhrase}: {content}");
+                return null;
+            }
+
+            var liveBroadcastList = JsonConvert.DeserializeObject<LiveBroadcastList>(content);
+            if (liveBroadcastList?.items == null || !liveBroadcastList.items.Any())
+            {
+                return null;
+            }
+
+            return liveBroadcastList.items.FirstOrDefault();
+        }
     }
 };

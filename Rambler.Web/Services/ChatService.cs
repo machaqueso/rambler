@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Rambler.Web.Data;
@@ -25,9 +26,27 @@ namespace Rambler.Web.Services
 
         public async Task CreateMessage(ChatMessage message)
         {
+            if (db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
+            {
+                return;
+            }
+
             db.Messages.Add(message);
             await db.SaveChangesAsync();
             await chatHubContext.Clients.All.SendAsync("ReceiveMessage", message);
+        }
+
+        public async Task AddLogEntry(string entry)
+        {
+            var message = new ChatMessage
+            {
+                Date = DateTime.UtcNow,
+                Author = "Logger",
+                Source = "Logger",
+                Message = entry
+            };
+
+            await CreateMessage(message);
         }
     }
 }

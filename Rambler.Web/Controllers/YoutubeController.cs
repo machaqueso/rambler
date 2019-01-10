@@ -8,10 +8,8 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using Rambler.Web.Data;
 using Rambler.Web.Hubs;
 using Rambler.Web.Models;
-using Rambler.Web.Models.Youtube.LiveBroadcast;
 using Rambler.Web.Models.Youtube.LiveChat;
 using Rambler.Web.Services;
 
@@ -36,14 +34,6 @@ namespace Rambler.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var token = await youtubeService.GetToken();
-            if (token == null)
-            {
-                return Authorize();
-            }
-            if (DateTime.UtcNow > token.ExpirationDate)
-            {
-                await GoogleRefresh(token);
-            }
 
             return View(token);
         }
@@ -64,7 +54,7 @@ namespace Rambler.Web.Controllers
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                return StatusCode((int)response.StatusCode, content);
+                return StatusCode((int) response.StatusCode, content);
             }
 
             var token = JsonConvert.DeserializeObject<AccessToken>(content);
@@ -75,6 +65,7 @@ namespace Rambler.Web.Controllers
                 user = new User();
                 await userService.Create(user);
             }
+
             await userService.AddToken(user.Id, ApiSource.Youtube, token);
 
             return RedirectToAction("Index");
@@ -83,7 +74,7 @@ namespace Rambler.Web.Controllers
         public IActionResult Authorize()
         {
             var clientId = Configuration["Authentication:Google:ClientId"];
-            var clientSecret = Configuration["Authentication:Google:ClientSecret"];
+            //var clientSecret = Configuration["Authentication:Google:ClientSecret"];
 
             if (string.IsNullOrEmpty(clientId))
             {
@@ -104,23 +95,13 @@ namespace Rambler.Web.Controllers
             {
                 return Authorize();
             }
-            if (DateTime.UtcNow > token.ExpirationDate)
+            if (token.Status == AccessTokenStatus.Expired)
             {
                 await GoogleRefresh(token);
             }
 
-            var response = await youtubeService.Get(
-                "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastType=persistent&mine=true",
-                token.access_token);
-
-            var content = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode)
-            {
-                return StatusCode((int)response.StatusCode, content);
-            }
-
-            var liveBroadcastList = JsonConvert.DeserializeObject<List>(content);
-            return View("Broadcast", liveBroadcastList);
+            var liveBroadcast = await youtubeService.GetLiveBroadcast();
+            return View("Broadcast", liveBroadcast);
         }
 
         public async Task<IActionResult> Messages(string id)
@@ -130,22 +111,12 @@ namespace Rambler.Web.Controllers
             {
                 return Authorize();
             }
-            if (DateTime.UtcNow > token.ExpirationDate)
+            if (token.Status == AccessTokenStatus.Expired)
             {
                 await GoogleRefresh(token);
             }
 
-            var response = await youtubeService.Get(
-                $"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={id}&part=id,snippet,authorDetails",
-                token.access_token);
-
-            var content = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode)
-            {
-                return StatusCode((int)response.StatusCode, content);
-            }
-
-            var liveChatMessageList = JsonConvert.DeserializeObject<MessageList>(content);
+            var liveChatMessageList = await youtubeService.GetLiveChatMessages(id);
 
             foreach (var item in liveChatMessageList.items.Where(x => x.snippet.hasDisplayContent))
             {
@@ -171,7 +142,8 @@ namespace Rambler.Web.Controllers
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}");
+                throw new InvalidOperationException(
+                    $"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
             }
 
             var accessToken = JsonConvert.DeserializeObject<AccessToken>(content);

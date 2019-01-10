@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Rambler.Web.Models.Youtube.LiveBroadcast
 {
-    public class Snippet
+    public class LiveBroadcastSnippet
     {
         public DateTime publishedAt { get; set; }
         public string channelId { get; set; }
@@ -15,21 +15,21 @@ namespace Rambler.Web.Models.Youtube.LiveBroadcast
         public string liveChatId { get; set; }
     }
 
-    public class Item
+    public class LiveBroadcastItem
     {
         public string kind { get; set; }
         public string etag { get; set; }
 
         public string id { get; set; }
-        public Snippet snippet { get; set; }
+        public LiveBroadcastSnippet snippet { get; set; }
     }
 
-    public class List
+    public class LiveBroadcastList
     {
         public string kind { get; set; }
         public string etag { get; set; }
         public PageInfo pageInfo { get; set; }
-        public IEnumerable<Item> items { get; set; }
+        public IEnumerable<LiveBroadcastItem> items { get; set; }
     }
 
 }

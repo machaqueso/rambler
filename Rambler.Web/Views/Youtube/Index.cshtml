@@ -6,6 +6,7 @@
 
 <link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
 <link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/paper-button/paper-button.html" />
 
 <dom-module id="page-module">
     <template>
@@ -15,10 +16,20 @@
                     <div>Token Type : @Model.token_type</div>
                     <div>Expires in : @Model.expires_in</div>
                     <div>Expiration Date : @Model.ExpirationDate</div>
+                    <div>Status: @Model.Status</div>
                 </div>
-                @Html.ActionLink("Broadcast", "Broadcast")
-                @Html.ActionLink("Live chat messages", "Messages")
             </main>
+            <buttons>
+                <a href="@Url.Action("Authorize")" tabindex="-1">
+                    <paper-button>Authorize</paper-button>
+                </a>
+                <a href="@Url.Action("Broadcast")" tabindex="-1">
+                    <paper-button>Broadcast</paper-button>
+                </a>
+                <a href="@Url.Action("Messages")" tabindex="-1">
+                    <paper-button>Live Chat</paper-button>
+                </a>
+            </buttons>
         </xenon-photo-card>
         <paper-toast id="toast"></paper-toast>
     </template>

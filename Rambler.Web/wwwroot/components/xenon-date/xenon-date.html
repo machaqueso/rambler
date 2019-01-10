@@ -1,0 +1,56 @@
+<!--
+
+`<xenon-date>` provides a simple date output. Simply bind your UTC timestamp to components attribute "value".
+Example:
+
+           `<xenon-date value="2017-08-20 21:11:35.537000"></xenon-date>
+            <xenon-date value="{{utcTimeStamp}}"></xenon-date>
+            <xenon-date show-time value="2017-03-20 21:11:35.537000"></xenon-date>
+            <xenon-date label="Start Date" show-time value="2017-03-20 21:11:35.537000"></xenon-date>`
+
+@group Xenon Elements
+@element xenon-date
+@demo demo/index.html
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="xenon-date-behavior.html">
+<dom-module id="xenon-date">
+    <template>
+        <content id="content"></content>
+    </template>
+    <script>
+        Polymer({
+            is: "xenon-date",
+            properties: {
+                value: { type: Date, observer: "_valueChange" },
+                date: { type: String, notify: true },
+                time: { type: String, notify: true },
+                showTime: { type: Boolean, notify: true, value: false },
+                showUtc: { type:Boolean, value:false }
+            },
+            behaviors: [
+                ACAXLabs.XenonDateBehavior
+            ],
+            _valueChange: function(datval) {
+                // wipe out my content 
+                var children = Polymer.dom(this).childNodes;
+                for(var i = 0; i < children.length; i++) {
+                    Polymer.dom(this).removeChild(children[i]);
+                }
+                var val = new Date(datval);
+                // check to see if the Date is valid
+                if (isNaN(val.getTime()) ) return; 
+                this._dateChange(val);
+                var output = (this.showTime) ? this.date + " " + this.time : this.date;
+                // repopulate my content node
+                var node = document.createTextNode(output);
+                Polymer.dom(this).appendChild(node);
+            },
+            _dateChange: function (val) {
+                this.date = this.getDateString(val, this.showUtc);
+                this.time = this.getTimeString(val, this.showUtc);
+            }
+        });
+    </script>
+</dom-module>

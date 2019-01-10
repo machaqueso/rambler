@@ -1,0 +1,43 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+    window.ACAXLabs = window.ACAXLabs || {} ;
+    ACAXLabs.XenonDateBehavior = {
+        getDateTimeString: function(val, inUtc) {
+            return this.getDateString(val, inUtc) + ' ' + this.getTimeString(val, inUtc);
+        },
+        getDateString: function(val, inUtc) {
+            val = new Date(val);
+            var parts = (inUtc) ? this._getUtcParts(val) : this._getLocalParts(val);
+            return this._pad(parts.month) + "-" + this._pad(parts.day) + "-" + parts.year;
+        },
+        getTimeString: function(val, inUtc) {
+            val = new Date(val);
+            var parts = (inUtc) ? this._getUtcParts(val) : this._getLocalParts(val);
+            parts.ampm = parts.hours >= 12 ? 'pm' : 'am';
+            parts.hours = parts.hours % 12;
+            if (parts.hours == 0) parts.hours = 12;
+            return this._pad(parts.hours) + ":" + this._pad(parts.minutes) + " " + parts.ampm;
+        },
+        _pad: function(value) {
+            return (value.toString().length == 2) ? value.toString() : "0" + value.toString(); 
+        },
+        _getLocalParts: function (value) {
+            return {
+                year: value.getFullYear(),
+                month: value.getMonth() + 1,
+                day: value.getDate(),
+                hours: value.getHours(),
+                minutes: value.getMinutes()
+            };
+        },
+        _getUtcParts: function (value) {
+            return {
+                year: value.getUTCFullYear(),
+                month: value.getUTCMonth() + 1,
+                day: value.getUTCDate(),
+                hours: value.getUTCHours(),
+                minutes: value.getUTCMinutes()
+            };
+        }
+    }
+</script>

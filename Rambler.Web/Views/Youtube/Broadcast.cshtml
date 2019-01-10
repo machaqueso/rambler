@@ -1,8 +1,16 @@
-@model Rambler.Web.Models.Youtube.LiveBroadcast.List
+@model Rambler.Web.Models.Youtube.LiveBroadcast.LiveBroadcastItem
 
-@foreach(var item in Model.items){
-        <div class="row"><label>Title</label>: @item.snippet.title</div>
-        <div class="row"><label>Description</label>: @item.snippet.description</div>
-        <p>@Html.ActionLink("Chat Messages","Messages", new { id = item.snippet.liveChatId })</p>
+
+@{
+    ViewData["Title"] = "Youtube Live Broadcast";
 }
 
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+
+<xenon-photo-card heading="@ViewData["Title"]">
+    <main>
+        <div class="row"><label>Title</label>: @Model.snippet.title</div>
+        <div class="row"><label>Description</label>: @Model.snippet.description</div>
+        <p>@Html.ActionLink("Chat Messages", "Messages", new { id = Model.snippet.liveChatId })</p>
+    </main>
+</xenon-photo-card>

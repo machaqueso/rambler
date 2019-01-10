@@ -21,6 +21,22 @@ namespace Rambler.Web.Services
             return db.Users;
         }
 
+        public async Task<User> GetCurrentUser()
+        {
+            // HACK: get first (and only) user for now
+            var user = await GetUsers()
+                .Include(x => x.AccessTokens)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                user = new User();
+                await Create(user);
+            }
+
+            return user;
+        }
+
         public async Task AddToken(int id, string apiSource, AccessToken token)
         {
             var user = await db.Users.Include(x => x.AccessTokens)
@@ -31,9 +47,17 @@ namespace Rambler.Web.Services
                 throw new InvalidOperationException("userid not found");
             }
 
-            if (user.AccessTokens.Any(x => x.ApiSource == apiSource))
+            var existingToken = user.AccessTokens.Single(x => x.ApiSource == apiSource);
+            if (existingToken != null)
             {
-                throw new InvalidOperationException("token exists, use refresh instead");
+                if (!string.IsNullOrEmpty(existingToken.refresh_token))
+                {
+                    throw new InvalidOperationException("token exists, use refresh instead");
+                }
+
+                // Deletes invalid access token
+                user.AccessTokens.Remove(existingToken);
+                await db.SaveChangesAsync();
             }
 
             token.ExpirationDate = DateTime.UtcNow.AddSeconds(token.expires_in);

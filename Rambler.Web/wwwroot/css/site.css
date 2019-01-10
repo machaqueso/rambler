@@ -10,21 +10,20 @@ body {
 }
 
 .chat {
+    background-color: black;
+    color: #FAFAFA;
+    padding: 10px;
 }
 
-.xenon-photo-card-0 #body.xenon-photo-card main .chat-row {
-    display: flex;
-    margin: 4px 0px 4px 0px;
+.chat > * {
+    padding-right: 5px;
 }
-    .chat-row .sender {
-        padding-right: 2px;
-        font-weight: bolder;
-    }
 
-        .chat-row .sender:after {
-            content: ":";
-        }
+.chat .author {
+    font-weight: bold;
+    color: #8A2BE2;
+}
 
-.xenon-layout-0 #main.xenon-layout {
-    height: 100%;
+.chat .message {
+    flex: 1 1 0;
 }

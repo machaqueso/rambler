@@ -6,20 +6,28 @@
 
 <link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
 <link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/xenon-date/xenon-date.html" />
+<link rel="import" href="/components/iron-ajax/iron-ajax.html" />
 
 <dom-module id="page-module">
     <template>
+        <iron-ajax auto id="ajax"
+                   url="/api/chat"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{messages}}"></iron-ajax>
+
         <xenon-photo-card heading="@ViewData["Title"]">
             <main>
                 <div class="chat">
-
+                    <template is="dom-repeat" items="{{messages}}" restamp>
+                        <div class="row">
+                            <xenon-date class="date" value="{{item.date}}" show-time></xenon-date>
+                            <div class="author">{{item.author}}</div>
+                            <div class="message">{{item.message}}</div>
+                        </div>
+                    </template>
                 </div>
-                <template is="dom-repeat" items="{{messages}}" restamp>
-                    <div class="chat-row">
-                        <div class="sender">{{item.author}}</div>
-                        <div>{{item.message}}</div>
-                    </div>
-                </template>
             </main>
         </xenon-photo-card>
         <paper-toast id="toast"></paper-toast>

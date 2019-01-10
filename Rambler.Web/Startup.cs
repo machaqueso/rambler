@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Rambler.Web.Data;
 using Rambler.Web.Hubs;
 using Rambler.Web.Services;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Rambler.Web
 {
@@ -32,6 +34,9 @@ namespace Rambler.Web
             services.AddTransient<DataContext>();
             services.AddTransient<UserService>();
             services.AddTransient<YoutubeService>();
+            services.AddTransient<ChatService>();
+
+            services.AddSingleton<IHostedService, YoutubeBackgroundService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSignalR();

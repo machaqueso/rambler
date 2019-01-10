@@ -1,0 +1,14 @@
+{
+  "name": "xenon-date",
+  "homepage": "https://github.com/acaxlabs/xenon-date",
+  "_release": "07efe9e014",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "07efe9e014faee688ca7a454bb9fcc21b22e1e0b"
+  },
+  "_source": "https://github.com/machaqueso/xenon-date.git",
+  "_target": "*",
+  "_originalSource": "https://github.com/machaqueso/xenon-date.git",
+  "_direct": true
+}
