@@ -5,7 +5,6 @@ namespace Rambler.Web.Data
 {
     public class DataContext : DbContext
     {
-        public DbSet<GoogleToken> GoogleTokens { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<ChatMessage> Messages { get; set; }
         public DbSet<AccessToken> AccessTokens { get; set; }

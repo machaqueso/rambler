@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Rambler.Web.Services;
 
@@ -19,14 +20,7 @@ namespace Rambler.Web.Api
         public IActionResult GetUsers()
         {
             var users = userService.GetUsers();
-
-            return Ok(users.Select(x => new
-            {
-                x.Id,
-                x.GoogleTokenId,
-                HasValidToken = (x.GoogleToken != null),
-                x.GoogleToken
-            }));
+            return Ok(users);
         }
 
         [Route("token")]

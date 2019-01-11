@@ -3,12 +3,23 @@
 }
 
 <link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/xenon-layout/xenon-header.html" />
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
+<link rel="import" href="/components/rambler-components/rambler-api-status.html" />
 
-<xenon-photo-card heading="@ViewData["Title"]">
-    <main>
-        <div style="background-color: black;">
-            <rambler-chat></rambler-chat>
-        </div>
-    </main>
-</xenon-photo-card>
+<div style="display: flex;">
+    <xenon-photo-card heading="Chatbox">
+        <main>
+            <div style="background-color: black;">
+                <rambler-chat></rambler-chat>
+            </div>
+        </main>
+    </xenon-photo-card>
+    <div>
+        <xenon-photo-card heading="API Status">
+            <main>
+                <rambler-api-status></rambler-api-status>
+            </main>
+        </xenon-photo-card>
+    </div>
+</div>

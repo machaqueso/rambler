@@ -7,11 +7,6 @@ namespace Rambler.Web.Hubs
     {
         public async Task SendMessage(string user, string message)
         {
-            if (Clients == null)
-            {
-                return;
-            }
-
             await Clients.All.SendAsync("ReceiveMessage", user, message);
         }
     }

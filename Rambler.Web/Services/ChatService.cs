@@ -35,18 +35,5 @@ namespace Rambler.Web.Services
             await db.SaveChangesAsync();
             await chatHubContext.Clients.All.SendAsync("ReceiveMessage", message);
         }
-
-        public async Task AddLogEntry(string entry)
-        {
-            var message = new ChatMessage
-            {
-                Date = DateTime.UtcNow,
-                Author = "Logger",
-                Source = "Logger",
-                Message = entry
-            };
-
-            await CreateMessage(message);
-        }
     }
 }
