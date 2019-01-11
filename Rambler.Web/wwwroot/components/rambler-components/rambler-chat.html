@@ -1,0 +1,54 @@
+﻿<script src="../lib/signalr/dist/browser/signalr.js"></script>
+
+<link rel="import" href="../paper-toast/paper-toast.html" />
+<link rel="import" href="../xenon-date/xenon-date.html" />
+<link rel="import" href="../iron-ajax/iron-ajax.html" />
+
+<dom-module id="rambler-chat">
+    <template>
+        <iron-ajax auto id="ajax"
+                   url="/api/chat"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{messages}}"></iron-ajax>
+
+        <div class="chat">
+            <template is="dom-repeat" items="{{messages}}" restamp>
+                <div class="row">
+                    <xenon-date class="date" value="{{item.date}}" show-time></xenon-date>
+                    <div class="author">{{item.author}}</div>
+                    <div class="message">{{item.message}}</div>
+                </div>
+            </template>
+        </div>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: "rambler-chat",
+            properties: {
+                messages: { Type: Array, notify: true, value: [] },
+                connection: { Type: Object, value: {} }
+            },
+            _onMessageReceived: function (message) {
+                if (!message) return;
+                this.push("messages", message);
+                if (this.messages.length > 10) {
+                    this.shift("messages");
+                }
+            },
+            ready: function () {
+                var that = this;
+                this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+                this.connection.on("ReceiveMessage", function (message) {
+                    that._onMessageReceived(message);
+                });
+
+                this.connection.start().catch(function (err) {
+                    return console.error(err.toString());
+                });
+            }
+        });
+    </script>
+</dom-module>
