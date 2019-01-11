@@ -15,15 +15,16 @@ body {
     padding: 10px;
 }
 
-.chat > * {
-    padding-right: 5px;
-}
+    .chat .row > * {
+        padding-right: 10px;
+    }
 
-.chat .author {
-    font-weight: bold;
-    color: #8A2BE2;
-}
+    .chat .author {
+        font-weight: bold;
+        color: #8A2BE2;
+    }
 
-.chat .message {
-    flex: 1 1 0;
-}
+    .chat .message {
+        flex: 1 1 0;
+        overflow: visible;
+    }
