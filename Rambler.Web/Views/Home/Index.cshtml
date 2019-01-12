@@ -7,7 +7,14 @@
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
 <link rel="import" href="/components/rambler-components/rambler-api-status.html" />
 
-<div style="display: flex;">
+<div>
+    <xenon-photo-card heading="API Status">
+        <main>
+            <div>
+                <rambler-api-status></rambler-api-status>
+            </div>
+        </main>
+    </xenon-photo-card>
     <xenon-photo-card heading="Chatbox">
         <main>
             <div style="background-color: black;">
@@ -15,11 +22,4 @@
             </div>
         </main>
     </xenon-photo-card>
-    <div>
-        <xenon-photo-card heading="API Status">
-            <main>
-                <rambler-api-status></rambler-api-status>
-            </main>
-        </xenon-photo-card>
-    </div>
 </div>

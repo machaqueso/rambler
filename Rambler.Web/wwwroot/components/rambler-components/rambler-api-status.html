@@ -1,24 +1,30 @@
 ﻿<script src="../../lib/signalr/dist/browser/signalr.js"></script>
 
+<link rel="import" href="../polymer/polymer.html" />
 <link rel="import" href="../paper-toast/paper-toast.html" />
 <link rel="import" href="../xenon-date/xenon-date.html" />
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
 
 <dom-module id="rambler-api-status">
     <template>
         <iron-ajax auto id="ajax"
                    url="/api/dashboard/apiStatus"
                    handle-as="json"
-                   loading="{{loading}}"
                    last-response="{{items}}"></iron-ajax>
 
-        <template is="dom-repeat" items="{{items}}" restamp>
-            <div class="row">
-                <label>{{item.name}}</label>
-                <div>{{item.status}}</div>
-                <xenon-date value="{{item.updateDate}}" show-time></xenon-date>
-            </div>
-        </template>
+        <table class="table table-borderless table-striped">
+            <template is="dom-repeat" items="{{items}}" restamp>
+                <tr>
+                    <td>{{item.name}}</td>
+                    <td>{{item.status}}</td>
+                    <td>
+                        <xenon-date value="{{item.updateDate}}" show-time></xenon-date>
+                    </td>
+                    <td><paper-button on-click="_sendTest">Test</paper-button></td>
+                </tr>
+            </template>
+        </table>
 
         <paper-toast id="toast"></paper-toast>
     </template>
@@ -29,18 +35,20 @@
                 items: { Type: Array, notify: true, value: [] },
                 connection: { Type: Object, value: {} }
             },
+            _sendTest: function (e) {
+                console.log(e.model.item);
+                this.connection.invoke("UpdateStatus", e.model.item.name, "TEST")
+                    .catch(function (err) {
+                        return console.error(err.toString());
+                    });
+            },
             ready: function () {
                 var that = this;
                 this.connection = new signalR.HubConnectionBuilder().withUrl("/dashboardHub").build();
 
-                this.connection.on("updateStatus", function (name, status) {
-                    console.log(name, status);
-                    var item = this.get(['items', name]);
-                    var index = this.myArray.indexOf(item);
-                    if (index != -1) {
-                        this.splice('items', index, 1);
-                    }
-                    this.push('items', { "name": name, "status": status });
+                this.connection.on("updateStatus", function (statuses) {
+                    that.items = [];
+                    that.set("items", statuses);
                 });
 
                 this.connection.start().catch(function (err) {

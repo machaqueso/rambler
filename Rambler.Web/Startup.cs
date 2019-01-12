@@ -35,6 +35,7 @@ namespace Rambler.Web
             services.AddTransient<UserService>();
             services.AddTransient<YoutubeService>();
             services.AddTransient<ChatService>();
+            services.AddTransient<DashboardService>();
 
             services.AddSingleton<IHostedService, YoutubeBackgroundService>();
 
@@ -61,7 +62,7 @@ namespace Rambler.Web
             app.UseSignalR(routes =>
             {
                 routes.MapHub<ChatHub>("/chatHub");
-                routes.MapHub<ChatHub>("/dashboardHub");
+                routes.MapHub<DashboardHub>("/dashboardHub");
             });
             app.UseMvc(routes =>
             {

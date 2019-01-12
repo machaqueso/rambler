@@ -13,6 +13,13 @@ namespace Rambler.Web.Models
             UpdateDate = DateTime.UtcNow;
         }
 
+        public ApiStatus(string name, string status)
+        {
+            Name = name;
+            Status = status;
+            UpdateDate = DateTime.UtcNow;
+        }
+
         public string Name { get; set; }
         public string Status { get; set; }
         public DateTime UpdateDate { get; set; }

@@ -35,3 +35,11 @@ body {
 .row label {
     font-weight: bold;
 }
+
+rambler-api-status .table td {
+    padding: 0;
+}
+    rambler-api-status .table td paper-button {
+        margin: 0;
+        padding: 0;
+    }

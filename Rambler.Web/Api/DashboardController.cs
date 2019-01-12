@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using Rambler.Web.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using Rambler.Web.Services;
 
 namespace Rambler.Web.Api
 {
@@ -8,16 +7,17 @@ namespace Rambler.Web.Api
     [ApiController]
     public class DashboardController : ControllerBase
     {
+        private readonly DashboardService dashboardService;
+
+        public DashboardController(DashboardService dashboardService)
+        {
+            this.dashboardService = dashboardService;
+        }
+
         [Route("apiStatus")]
         public IActionResult GetApiStatus()
         {
-            var apiStatuses = new List<ApiStatus>
-            {
-                new ApiStatus(ApiSource.Youtube),
-                new ApiStatus(ApiSource.Twitch)
-            };
-
-            return Ok(apiStatuses);
+            return Ok(dashboardService.GetApiStatuses());
         }
     }
 }
