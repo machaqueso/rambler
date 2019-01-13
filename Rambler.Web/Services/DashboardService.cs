@@ -13,7 +13,7 @@ namespace Rambler.Web.Services
     {
         private readonly IHubContext<DashboardHub> dashboardHub;
 
-        private IList<ApiStatus> apiStatuses;
+        private static IList<ApiStatus> apiStatuses;
 
         public DashboardService(IHubContext<DashboardHub> dashboardHub)
         {

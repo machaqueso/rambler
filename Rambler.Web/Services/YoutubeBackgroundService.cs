@@ -54,8 +54,7 @@ namespace Rambler.Web.Services
                         if (liveBroadcast == null)
                         {
                             logger.LogDebug("No live broadcasts found.");
-                            await dashboardService.UpdateStatus(ApiSource.Youtube, "Error",
-                                cancellationToken: stoppingToken);
+                            await dashboardService.UpdateStatus(ApiSource.Youtube, "Live stream offline", cancellationToken: stoppingToken);
                             await Task.Delay(TimeSpan.FromMilliseconds(delay), stoppingToken);
                             continue;
                         }
