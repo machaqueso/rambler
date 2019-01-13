@@ -15,18 +15,15 @@
         <xenon-photo-card heading="@ViewData["Title"]">
             <main>
                 <form id="form" is="iron-form">
-                    <paper-input label="User" value="{{message.user}}"></paper-input>
-                    <paper-input label="Message" value="{{message.message}}"></paper-input>
-                    <paper-button on-tap="_send">Send</paper-button>
+                    <div class="form-row">
+                        <paper-input style="max-width: 20%; padding-right: 10px;" label="Author" value="{{message.author}}"></paper-input>
+                        <paper-input style="flex: 1 1 0;" label="Message" value="{{message.message}}"></paper-input>
+                        <paper-button on-tap="_send">Send</paper-button>
+                    </div>
                 </form>
                 <hr />
-                <div>Messages:</div>
-                <template is="dom-repeat" items="{{messages}}" restamp>
-                    <div style="display: flex">
-                        <div>{{item.user}}</div>
-                        <div>{{item.message}}</div>
-                    </div>
-                </template>
+                <h4>Messages:</h4>
+                <rambler-chat></rambler-chat>
             </main>
         </xenon-photo-card>
         <paper-toast id="toast"></paper-toast>
@@ -43,18 +40,18 @@
                 "_onMessagesChanged(messages)"
             ],
             _send: function () {
-                this.connection.invoke("SendMessage", this.message.user, this.message.message)
+                this.connection.invoke("SendMessage", this.message.author, this.message.message)
                     .catch(function (err) {
                         return console.error(err.toString());
                     });
             },
-            _onMessageReceived: function (user, message) {
-                console.log("received: user", user, "message", message, "messages");
+            _onMessageReceived: function (author, message) {
+                console.log("received: author", author, "message", message, "messages");
 
-                if (!user) return;
+                if (!author) return;
                 if (!message) return;
 
-                var msg = { "user": user, "message": message };
+                var msg = { "author": author, "message": message };
                 this.push("messages", msg);
                 console.log("messages:", this.messages);
             },
@@ -65,8 +62,8 @@
                 var that = this;
                 this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
-                this.connection.on("ReceiveMessage", function (user, message) {
-                    that._onMessageReceived(user, message);
+                this.connection.on("ReceiveMessage", function (author, message) {
+                    that._onMessageReceived(author, message);
                 });
 
                 this.connection.start().catch(function (err) {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Rambler.Web.Data;
@@ -26,7 +25,8 @@ namespace Rambler.Web.Services
 
         public async Task CreateMessage(ChatMessage message)
         {
-            if (db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
+            if (!string.IsNullOrEmpty(message.SourceMessageId) &&
+                db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
             {
                 return;
             }

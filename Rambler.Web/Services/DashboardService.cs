@@ -62,7 +62,5 @@ namespace Rambler.Web.Services
         {
             return apiStatuses;
         }
-
-
     }
 }
