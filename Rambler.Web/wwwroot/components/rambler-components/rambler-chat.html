@@ -3,6 +3,7 @@
 <link rel="import" href="../paper-toast/paper-toast.html" />
 <link rel="import" href="../xenon-date/xenon-date.html" />
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
+<link rel="import" href="rambler-chat-date.html" />
 
 <dom-module id="rambler-chat">
     <template>
@@ -15,7 +16,7 @@
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
                 <div class="row">
-                    <xenon-date class="date" value="{{item.date}}" show-time></xenon-date>
+                    <rambler-chat-date class="date" value="{{item.date}}"></rambler-chat-date>
                     <div class="author">{{item.author}}</div>
                     <div class="message">{{item.message}}</div>
                 </div>

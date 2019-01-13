@@ -1,0 +1,34 @@
+﻿
+<dom-module id="rambler-chat-date">
+    <template>
+        <div>[[displayDate]]</div>
+    </template>
+    <script>
+        Polymer({
+            is: "rambler-chat-date",
+            properties: {
+                value: { Type: Date, notify: true, value: [] },
+                displayDate: { Type: String, notify: true },
+                showYear: { Type: Boolean, value: false },
+            },
+            observers: [
+                "_onDateChanged(value)"
+            ],
+            _onDateChanged: function (date) {
+                this._setDate(date);
+            },
+            _setDate: function (newDate) {
+                var date = new Date(newDate);
+                var displayDate = (date.getMonth() + 1) + "/" + date.getDay();
+                if (this.showYear) displayDate += "/" + date.getFullYear();
+                displayDate += " " + date.toLocaleTimeString();
+                this.set("displayDate", displayDate);
+            },
+            ready: function () {
+                if (!this.value || this.value == undefined) {
+                    this.set("value", new Date());
+                }
+            }
+        });
+    </script>
+</dom-module>

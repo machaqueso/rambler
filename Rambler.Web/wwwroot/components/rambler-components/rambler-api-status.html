@@ -1,10 +1,10 @@
 ﻿<script src="../../lib/signalr/dist/browser/signalr.js"></script>
 
-<link rel="import" href="../polymer/polymer.html" />
 <link rel="import" href="../paper-toast/paper-toast.html" />
 <link rel="import" href="../xenon-date/xenon-date.html" />
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
 <link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="rambler-chat-date.html" />
 
 <dom-module id="rambler-api-status">
     <template>
@@ -19,7 +19,7 @@
                     <td>{{item.name}}</td>
                     <td>{{item.status}}</td>
                     <td>
-                        <xenon-date value="{{item.updateDate}}" show-time></xenon-date>
+                        <rambler-chat-date value="{{item.updateDate}}" show-time></rambler-chat-date>
                     </td>
                     <td><paper-button class="primary" on-click="_sendTest">Test</paper-button></td>
                 </tr>
