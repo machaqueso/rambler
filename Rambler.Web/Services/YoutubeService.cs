@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rambler.Web.Models;
@@ -16,11 +17,13 @@ namespace Rambler.Web.Services
     {
         private readonly UserService userService;
         private readonly ILogger<YoutubeService> logger;
+        public IConfiguration configuration { get; }
 
-        public YoutubeService(UserService userService, ILogger<YoutubeService> logger)
+        public YoutubeService(UserService userService, ILogger<YoutubeService> logger, IConfiguration configuration)
         {
             this.userService = userService;
             this.logger = logger;
+            this.configuration = configuration;
         }
 
         public async Task<HttpResponseMessage> Get(string request)
@@ -131,6 +134,11 @@ namespace Rambler.Web.Services
         public async Task<LiveBroadcastItem> GetLiveBroadcast()
         {
             var token = await GetToken();
+            if (token != null && token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
+            {
+                await RefreshToken(token);
+            }
+
             if (!IsValidToken(token))
             {
                 return null;
@@ -155,5 +163,30 @@ namespace Rambler.Web.Services
 
             return liveBroadcastList.items.FirstOrDefault();
         }
+
+        public async Task RefreshToken(AccessToken token)
+        {
+            var data = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", configuration["Authentication:Google:ClientId"]),
+                new KeyValuePair<string, string>("client_secret", configuration["Authentication:Google:ClientSecret"]),
+                new KeyValuePair<string, string>("refresh_token", token.refresh_token),
+                new KeyValuePair<string, string>("grant_type", "refresh_token")
+            };
+
+            var response = await Post("https://accounts.google.com/o/oauth2/token", data);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new InvalidOperationException(
+                    $"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
+            }
+
+            var accessToken = JsonConvert.DeserializeObject<AccessToken>(content);
+            accessToken.Id = token.Id;
+            await userService.UpdateToken(accessToken);
+        }
+
     }
 };

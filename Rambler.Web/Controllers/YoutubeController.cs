@@ -97,7 +97,7 @@ namespace Rambler.Web.Controllers
             }
             if (token.Status == AccessTokenStatus.Expired)
             {
-                await GoogleRefresh(token);
+                await youtubeService.RefreshToken(token);
             }
 
             var liveBroadcast = await youtubeService.GetLiveBroadcast();
@@ -113,7 +113,7 @@ namespace Rambler.Web.Controllers
             }
             if (token.Status == AccessTokenStatus.Expired)
             {
-                await GoogleRefresh(token);
+                await youtubeService.RefreshToken(token);
             }
 
             var liveChatMessageList = await youtubeService.GetLiveChatMessages(id);
@@ -125,30 +125,6 @@ namespace Rambler.Web.Controllers
             }
 
             return View("Messages", liveChatMessageList);
-        }
-
-        private async Task GoogleRefresh(AccessToken token)
-        {
-            var data = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("client_id", Configuration["Authentication:Google:ClientId"]),
-                new KeyValuePair<string, string>("client_secret", Configuration["Authentication:Google:ClientSecret"]),
-                new KeyValuePair<string, string>("refresh_token", token.refresh_token),
-                new KeyValuePair<string, string>("grant_type", "refresh_token")
-            };
-
-            var response = await youtubeService.Post("https://accounts.google.com/o/oauth2/token", data);
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException(
-                    $"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
-            }
-
-            var accessToken = JsonConvert.DeserializeObject<AccessToken>(content);
-            accessToken.Id = token.Id;
-            await userService.RefreshToken(accessToken);
         }
     }
 }

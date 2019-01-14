@@ -66,7 +66,7 @@ namespace Rambler.Web.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task RefreshToken(AccessToken token)
+        public async Task UpdateToken(AccessToken token)
         {
             var existingToken = await db.AccessTokens
                 .FirstOrDefaultAsync(x => x.Id == token.Id);

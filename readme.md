@@ -38,4 +38,4 @@ When completed, Rambler 1.0 should have the following features:
 - REST api
 
 ## Stream:
-The plan is to stream while I'm developing this app, you can watch me code live at twitch.tv/machaqueso
+The plan is to stream while I'm developing this app, you can watch me code live at (twitch.tv/machacoder) and (https://www.youtube.com/channel/UCmUfkaiDlA3IZBibnMtyqlw)

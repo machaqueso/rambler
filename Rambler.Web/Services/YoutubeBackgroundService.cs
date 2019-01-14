@@ -49,15 +49,15 @@ namespace Rambler.Web.Services
 
                     stoppingToken.Register(() => logger.LogDebug($" YoutubeBackgroundService background task is stopping."));
 
+                    if (!await youtubeService.HasValidToken())
+                    {
+                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Needs Authentication", cancellationToken: stoppingToken);
+                        await Delay(stoppingToken);
+                        continue;
+                    }
+
                     while (!stoppingToken.IsCancellationRequested)
                     {
-                        if (!await youtubeService.HasValidToken())
-                        {
-                            await dashboardService.UpdateStatus(ApiSource.Youtube, "Needs Authentication", cancellationToken: stoppingToken);
-                            await Delay(stoppingToken);
-                            continue;
-                        }
-
                         await dashboardService.UpdateStatus(ApiSource.Youtube, "Running", cancellationToken: stoppingToken);
 
                         try
