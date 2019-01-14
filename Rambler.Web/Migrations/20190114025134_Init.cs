@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Rambler.Web.Migrations
 {
-    public partial class CreatedDatabaseModel : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -31,8 +31,7 @@ namespace Rambler.Web.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    GoogleTokenId = table.Column<int>(nullable: true)
+                        .Annotation("Sqlite:Autoincrement", true)
                 },
                 constraints: table =>
                 {
@@ -51,8 +50,7 @@ namespace Rambler.Web.Migrations
                     expires_in = table.Column<int>(nullable: false),
                     refresh_token = table.Column<string>(nullable: true),
                     ExpirationDate = table.Column<DateTime>(nullable: false),
-                    UserId = table.Column<int>(nullable: false),
-                    Discriminator = table.Column<string>(nullable: false)
+                    UserId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -69,35 +67,18 @@ namespace Rambler.Web.Migrations
                 name: "IX_AccessTokens_UserId",
                 table: "AccessTokens",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_GoogleTokenId",
-                table: "Users",
-                column: "GoogleTokenId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Users_AccessTokens_GoogleTokenId",
-                table: "Users",
-                column: "GoogleTokenId",
-                principalTable: "AccessTokens",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_AccessTokens_Users_UserId",
-                table: "AccessTokens");
+            migrationBuilder.DropTable(
+                name: "AccessTokens");
 
             migrationBuilder.DropTable(
                 name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "AccessTokens");
         }
     }
 }

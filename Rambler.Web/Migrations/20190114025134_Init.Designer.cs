@@ -9,8 +9,8 @@ using Rambler.Web.Data;
 namespace Rambler.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190108042156_CreatedDatabaseModel")]
-    partial class CreatedDatabaseModel
+    [Migration("20190114025134_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,9 +24,6 @@ namespace Rambler.Web.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("ApiSource");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired();
 
                     b.Property<DateTime>("ExpirationDate");
 
@@ -45,8 +42,6 @@ namespace Rambler.Web.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AccessTokens");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("AccessToken");
                 });
 
             modelBuilder.Entity("Rambler.Web.Models.ChatMessage", b =>
@@ -78,23 +73,9 @@ namespace Rambler.Web.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("GoogleTokenId");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("GoogleTokenId");
-
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Rambler.Web.Models.GoogleToken", b =>
-                {
-                    b.HasBaseType("Rambler.Web.Models.AccessToken");
-
-
-                    b.ToTable("GoogleToken");
-
-                    b.HasDiscriminator().HasValue("GoogleToken");
                 });
 
             modelBuilder.Entity("Rambler.Web.Models.AccessToken", b =>
@@ -103,13 +84,6 @@ namespace Rambler.Web.Migrations
                         .WithMany("AccessTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Rambler.Web.Models.User", b =>
-                {
-                    b.HasOne("Rambler.Web.Models.GoogleToken", "GoogleToken")
-                        .WithMany()
-                        .HasForeignKey("GoogleTokenId");
                 });
 #pragma warning restore 612, 618
         }

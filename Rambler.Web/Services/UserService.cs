@@ -47,7 +47,7 @@ namespace Rambler.Web.Services
                 throw new InvalidOperationException("userid not found");
             }
 
-            var existingToken = user.AccessTokens.Single(x => x.ApiSource == apiSource);
+            var existingToken = user.AccessTokens.SingleOrDefault(x => x.ApiSource == apiSource);
             if (existingToken != null)
             {
                 if (!string.IsNullOrEmpty(existingToken.refresh_token))

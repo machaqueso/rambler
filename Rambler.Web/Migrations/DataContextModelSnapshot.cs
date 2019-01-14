@@ -23,9 +23,6 @@ namespace Rambler.Web.Migrations
 
                     b.Property<string>("ApiSource");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired();
-
                     b.Property<DateTime>("ExpirationDate");
 
                     b.Property<int>("UserId");
@@ -43,8 +40,6 @@ namespace Rambler.Web.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AccessTokens");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("AccessToken");
                 });
 
             modelBuilder.Entity("Rambler.Web.Models.ChatMessage", b =>
@@ -76,23 +71,9 @@ namespace Rambler.Web.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("GoogleTokenId");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("GoogleTokenId");
-
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Rambler.Web.Models.GoogleToken", b =>
-                {
-                    b.HasBaseType("Rambler.Web.Models.AccessToken");
-
-
-                    b.ToTable("GoogleToken");
-
-                    b.HasDiscriminator().HasValue("GoogleToken");
                 });
 
             modelBuilder.Entity("Rambler.Web.Models.AccessToken", b =>
@@ -101,13 +82,6 @@ namespace Rambler.Web.Migrations
                         .WithMany("AccessTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Rambler.Web.Models.User", b =>
-                {
-                    b.HasOne("Rambler.Web.Models.GoogleToken", "GoogleToken")
-                        .WithMany()
-                        .HasForeignKey("GoogleTokenId");
                 });
 #pragma warning restore 612, 618
         }

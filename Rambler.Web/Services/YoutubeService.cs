@@ -73,6 +73,19 @@ namespace Rambler.Web.Services
                    && !string.IsNullOrEmpty(token.access_token);
         }
 
+        public async Task<bool> HasValidToken()
+        {
+            var token = await GetToken();
+
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return token.Status == AccessTokenStatus.Ok
+                   && !string.IsNullOrEmpty(token.access_token);
+        }
+
         public async Task<LiveChatMessageList> GetLiveChatMessages(string liveChatId)
         {
             if (string.IsNullOrEmpty(liveChatId))

@@ -19,7 +19,7 @@
             },
             _setDate: function (newDate) {
                 var date = new Date(newDate);
-                var displayDate = (date.getMonth() + 1) + "/" + date.getDay();
+                var displayDate = (date.getMonth() + 1) + "/" + date.getDate();
                 if (this.showYear) displayDate += "/" + date.getFullYear();
                 displayDate += " " + date.toLocaleTimeString();
                 this.set("displayDate", displayDate);

@@ -12,12 +12,19 @@
     <template>
         <xenon-photo-card heading="@ViewData["Title"]">
             <main>
-                <div class="flex">
-                    <div>Token Type : @Model.token_type</div>
-                    <div>Expires in : @Model.expires_in</div>
-                    <div>Expiration Date : @Model.ExpirationDate</div>
-                    <div>Status: @Model.Status</div>
-                </div>
+                @if (Model != null)
+                {
+                    <div class="flex">
+                        <div>Token Type : @Model.token_type</div>
+                        <div>Expires in : @Model.expires_in</div>
+                        <div>Expiration Date : @Model.ExpirationDate</div>
+                        <div>Status: @Model.Status</div>
+                    </div>
+                }
+                else
+                {
+                    <div>Access token is null</div>
+                }
             </main>
             <buttons>
                 <a href="@Url.Action("Authorize")" tabindex="-1">
