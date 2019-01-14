@@ -24,11 +24,17 @@ namespace Rambler.Web.Api
         }
 
         [Route("token")]
-        public IActionResult GetTokens()
+        public IActionResult GetTokens(string apiSource = "")
         {
             var users = userService.GetUsers();
+            var tokens = users.SelectMany(x => x.AccessTokens);
 
-            return Ok(users.SelectMany(x => x.AccessTokens));
+            if (!string.IsNullOrEmpty(apiSource))
+            {
+                tokens = tokens.Where(x => x.ApiSource == apiSource);
+            }
+
+            return Ok(tokens);
         }
     }
 }

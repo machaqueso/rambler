@@ -11,6 +11,5 @@ namespace Rambler.Web.Models
         public string Source { get; set; }
         public string SourceMessageId { get; set; }
         public string SourceAuthorId { get; set; }
-        public int PollingInterval { get; set; }
     }
 }

@@ -9,8 +9,8 @@ using Rambler.Web.Data;
 namespace Rambler.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190114025134_Init")]
-    partial class Init
+    [Migration("20190114053338_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -54,8 +54,6 @@ namespace Rambler.Web.Migrations
                     b.Property<DateTime>("Date");
 
                     b.Property<string>("Message");
-
-                    b.Property<int>("PollingInterval");
 
                     b.Property<string>("Source");
 

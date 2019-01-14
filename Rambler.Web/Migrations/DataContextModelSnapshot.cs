@@ -53,8 +53,6 @@ namespace Rambler.Web.Migrations
 
                     b.Property<string>("Message");
 
-                    b.Property<int>("PollingInterval");
-
                     b.Property<string>("Source");
 
                     b.Property<string>("SourceAuthorId");

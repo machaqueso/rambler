@@ -36,8 +36,10 @@ namespace Rambler.Web
             services.AddTransient<YoutubeService>();
             services.AddTransient<ChatService>();
             services.AddTransient<DashboardService>();
+            services.AddTransient<TwitchService>();
 
             services.AddSingleton<IHostedService, YoutubeBackgroundService>();
+            services.AddSingleton<IHostedService, TwitchBackgroundService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSignalR();

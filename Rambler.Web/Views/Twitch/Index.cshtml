@@ -1,0 +1,55 @@
+﻿
+@{
+    ViewData["Title"] = "Twitch";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/paper-button/paper-button.html" />
+<link rel="import" href="/components/iron-ajax/iron-ajax.html" />
+
+<dom-module id="page-module">
+    <template>
+        <iron-ajax id="ajax"
+                   auto
+                   url="/api/user/token?apiSource=Twitch"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{tokens}}"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <main>
+                <template is="dom-repeat" items="[[tokens]]">
+                    <div class="flex">
+                        <div>Token Type : {{item.token_type}}</div>
+                        <div>Expires in : {{item.expires_in}}</div>
+                        <div>Expiration Date : {{item.expirationDate}}</div>
+                        <div>Status: {{item.status}}</div>
+                    </div>
+                </template>
+            </main>
+            <buttons>
+                <a href="@Url.Action("Authorize")" tabindex="-1">
+                    <paper-button>Authorize</paper-button>
+                </a>
+            </buttons>
+        </xenon-photo-card>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: "page-module",
+            properties: {
+            
+            },
+            observers: [
+            ],
+            ready: function () {
+            }
+        });
+    </script>
+</dom-module>
+
+<page-module></page-module>
+

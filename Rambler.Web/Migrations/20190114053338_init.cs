@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Rambler.Web.Migrations
 {
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -18,8 +18,7 @@ namespace Rambler.Web.Migrations
                     Message = table.Column<string>(nullable: true),
                     Source = table.Column<string>(nullable: true),
                     SourceMessageId = table.Column<string>(nullable: true),
-                    SourceAuthorId = table.Column<string>(nullable: true),
-                    PollingInterval = table.Column<int>(nullable: false)
+                    SourceAuthorId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
