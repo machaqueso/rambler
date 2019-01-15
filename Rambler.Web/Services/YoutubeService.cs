@@ -159,10 +159,21 @@ namespace Rambler.Web.Services
 
         public async Task RefreshToken(AccessToken token)
         {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (!token.HasRefreshToken)
+            {
+                throw new InvalidOperationException("invalid refresh_token");
+            }
+
             var data = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("client_id", configuration["Authentication:Google:ClientId"]),
                 new KeyValuePair<string, string>("client_secret", configuration["Authentication:Google:ClientSecret"]),
+                new KeyValuePair<string, string>("refresh_token", token.refresh_token),
                 new KeyValuePair<string, string>("grant_type", "refresh_token")
             };
 

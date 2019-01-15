@@ -142,13 +142,19 @@ namespace Rambler.Web.Services
                 prefix = message.Substring(0, index);
                 var parts = message.Split(" ");
                 command = parts[1];
-                parameters = string.Join(' ', parts.Skip(2));
+                if (parts.Length > 2)
+                {
+                    parameters = string.Join(' ', parts.Skip(2));
+                }
             }
             else
             {
                 var parts = message.Split(" ");
                 command = parts[0];
-                parameters = string.Join(' ', parts.Skip(1));
+                if (parts.Length > 1)
+                {
+                    parameters = string.Join(' ', parts.Skip(1));
+                }
             }
 
             if (prefix.Contains("!"))

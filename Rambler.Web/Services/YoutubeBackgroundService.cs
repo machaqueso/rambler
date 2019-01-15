@@ -46,14 +46,24 @@ namespace Rambler.Web.Services
             {
                 try
                 {
-
                     cancellationToken.Register(async () =>
                     {
                         await dashboardService.UpdateStatus(ApiSource.Youtube, "Stopping", cancellationToken);
                         logger.LogDebug($" YoutubeBackgroundService background task is stopping.");
                     });
 
-                    if (!await youtubeService.HasValidToken())
+                    var token = await youtubeService.GetToken();
+                    if (token == null)
+                    {
+                        throw new UnauthorizedAccessException("Youtube token not found");
+                    }
+
+                    if (token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
+                    {
+                        await youtubeService.RefreshToken(token);
+                    }
+
+                    if (!youtubeService.IsValidToken(token))
                     {
                         await dashboardService.UpdateStatus(ApiSource.Youtube, "Needs Authentication", cancellationToken);
                         await Delay(cancellationToken);
