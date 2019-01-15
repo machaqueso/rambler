@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Rambler.Web
@@ -18,6 +19,13 @@ namespace Rambler.Web
                 {
                     builder.AddConfiguration(ctx.Configuration.GetSection("Logging"));
                     builder.AddFile(o => o.RootPath = AppContext.BaseDirectory);
+                })
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    // Call additional providers here as needed.
+                    // Call AddEnvironmentVariables last if you need to allow environment
+                    // variables to override values from other providers.
+                    config.AddEnvironmentVariables(prefix: "Authentication");
                 })
                 .UseStartup<Startup>();
     }

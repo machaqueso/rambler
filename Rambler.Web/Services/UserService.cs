@@ -50,12 +50,6 @@ namespace Rambler.Web.Services
             var existingToken = user.AccessTokens.SingleOrDefault(x => x.ApiSource == apiSource);
             if (existingToken != null)
             {
-                if (!string.IsNullOrEmpty(existingToken.refresh_token))
-                {
-                    throw new InvalidOperationException("token exists, use refresh instead");
-                }
-
-                // Deletes invalid access token
                 user.AccessTokens.Remove(existingToken);
                 await db.SaveChangesAsync();
             }
