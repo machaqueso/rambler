@@ -7,6 +7,15 @@
 
 <dom-module id="rambler-chat">
     <template>
+        <style>
+            .youtube {
+                color: #ff0000;
+            }
+
+            .twitch {
+                color: #6441a4;
+            }
+        </style>
         <iron-ajax auto id="ajax"
                    url="/api/chat"
                    handle-as="json"
@@ -16,7 +25,12 @@
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
                 <div class="row">
-                    <rambler-chat-date class="date" value="{{item.date}}"></rambler-chat-date>
+                    <template is="dom-if" if="[[item.source]]">
+                        <i class$="[[getIcon(item.source)]]" title="[[item.source]]"></i>
+                    </template>
+                    <template is="dom-if" if="[[showDate]]">
+                        <rambler-chat-date class="date" value="{{item.date}}"></rambler-chat-date>
+                    </template>
                     <div class="author">{{item.author}}</div>
                     <div class="message">{{item.message}}</div>
                 </div>
@@ -29,7 +43,8 @@
             is: "rambler-chat",
             properties: {
                 messages: { Type: Array, notify: true, value: [] },
-                connection: { Type: Object, value: {} }
+                connection: { Type: Object, value: {} },
+                showDate: { Type: Boolean, value: true },
             },
             _onMessageReceived: function (message) {
                 if (!message) return;
@@ -37,6 +52,9 @@
                 if (this.messages.length > 10) {
                     this.shift("messages");
                 }
+            },
+            getIcon: function (source) {
+                return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
             },
             ready: function () {
                 var that = this;
