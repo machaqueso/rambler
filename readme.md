@@ -38,3 +38,4 @@ The plan is to stream while I'm developing this app, you can watch me code live 
 
 ## TODO:
 - Make chat messages automatically vanish after a set period of time
+- Redirect to settings page when youtube/twitch OAuth keys are missing.

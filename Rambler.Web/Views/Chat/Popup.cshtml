@@ -5,8 +5,21 @@
     Layout = "_Empty";
 }
 
+@section Styles{
+<style>
+        #container {
+            font-size: @Model.FontSize;
+            background-color: @Model.BackgroundColor;
+        }
+
+        #container .chat {
+            color: @Model.Color;
+        }
+</style>
+}
+
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
 
-<div style="font-size: @Model.FontSize;background-color: @Model.BackgroundColor;">
+<div id="container">
     <rambler-chat></rambler-chat>
 </div>
