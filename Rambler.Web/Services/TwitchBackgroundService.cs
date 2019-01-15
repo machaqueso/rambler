@@ -31,16 +31,16 @@ namespace Rambler.Web.Services
         {
             logger.LogDebug($"TwitchBackgroundService is starting.");
             await dashboardService.UpdateStatus(ApiSource.Twitch, "Starting", cancellationToken);
+            cancellationToken.Register(async () =>
+            {
+                await dashboardService.UpdateStatus(ApiSource.Youtube, "Stopping", cancellationToken: cancellationToken);
+                logger.LogDebug($" TwitchBackgroundService background task is stopping.");
+            });
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    cancellationToken.Register(async () =>
-                    {
-                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Stopping", cancellationToken: cancellationToken);
-                        logger.LogDebug($" TwitchBackgroundService background task is stopping.");
-                    });
-
                     var webSocket = new ClientWebSocket();
                     while (!cancellationToken.IsCancellationRequested)
                     {

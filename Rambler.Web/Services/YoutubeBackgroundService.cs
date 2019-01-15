@@ -42,16 +42,16 @@ namespace Rambler.Web.Services
             logger.LogDebug($"YoutubeBackgroundService is starting.");
             await dashboardService.UpdateStatus(ApiSource.Youtube, "Starting", cancellationToken);
 
+            cancellationToken.Register(async () =>
+            {
+                await dashboardService.UpdateStatus(ApiSource.Youtube, "Stopping", cancellationToken);
+                logger.LogDebug($" YoutubeBackgroundService background task is stopping.");
+            });
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    cancellationToken.Register(async () =>
-                    {
-                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Stopping", cancellationToken);
-                        logger.LogDebug($" YoutubeBackgroundService background task is stopping.");
-                    });
-
                     var token = await youtubeService.GetToken();
                     if (token == null)
                     {
