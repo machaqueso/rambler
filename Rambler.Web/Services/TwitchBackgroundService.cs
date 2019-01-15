@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rambler.Web.Models;
@@ -34,17 +32,18 @@ namespace Rambler.Web.Services
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             logger.LogDebug($"TwitchBackgroundService is starting.");
+            await dashboardService.UpdateStatus(ApiSource.Twitch, "Starting", cancellationToken);
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    await dashboardService.UpdateStatus(ApiSource.Twitch, "Starting", cancellationToken);
-
-                    cancellationToken.Register(() => logger.LogDebug($" TwitchBackgroundService background task is stopping."));
-
+                    cancellationToken.Register(async () =>
+                    {
+                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Stopping", cancellationToken: cancellationToken);
+                        logger.LogDebug($" TwitchBackgroundService background task is stopping.");
+                    });
 
                     var webSocket = new ClientWebSocket();
-
                     while (!cancellationToken.IsCancellationRequested)
                     {
                         if (webSocket.State != WebSocketState.Open)
@@ -66,6 +65,7 @@ namespace Rambler.Web.Services
                             // authenticate with twitch using oauth
                             await TwitchHandshake(webSocket, cancellationToken);
                         }
+
                         await dashboardService.UpdateStatus(ApiSource.Twitch, "Connected", cancellationToken);
 
                         await Send(webSocket, cancellationToken, "JOIN :#machacoder");
@@ -76,9 +76,10 @@ namespace Rambler.Web.Services
                 catch (Exception ex)
                 {
                     logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
-                    await dashboardService.UpdateStatus(ApiSource.Twitch, "Error", cancellationToken: cancellationToken);
-                    throw;
+                    await dashboardService.UpdateStatus(ApiSource.Twitch, "Error",
+                        cancellationToken: cancellationToken);
                 }
+
                 await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
             }
         }
@@ -90,6 +91,7 @@ namespace Rambler.Web.Services
             {
                 throw new UnauthorizedAccessException("Twitch token not found");
             }
+
             if (token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
             {
                 await twitchService.RefreshToken(token);
@@ -144,7 +146,7 @@ namespace Rambler.Web.Services
 
                         if (line.Contains("PING"))
                         {
-                            var host = line.Substring(line.IndexOf(":"));
+                            var host = line.Substring(line.IndexOf(':'));
                             await Send(webSocket, cancellationToken, $"PONG :{host}");
                             await dashboardService.UpdateStatus(ApiSource.Twitch, "Connected", cancellationToken);
                         }
