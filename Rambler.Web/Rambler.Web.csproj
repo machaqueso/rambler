@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\lib\moment\**" />
+    <Content Remove="wwwroot\lib\moment\**" />
+    <EmbeddedResource Remove="wwwroot\lib\moment\**" />
+    <None Remove="wwwroot\lib\moment\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="compilerconfig.json" />
   </ItemGroup>
 
