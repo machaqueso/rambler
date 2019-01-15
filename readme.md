@@ -2,19 +2,15 @@
 A multi-chat bot for streamers.
 
 ## Description:
-Rambler is intended to be a single application consolidating the functions I require from several streamer assistance apps I currently use:
+Rambler is an all-in-one, self-hosted tool for streamers.
 
-- streampro.io for banners
-- nightbot for moderation and song requests in both twitch and youtube
-- koalabot for twitch moderation, custom commands and points (chelas)
-- restream.io multi-chat to read and show chat messages from both twitch and youtube
-
-## Features:
+## Features / Roadmap:
 When completed, Rambler 1.0 should have the following features:
 
-- Support for Twitch and Youtube.
-- A web server running on my local LAN I can use to read chat and perform moderation.
-- A web page I can pull on OBS to show chat messages in stream.
+- ~~Support for Twitch and Youtube.~~ **DONE**
+- ~~A web server running on my local LAN I can use to read chat.~~ **DONE**
+- ~~A web page I can pull on OBS to show chat messages in stream.~~ **DONE**
+- A web server running on my local LAN I can use to perform moderation.
   - Ignore list for users to never show in stream chat view (for bots)
 - An automated reputation system:
   - Users gain reputation based on:
@@ -38,4 +34,7 @@ When completed, Rambler 1.0 should have the following features:
 - REST api
 
 ## Stream:
-The plan is to stream while I'm developing this app, you can watch me code live at (twitch.tv/machacoder) and (https://www.youtube.com/channel/UCmUfkaiDlA3IZBibnMtyqlw)
+The plan is to stream while I'm developing this app, you can watch me code live on [twitch](https://twitch.tv/machacoder) or [youtube](https://www.youtube.com/channel/UCmUfkaiDlA3IZBibnMtyqlw)
+
+## TODO:
+- Make chat messages automatically vanish after a set period of time

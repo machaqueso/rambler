@@ -1,8 +1,12 @@
-﻿@{
+﻿@model ChatConfig
+
+@{
     ViewData["Title"] = "Home Page";
     Layout = "_Empty";
 }
 
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
 
-<rambler-chat></rambler-chat>
+<div style="font-size: @Model.FontSize;background-color: @Model.BackgroundColor;">
+    <rambler-chat></rambler-chat>
+</div>

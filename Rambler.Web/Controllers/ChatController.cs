@@ -1,12 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Rambler.Web.Models;
 
 namespace Rambler.Web.Controllers
 {
     public class ChatController : Controller
     {
-        public IActionResult Popup()
+        public IActionResult Popup(string fontSize = "inherit", string backgroundColor = "none")
         {
-            return View();
+            var chatConfig = new ChatConfig
+            {
+                FontSize = fontSize,
+                BackgroundColor = backgroundColor
+            };
+
+            return View(chatConfig);
         }
     }
 }
