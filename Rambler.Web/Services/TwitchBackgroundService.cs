@@ -12,7 +12,6 @@ namespace Rambler.Web.Services
     public class TwitchBackgroundService : BackgroundService
     {
         private readonly ILogger<TwitchBackgroundService> logger;
-        private readonly ChatService chatService;
         private readonly DashboardService dashboardService;
         private readonly TwitchService twitchService;
 
@@ -20,10 +19,9 @@ namespace Rambler.Web.Services
         private const int receiveChunkSize = 510; // RFC-2812
         private const int connectionTimeout = 60;
 
-        public TwitchBackgroundService(ChatService chatService, ILogger<TwitchBackgroundService> logger,
+        public TwitchBackgroundService(ILogger<TwitchBackgroundService> logger,
             DashboardService dashboardService, TwitchService twitchService)
         {
-            this.chatService = chatService;
             this.logger = logger;
             this.dashboardService = dashboardService;
             this.twitchService = twitchService;
@@ -108,6 +106,7 @@ namespace Rambler.Web.Services
 
         private async Task Send(ClientWebSocket webSocket, CancellationToken cancellationToken, string message)
         {
+            logger.LogDebug($"Twitch Chat > {message}");
             var encoder = new UTF8Encoding();
             var buffer = encoder.GetBytes(message);
             if (webSocket.State == WebSocketState.Open)
@@ -136,20 +135,23 @@ namespace Rambler.Web.Services
                 }
                 else if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    var text = partial + encoder.GetString(buffer);
+                    var text = partial + encoder.GetString(buffer).Replace("\0", "");
                     partial = string.Empty;
                     var lines = (text.Substring(0, text.LastIndexOf('\r'))).Split('\r');
 
                     foreach (var line in lines)
                     {
-                        await twitchService.ProcessMessage(line);
+                        logger.LogDebug($"Twitch Chat < {line}");
 
                         if (line.Contains("PING"))
                         {
                             var host = line.Substring(line.IndexOf(':'));
                             await Send(webSocket, cancellationToken, $"PONG :{host}");
                             await dashboardService.UpdateStatus(ApiSource.Twitch, "Connected", cancellationToken);
+                            continue;
                         }
+
+                        await twitchService.ProcessMessage(line);
                     }
 
                     partial = text.Substring(text.LastIndexOf('\r'));
