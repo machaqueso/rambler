@@ -38,12 +38,12 @@ namespace Rambler.Web.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            delay = DefaultDelay;
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    delay = DefaultDelay;
-
                     logger.LogDebug($"YoutubeBackgroundService is starting.");
                     await dashboardService.UpdateStatus(ApiSource.Youtube, "Starting", cancellationToken: stoppingToken);
 

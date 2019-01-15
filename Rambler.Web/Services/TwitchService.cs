@@ -134,7 +134,12 @@ namespace Rambler.Web.Services
 
             if (message.StartsWith(":"))
             {
-                prefix = message.Substring(0, message.IndexOf(" ", StringComparison.Ordinal));
+                var index = prefix.IndexOf(' ');
+                if (index < 0)
+                {
+                    index = message.Length;
+                }
+                prefix = message.Substring(0, index);
                 var parts = message.Split(" ");
                 command = parts[1];
                 parameters = string.Join(' ', parts.Skip(2));

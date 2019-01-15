@@ -79,14 +79,7 @@ namespace Rambler.Web.Services
         public async Task<bool> HasValidToken()
         {
             var token = await GetToken();
-
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            return token.Status == AccessTokenStatus.Ok
-                   && !string.IsNullOrEmpty(token.access_token);
+            return IsValidToken(token);
         }
 
         public async Task<LiveChatMessageList> GetLiveChatMessages(string liveChatId)
@@ -170,7 +163,6 @@ namespace Rambler.Web.Services
             {
                 new KeyValuePair<string, string>("client_id", configuration["Authentication:Google:ClientId"]),
                 new KeyValuePair<string, string>("client_secret", configuration["Authentication:Google:ClientSecret"]),
-                new KeyValuePair<string, string>("refresh_token", token.refresh_token),
                 new KeyValuePair<string, string>("grant_type", "refresh_token")
             };
 
