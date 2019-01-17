@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rambler.Web.Models;
@@ -17,13 +16,14 @@ namespace Rambler.Web.Services
     {
         private readonly UserService userService;
         private readonly ILogger<YoutubeService> logger;
-        public IConfiguration configuration { get; }
+        public readonly ConfigurationService configurationService;
 
-        public YoutubeService(UserService userService, ILogger<YoutubeService> logger, IConfiguration configuration)
+        public YoutubeService(UserService userService, ILogger<YoutubeService> logger,
+            ConfigurationService configurationService)
         {
             this.userService = userService;
             this.logger = logger;
-            this.configuration = configuration;
+            this.configurationService = configurationService;
         }
 
         public async Task<HttpResponseMessage> Get(string request)
@@ -102,7 +102,7 @@ namespace Rambler.Web.Services
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogError($"GetLiveChatMessages error: {(int)response.StatusCode} - {response.ReasonPhrase}",
+                logger.LogError($"GetLiveChatMessages error: {(int) response.StatusCode} - {response.ReasonPhrase}",
                     response);
                 return null;
             }
@@ -144,7 +144,8 @@ namespace Rambler.Web.Services
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogError($"GetLiveBroadcast error: {(int)response.StatusCode} - {response.ReasonPhrase}: {content}");
+                logger.LogError(
+                    $"GetLiveBroadcast error: {(int) response.StatusCode} - {response.ReasonPhrase}: {content}");
                 return null;
             }
 
@@ -169,10 +170,13 @@ namespace Rambler.Web.Services
                 throw new InvalidOperationException("invalid refresh_token");
             }
 
+            var clientId = await configurationService.GetValue("Authentication:Google:ClientId");
+            var clientSecret = await configurationService.GetValue("Authentication:Google:ClientSecret");
+
             var data = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("client_id", configuration["Authentication:Google:ClientId"]),
-                new KeyValuePair<string, string>("client_secret", configuration["Authentication:Google:ClientSecret"]),
+                new KeyValuePair<string, string>("client_id", clientId),
+                new KeyValuePair<string, string>("client_secret", clientSecret),
                 new KeyValuePair<string, string>("refresh_token", token.refresh_token),
                 new KeyValuePair<string, string>("grant_type", "refresh_token")
             };
@@ -191,5 +195,10 @@ namespace Rambler.Web.Services
             await userService.UpdateToken(accessToken);
         }
 
+        public bool IsConfigured()
+        {
+            return configurationService.HasValue("Authentication:Google:ClientId") &&
+                   configurationService.HasValue("Authentication:Google:ClientSecret");
+        }
     }
 };

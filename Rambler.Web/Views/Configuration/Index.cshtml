@@ -11,10 +11,10 @@
     <template>
         <iron-ajax id="ajax"
                    auto
-                   url="/api/token"
+                   url="/api/configuration"
                    handle-as="json"
                    loading="{{loading}}"
-                   last-response="{{tokens}}"
+                   last-response="{{settings}}"
                    debounce-duration="300"></iron-ajax>
 
         <xenon-section id="section">
@@ -24,19 +24,17 @@
                         <thead>
                             <tr>
                                 <th>Id</th>
-                                <th>Source</th>
-                                <th>Type</th>
-                                <th>Expiration Date</th>
+                                <th>Name</th>
+                                <th>Key</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <template is="dom-repeat" items="{{tokens}}">
+                            <template is="dom-repeat" items="{{settings}}">
                                 <tr>
                                     <td>{{item.id}}</td>
-                                    <td>{{item.apiSource}}</td>
-                                    <td>{{item.token_type}}</td>
-                                    <td>{{item.expirationDate}}</td>
+                                    <td>{{item.name}}</td>
+                                    <td>{{item.key}}</td>
                                     <td>{{item.status}}</td>
                                 </tr>
                             </template>

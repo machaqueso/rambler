@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rambler.Web.Data;
 
 namespace Rambler.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20190117021930_AddedConfigurationTable")]
+    partial class AddedConfigurationTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,24 +71,13 @@ namespace Rambler.Web.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Description");
-
                     b.Property<string>("Key");
-
-                    b.Property<string>("Name");
 
                     b.Property<string>("Value");
 
                     b.HasKey("Id");
 
                     b.ToTable("ConfigurationSettings");
-
-                    b.HasData(
-                        new { Id = 1, Key = "Authentication:Google:ClientId", Name = "Youtube client id" },
-                        new { Id = 2, Key = "Authentication:Google:ClientSecret", Name = "Youtube client secret" },
-                        new { Id = 3, Key = "Authentication:Twitch:ClientId", Name = "Twitch client id" },
-                        new { Id = 4, Key = "Authentication:Twitch:ClientSecret", Name = "Twitch client secret" }
-                    );
                 });
 
             modelBuilder.Entity("Rambler.Web.Models.User", b =>

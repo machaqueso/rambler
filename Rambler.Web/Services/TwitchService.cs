@@ -4,8 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rambler.Web.Models;
@@ -16,15 +14,16 @@ namespace Rambler.Web.Services
     {
         private readonly UserService userService;
         private readonly ILogger<TwitchService> logger;
-        public IConfiguration configuration { get; }
-        public ChatService chatService;
+        private readonly ChatService chatService;
+        private readonly ConfigurationService configurationService;
 
-        public TwitchService(UserService userService, ILogger<TwitchService> logger, IConfiguration configuration, ChatService chatService)
+        public TwitchService(UserService userService, ILogger<TwitchService> logger, ChatService chatService,
+            ConfigurationService configurationService)
         {
             this.userService = userService;
             this.logger = logger;
-            this.configuration = configuration;
             this.chatService = chatService;
+            this.configurationService = configurationService;
         }
 
         public async Task<HttpResponseMessage> Get(string request)
@@ -90,13 +89,12 @@ namespace Rambler.Web.Services
                    && !string.IsNullOrEmpty(token.access_token);
         }
 
-
         public async Task RefreshToken(AccessToken token)
         {
             var data = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("client_id", configuration["Authentication:Twitch:ClientId"]),
-                new KeyValuePair<string, string>("client_secret", configuration["Authentication:Twitch:ClientSecret"]),
+                new KeyValuePair<string, string>("client_id", await configurationService.GetValue("Authentication:Twitch:ClientId")),
+                new KeyValuePair<string, string>("client_secret", await configurationService.GetValue("Authentication:Twitch:ClientSecret")),
                 new KeyValuePair<string, string>("refresh_token", token.refresh_token),
                 new KeyValuePair<string, string>("grant_type", "refresh_token")
             };
@@ -139,6 +137,7 @@ namespace Rambler.Web.Services
                 {
                     index = message.Length;
                 }
+
                 prefix = message.Substring(0, index);
                 var parts = message.Split(" ");
                 command = parts[1];
@@ -164,6 +163,7 @@ namespace Rambler.Web.Services
                 {
                     index = 1;
                 }
+
                 author = prefix.Substring(1, index);
             }
 
@@ -181,6 +181,12 @@ namespace Rambler.Web.Services
                 Date = DateTime.UtcNow,
                 Source = ApiSource.Twitch
             });
+        }
+
+        public bool IsConfigured()
+        {
+            return configurationService.HasValue("Authentication:Twitch:ClientId") &&
+                   configurationService.HasValue("Authentication:Twitch:ClientSecret");
         }
     }
 };

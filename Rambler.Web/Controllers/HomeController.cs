@@ -8,7 +8,7 @@ namespace Rambler.Web.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Dashboard");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -17,10 +17,9 @@ namespace Rambler.Web.Controllers
             return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
         }
 
-        public IActionResult Chat()
+        public IActionResult Dashboard()
         {
             return View();
         }
-
     }
 }

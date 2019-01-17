@@ -1,17 +1,74 @@
+using System.IO;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 using Rambler.Web.Models;
 
 namespace Rambler.Web.Data
 {
     public class DataContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<ChatMessage> Messages { get; set; }
-        public DbSet<AccessToken> AccessTokens { get; set; }
+        private readonly IConfiguration configuration;
+
+        public DataContext(IConfiguration configuration)
+        {
+            this.configuration = configuration;
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Filename=./data.db");
+            optionsBuilder.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
+        }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<ChatMessage> Messages { get; set; }
+        public DbSet<AccessToken> AccessTokens { get; set; }
+        public DbSet<ConfigurationSetting> ConfigurationSettings { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.Entity<ConfigurationSetting>().HasData(
+                new ConfigurationSetting
+                {
+                    Id = 1,
+                    Name = "Youtube client id",
+                    Key = "Authentication:Google:ClientId"
+                },
+                new ConfigurationSetting
+                {
+                    Id = 2,
+                    Name = "Youtube client secret",
+                    Key = "Authentication:Google:ClientSecret"
+                },
+                new ConfigurationSetting
+                {
+                    Id = 3,
+                    Name = "Twitch client id",
+                    Key = "Authentication:Twitch:ClientId"
+                },
+                new ConfigurationSetting
+                {
+                    Id = 4,
+                    Name = "Twitch client secret",
+                    Key = "Authentication:Twitch:ClientSecret"
+                }
+            );
+        }
+
+    }
+
+    // This is needed for entity framework migrations to work when configuration is passed to datacontext
+    public class DataContextDbFactory : IDesignTimeDbContextFactory<DataContext>
+    {
+        DataContext IDesignTimeDbContextFactory<DataContext>.CreateDbContext(string[] args)
+        {
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            return new DataContext(configuration);
         }
     }
 }

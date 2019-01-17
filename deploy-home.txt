@@ -1,0 +1,7 @@
+option batch continue
+option confirm off
+open scp://spectro@rambler-home.machaqueso.cl
+lcd D:\src\machaqueso\rambler\publish\linux-x64
+cd /data/dockerdata/rambler-home.machaqueso.cl/www
+synchronize remote
+exit

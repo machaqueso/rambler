@@ -31,13 +31,12 @@ namespace Rambler.Web.Controllers
 
         public IActionResult Authorize()
         {
-            var clientId = configuration["Authentication:Twitch:ClientId"];
-
-            if (string.IsNullOrEmpty(clientId))
+            if (!twitchService.IsConfigured())
             {
-                throw new InvalidOperationException("Authentication:Twitch:ClientId not configured");
+                return RedirectToAction("Twitch", "Configuration");
             }
 
+            var clientId = configuration["Authentication:Twitch:ClientId"];
             var redirectUrl = Url.Action("Callback", "Twitch", null, Request.Scheme, null).ToLower();
             var oauthRequest = $"https://id.twitch.tv/oauth2/authorize?client_id={clientId}&redirect_uri={redirectUrl}&response_type=code&scope=chat:read";
 
@@ -59,7 +58,7 @@ namespace Rambler.Web.Controllers
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                return StatusCode((int) response.StatusCode, content);
+                return StatusCode((int)response.StatusCode, content);
             }
 
             var token = JsonConvert.DeserializeObject<AccessToken>(content);

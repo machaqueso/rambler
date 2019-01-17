@@ -41,6 +41,14 @@ namespace Rambler.Web.Services
             {
                 try
                 {
+                    if (!twitchService.IsConfigured())
+                    {
+                        await dashboardService.UpdateStatus(ApiSource.Twitch, "Not Configured", cancellationToken);
+                        logger.LogError($"Twitch is not Configured");
+                        await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                        continue;
+                    }
+
                     var webSocket = new ClientWebSocket();
                     while (!cancellationToken.IsCancellationRequested)
                     {

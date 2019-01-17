@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/xenon-layout/xenon-header.html" />
+<link rel="import" href="/components/rambler-components/rambler-chat.html" />
+<link rel="import" href="/components/rambler-components/rambler-api-status.html" />
+
+<div>
+    <xenon-photo-card heading="API Status">
+        <main>
+            <div>
+                <rambler-api-status></rambler-api-status>
+            </div>
+        </main>
+    </xenon-photo-card>
+    <xenon-photo-card heading="Chatbox">
+        <actions>
+            <a href="@Url.Action("Popup", "Chat")" tabindex="-1" target="_blank">
+                <paper-button>Popup</paper-button>
+            </a>
+        </actions>
+        <main>
+            <div style="background-color: black;">
+                <rambler-chat></rambler-chat>
+            </div>
+        </main>
+    </xenon-photo-card>
+</div>

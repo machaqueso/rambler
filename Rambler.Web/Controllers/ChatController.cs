@@ -16,5 +16,11 @@ namespace Rambler.Web.Controllers
 
             return View(chatConfig);
         }
+
+        public IActionResult Index()
+        {
+            return View();
+        }
+
     }
 }
