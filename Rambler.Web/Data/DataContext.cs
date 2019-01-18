@@ -24,6 +24,7 @@ namespace Rambler.Web.Data
         public DbSet<ChatMessage> Messages { get; set; }
         public DbSet<AccessToken> AccessTokens { get; set; }
         public DbSet<ConfigurationSetting> ConfigurationSettings { get; set; }
+        public DbSet<Integration> Integrations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -52,6 +53,21 @@ namespace Rambler.Web.Data
                     Id = 4,
                     Name = "Twitch client secret",
                     Key = "Authentication:Twitch:ClientSecret"
+                }
+            );
+
+            builder.Entity<Integration>().HasData(
+                new Integration
+                {
+                    Id = 1,
+                    Name = "Youtube",
+                    IsEnabled = false
+                },
+                new Integration
+                {
+                    Id = 2,
+                    Name = "Twitch",
+                    IsEnabled = false
                 }
             );
         }

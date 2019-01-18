@@ -52,6 +52,13 @@ namespace Rambler.Web.Services
             {
                 try
                 {
+                    if (!await youtubeService.IsEnabled())
+                    {
+                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Disabled", cancellationToken);
+                        await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                        continue;
+                    }
+
                     if (!youtubeService.IsConfigured())
                     {
                         await dashboardService.UpdateStatus(ApiSource.Youtube, "Not Configured", cancellationToken);

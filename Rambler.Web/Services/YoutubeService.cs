@@ -17,13 +17,15 @@ namespace Rambler.Web.Services
         private readonly UserService userService;
         private readonly ILogger<YoutubeService> logger;
         public readonly ConfigurationService configurationService;
+        public readonly IntegrationService IntegrationService;
 
         public YoutubeService(UserService userService, ILogger<YoutubeService> logger,
-            ConfigurationService configurationService)
+            ConfigurationService configurationService, IntegrationService integrationService)
         {
             this.userService = userService;
             this.logger = logger;
             this.configurationService = configurationService;
+            IntegrationService = integrationService;
         }
 
         public async Task<HttpResponseMessage> Get(string request)
@@ -102,7 +104,7 @@ namespace Rambler.Web.Services
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogError($"GetLiveChatMessages error: {(int) response.StatusCode} - {response.ReasonPhrase}",
+                logger.LogError($"GetLiveChatMessages error: {(int)response.StatusCode} - {response.ReasonPhrase}",
                     response);
                 return null;
             }
@@ -145,7 +147,7 @@ namespace Rambler.Web.Services
             if (!response.IsSuccessStatusCode)
             {
                 logger.LogError(
-                    $"GetLiveBroadcast error: {(int) response.StatusCode} - {response.ReasonPhrase}: {content}");
+                    $"GetLiveBroadcast error: {(int)response.StatusCode} - {response.ReasonPhrase}: {content}");
                 return null;
             }
 
@@ -197,8 +199,13 @@ namespace Rambler.Web.Services
 
         public bool IsConfigured()
         {
-            return configurationService.HasValue("Authentication:Google:ClientId") &&
-                   configurationService.HasValue("Authentication:Google:ClientSecret");
+            return configurationService.HasValue("Authentication:Google:ClientId")
+                   && configurationService.HasValue("Authentication:Google:ClientSecret");
+        }
+
+        public async Task<bool> IsEnabled()
+        {
+            return await IntegrationService.IsEnabled(ApiSource.Youtube);
         }
     }
 };

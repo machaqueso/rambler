@@ -16,14 +16,16 @@ namespace Rambler.Web.Services
         private readonly ILogger<TwitchService> logger;
         private readonly ChatService chatService;
         private readonly ConfigurationService configurationService;
+        private readonly IntegrationService integrationService;
 
         public TwitchService(UserService userService, ILogger<TwitchService> logger, ChatService chatService,
-            ConfigurationService configurationService)
+            ConfigurationService configurationService, IntegrationService integrationService)
         {
             this.userService = userService;
             this.logger = logger;
             this.chatService = chatService;
             this.configurationService = configurationService;
+            this.integrationService = integrationService;
         }
 
         public async Task<HttpResponseMessage> Get(string request)
@@ -188,5 +190,11 @@ namespace Rambler.Web.Services
             return configurationService.HasValue("Authentication:Twitch:ClientId") &&
                    configurationService.HasValue("Authentication:Twitch:ClientSecret");
         }
+
+        public async Task<bool> IsEnabled()
+        {
+            return await integrationService.IsEnabled(ApiSource.Twitch);
+        }
+
     }
 };

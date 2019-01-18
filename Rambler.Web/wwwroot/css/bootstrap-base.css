@@ -1,5 +1,36 @@
 ﻿/* Base styles lifted from bootstrap */
 
+:root {
+    --blue: #007bff;
+    --indigo: #6610f2;
+    --purple: #6f42c1;
+    --pink: #e83e8c;
+    --red: #dc3545;
+    --orange: #fd7e14;
+    --yellow: #ffc107;
+    --green: #28a745;
+    --teal: #20c997;
+    --cyan: #17a2b8;
+    --white: #fff;
+    --gray: #6c757d;
+    --gray-dark: #343a40;
+    --primary: #007bff;
+    --secondary: #6c757d;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --breakpoint-xs: 0;
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+    --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
 h1, h2, h3, h4, h5, h6 {
     margin-top: 0;
     margin-bottom: 0.5rem;
@@ -209,3 +240,86 @@ fieldset:disabled a.btn {
         .show > .btn-secondary.dropdown-toggle:focus {
             box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
         }
+
+
+.text-primary {
+    color: #007bff;
+}
+
+a.text-primary:hover, a.text-primary:focus {
+    color: #0062cc;
+}
+
+.text-secondary {
+    color: #6c757d;
+}
+
+a.text-secondary:hover, a.text-secondary:focus {
+    color: #545b62;
+}
+
+.text-success {
+    color: #28a745;
+}
+
+a.text-success:hover, a.text-success:focus {
+    color: #1e7e34;
+}
+
+.text-info {
+    color: #17a2b8;
+}
+
+a.text-info:hover, a.text-info:focus {
+    color: #117a8b;
+}
+
+.text-warning {
+    color: #ffc107;
+}
+
+a.text-warning:hover, a.text-warning:focus {
+    color: #d39e00;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+a.text-danger:hover, a.text-danger:focus {
+    color: #bd2130;
+}
+
+.text-light {
+    color: #f8f9fa;
+}
+
+a.text-light:hover, a.text-light:focus {
+    color: #dae0e5;
+}
+
+.text-dark {
+    color: #343a40;
+}
+
+a.text-dark:hover, a.text-dark:focus {
+    color: #1d2124;
+}
+
+.text-body {
+    color: #212529;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.text-black-50 {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+

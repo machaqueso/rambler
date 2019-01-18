@@ -41,6 +41,13 @@ namespace Rambler.Web.Services
             {
                 try
                 {
+                    if (!await twitchService.IsEnabled())
+                    {
+                        await dashboardService.UpdateStatus(ApiSource.Twitch, "Disabled", cancellationToken);
+                        await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                        continue;
+                    }
+
                     if (!twitchService.IsConfigured())
                     {
                         await dashboardService.UpdateStatus(ApiSource.Twitch, "Not Configured", cancellationToken);

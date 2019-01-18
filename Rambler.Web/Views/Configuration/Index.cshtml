@@ -1,11 +1,11 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "Configuration";
 }
 
 <link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
 <link rel="import" href="/components/paper-toast/paper-toast.html" />
 <link rel="import" href="/components/iron-ajax/iron-ajax.html" />
+<link rel="import" href="/components/paper-toggle-button/paper-toggle-button.html" />
 
 <dom-module id="page-module">
     <template>
@@ -15,34 +15,62 @@
                    handle-as="json"
                    loading="{{loading}}"
                    last-response="{{settings}}"
+                   debounce-duration="300">
+        </iron-ajax>
+
+        <iron-ajax id="getIntegration"
+                   auto
+                   url="/api/integration"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{integrations}}"
+                   debounce-duration="300">
+        </iron-ajax>
+
+        <iron-ajax id="putIntegration"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="PUT"
+                   on-response="_onAjaxResponse"
+                   on-error="_onAjaxError"
                    debounce-duration="300"></iron-ajax>
 
-        <xenon-section id="section">
-            <xenon-photo-card heading="">
-                <main>
-                    <table class="table table-bordered table-striped">
-                        <thead>
+        <xenon-photo-card heading="Enable/Disable Integrations">
+            <main>
+                <template is="dom-repeat" items="{{integrations}}">
+                    <div class="row">
+                        <paper-toggle-button on-change="_toggle" checked="{{item.isEnabled}}">{{item.name}}</paper-toggle-button>
+                        <div class="text-danger">[[item.error]]</div>
+                    </div>
+                </template>
+            </main>
+        </xenon-photo-card>
+
+        <xenon-photo-card heading="Settings">
+            <main>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Key</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="{{settings}}">
                             <tr>
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Key</th>
-                                <th>Status</th>
+                                <td>{{item.id}}</td>
+                                <td>{{item.name}}</td>
+                                <td>{{item.key}}</td>
+                                <td>{{item.status}}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <template is="dom-repeat" items="{{settings}}">
-                                <tr>
-                                    <td>{{item.id}}</td>
-                                    <td>{{item.name}}</td>
-                                    <td>{{item.key}}</td>
-                                    <td>{{item.status}}</td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </main>
-            </xenon-photo-card>
-        </xenon-section>
+                        </template>
+                    </tbody>
+                </table>
+            </main>
+        </xenon-photo-card>
 
         <paper-toast id="toast"></paper-toast>
     </template>
@@ -53,6 +81,12 @@
             },
             observers: [
             ],
+            _toggle: function (e) {
+                console.log(e.model.item);
+                this.$.putIntegration.url = "/api/integration/" + e.model.item.id;
+                this.$.putIntegration.body = JSON.stringify(e.model.item);
+                this.$.putIntegration.generateRequest();
+            },
             ready: function () {
             }
         });
@@ -60,4 +94,3 @@
 </dom-module>
 
 <page-module></page-module>
-
