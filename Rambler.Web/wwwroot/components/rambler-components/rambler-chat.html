@@ -25,11 +25,11 @@
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
                 <div class="row">
+                    <template is="dom-if" if="[[showDate]]">
+                        <rambler-chat-date class="date" value="{{item.date}}" smart-date></rambler-chat-date>
+                    </template>
                     <template is="dom-if" if="[[item.source]]">
                         <i class$="[[getIcon(item.source)]]" title="[[item.source]]"></i>
-                    </template>
-                    <template is="dom-if" if="[[showDate]]">
-                        <rambler-chat-date class="date" value="{{item.date}}"></rambler-chat-date>
                     </template>
                     <div class="author">{{item.author}}</div>
                     <div class="message">{{item.message}}</div>

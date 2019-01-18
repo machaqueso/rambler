@@ -12,6 +12,8 @@
                 displayDate: { Type: String, notify: true },
                 showYear: { Type: Boolean, value: false },
                 showDate: { Type: Boolean, value: false },
+                format: { Type: String },
+                smartDate: { Type: Boolean, value: true }
             },
             observers: [
                 "_onDateChanged(value)"
@@ -20,11 +22,30 @@
                 this._setDate(date);
             },
             _setDate: function (newDate) {
+                if (this.showdate == undefined) this.showDate = false;
+                if (this.smartDate == undefined) this.smartDate = true;
+
+                if (this.format && !this.smartDate) {
+                    this.set("displayDate", moment(newDate).utc().format(this.format));
+                    return;
+                }
+
                 var displayDate = "";
-                if (this.showDate) {
+                var over12Hours = (this.smartDate && moment(new Date()).diff(newDate, 'hours') > 12);
+                var showDate = this.showDate || over12Hours;
+                if (showDate) {
                     displayDate += moment(newDate).utc().format('l');
                 }
-                displayDate += " " + moment(newDate).utc().format('h:mm');
+
+                if (moment.locale() === 'en') {
+                    displayDate += " " + moment(newDate).utc().format('h:mm');
+                    if (over12Hours) {
+                        displayDate += " " + moment(newDate).utc().format('a');
+                    }
+                } else {
+                    displayDate += " " + moment(newDate).utc().format('H:mm');
+                }
+
 
                 this.set("displayDate", displayDate);
             },
