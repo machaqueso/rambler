@@ -10,10 +10,14 @@ namespace Rambler.Web.Services
     public class IntegrationService
     {
         private readonly DataContext db;
+        private readonly YoutubeBackgroundService youtube;
+        private readonly TwitchBackgroundService twitch;
 
-        public IntegrationService(DataContext db)
+        public IntegrationService(DataContext db, YoutubeBackgroundService youtube, TwitchBackgroundService twitch)
         {
             this.db = db;
+            this.youtube = youtube;
+            this.twitch = twitch;
         }
 
         public IQueryable<Integration> GetIntegrations()

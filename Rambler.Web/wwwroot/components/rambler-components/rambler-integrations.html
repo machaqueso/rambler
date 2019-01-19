@@ -1,0 +1,49 @@
+﻿<script src="../../lib/signalr/dist/browser/signalr.js"></script>
+
+<link rel="import" href="../paper-toast/paper-toast.html" />
+<link rel="import" href="../iron-ajax/iron-ajax.html" />
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html" />
+
+<dom-module id="rambler-integrations">
+    <template>
+        <iron-ajax id="getIntegration"
+                   auto
+                   url="/api/integration"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{integrations}}"
+                   debounce-duration="300">
+        </iron-ajax>
+
+        <iron-ajax id="putIntegration"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="PUT"
+                   debounce-duration="300"></iron-ajax>
+
+        <template is="dom-repeat" items="{{integrations}}">
+            <div class="row">
+                <paper-toggle-button on-change="_toggle" checked="{{item.isEnabled}}">{{item.name}}</paper-toggle-button>
+                <div class="text-danger">[[item.error]]</div>
+            </div>
+        </template>
+
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: "rambler-integrations",
+            properties: {
+            },
+            _toggle: function (e) {
+                console.log(e.model.item);
+                this.$.putIntegration.url = "/api/integration/" + e.model.item.id;
+                this.$.putIntegration.body = JSON.stringify(e.model.item);
+                this.$.putIntegration.generateRequest();
+            },
+            ready: function () {
+            }
+        });
+    </script>
+</dom-module>

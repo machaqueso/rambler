@@ -6,6 +6,7 @@
 <link rel="import" href="/components/paper-toast/paper-toast.html" />
 <link rel="import" href="/components/iron-ajax/iron-ajax.html" />
 <link rel="import" href="/components/paper-toggle-button/paper-toggle-button.html" />
+<link rel="import" href="/components/rambler-components/rambler-integrations.html" />
 
 <dom-module id="page-module">
     <template>
@@ -18,32 +19,9 @@
                    debounce-duration="300">
         </iron-ajax>
 
-        <iron-ajax id="getIntegration"
-                   auto
-                   url="/api/integration"
-                   handle-as="json"
-                   loading="{{loading}}"
-                   last-response="{{integrations}}"
-                   debounce-duration="300">
-        </iron-ajax>
-
-        <iron-ajax id="putIntegration"
-                   handle-as="json"
-                   content-type="application/json"
-                   loading="{{loading}}"
-                   method="PUT"
-                   on-response="_onAjaxResponse"
-                   on-error="_onAjaxError"
-                   debounce-duration="300"></iron-ajax>
-
         <xenon-photo-card heading="Enable/Disable Integrations">
             <main>
-                <template is="dom-repeat" items="{{integrations}}">
-                    <div class="row">
-                        <paper-toggle-button on-change="_toggle" checked="{{item.isEnabled}}">{{item.name}}</paper-toggle-button>
-                        <div class="text-danger">[[item.error]]</div>
-                    </div>
-                </template>
+                <rambler-integrations></rambler-integrations>
             </main>
         </xenon-photo-card>
 
@@ -81,12 +59,6 @@
             },
             observers: [
             ],
-            _toggle: function (e) {
-                console.log(e.model.item);
-                this.$.putIntegration.url = "/api/integration/" + e.model.item.id;
-                this.$.putIntegration.body = JSON.stringify(e.model.item);
-                this.$.putIntegration.generateRequest();
-            },
             ready: function () {
             }
         });

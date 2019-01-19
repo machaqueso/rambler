@@ -6,15 +6,25 @@
 <link rel="import" href="/components/xenon-layout/xenon-header.html" />
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
 <link rel="import" href="/components/rambler-components/rambler-api-status.html" />
+<link rel="import" href="/components/rambler-components/rambler-integrations.html" />
 
 <div>
-    <xenon-photo-card heading="API Status">
-        <main>
-            <div>
-                <rambler-api-status></rambler-api-status>
-            </div>
-        </main>
-    </xenon-photo-card>
+    <div class="row">
+        <xenon-photo-card heading="Integrations">
+            <main>
+                <div>
+                    <rambler-integrations></rambler-integrations>
+                </div>
+            </main>
+        </xenon-photo-card>
+        <xenon-photo-card heading="API Status">
+            <main>
+                <div>
+                    <rambler-api-status></rambler-api-status>
+                </div>
+            </main>
+        </xenon-photo-card>
+    </div>
     <xenon-photo-card heading="Chatbox">
         <actions>
             <a href="@Url.Action("Popup", "Chat")" tabindex="-1" target="_blank">
