@@ -28,6 +28,8 @@ namespace Rambler.Web.Services
             IntegrationService = integrationService;
         }
 
+        public event EventHandler<IntegrationChangedEventArgs> ToggleIntegrationChanged;
+        
         public async Task<HttpResponseMessage> Get(string request)
         {
             return await Get(request, string.Empty);
@@ -207,5 +209,6 @@ namespace Rambler.Web.Services
         {
             return await IntegrationService.IsEnabled(ApiSource.Youtube);
         }
+
     }
 };

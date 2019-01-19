@@ -32,14 +32,15 @@ namespace Rambler.Web
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddTransient<DataContext>();
-            services.AddTransient<UserService>();
-            services.AddTransient<YoutubeService>();
-            services.AddTransient<ChatService>();
-            services.AddTransient<DashboardService>();
-            services.AddTransient<TwitchService>();
-            services.AddTransient<ConfigurationService>();
-            services.AddTransient<IntegrationService>();
+            services.AddDbContext<DataContext>();
+
+            services.AddScoped<UserService>();
+            services.AddScoped<YoutubeService>();
+            services.AddScoped<ChatService>();
+            services.AddScoped<DashboardService>();
+            services.AddScoped<TwitchService>();
+            services.AddScoped<ConfigurationService>();
+            services.AddScoped<IntegrationService>();
 
             services.AddSingleton<IHostedService, YoutubeBackgroundService>();
             services.AddSingleton<IHostedService, TwitchBackgroundService>();

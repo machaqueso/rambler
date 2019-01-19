@@ -9,7 +9,7 @@ namespace Rambler.Web.Models
         public ApiStatus(string name)
         {
             Name = name;
-            Status = "Stopped";
+            Status = BackgroundServiceStatus.Stopped;
             UpdateDate = DateTime.UtcNow;
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Rambler.Web.Models;
 using Rambler.Web.Services;
@@ -19,7 +20,7 @@ namespace Rambler.Web.Api
         [Route("")]
         public IActionResult GetIntegrations()
         {
-            return Ok(integrationService.GetIntegrations());
+            return Ok(integrationService.GetIntegrations().OrderBy(x => x.Name));
         }
 
         [Route("{id}")]
@@ -29,7 +30,6 @@ namespace Rambler.Web.Api
             await integrationService.UpdateIntegration(id, integration);
             return NoContent();
         }
-
 
     }
 }

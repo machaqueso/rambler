@@ -10,15 +10,13 @@ namespace Rambler.Web.Services
     public class IntegrationService
     {
         private readonly DataContext db;
-        private readonly YoutubeBackgroundService youtube;
-        private readonly TwitchBackgroundService twitch;
 
-        public IntegrationService(DataContext db, YoutubeBackgroundService youtube, TwitchBackgroundService twitch)
+        public IntegrationService(DataContext db)
         {
             this.db = db;
-            this.youtube = youtube;
-            this.twitch = twitch;
         }
+
+        public event EventHandler<IntegrationChangedEventArgs> IntegrationChanged;
 
         public IQueryable<Integration> GetIntegrations()
         {
@@ -40,13 +38,28 @@ namespace Rambler.Web.Services
 
         public async Task<bool> IsEnabled(string name)
         {
-            var integration = await GetIntegrations().FirstOrDefaultAsync(x => x.Name == name);
+            var integration = await GetIntegrations()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Name == name);
+
             if (integration == null)
             {
                 return false;
             }
 
+
+
             return integration.IsEnabled;
+        }
+
+        public void IntegrationEvent(bool isEnabled)
+        {
+            var handler = IntegrationChanged;
+            if (handler != null)
+            {
+                var args = new IntegrationChangedEventArgs(isEnabled);
+                handler(this, args);
+            }
         }
 
     }

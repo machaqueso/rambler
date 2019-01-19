@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Rambler.Web.Data;
 using Rambler.Web.Models;
 
 // Details on how to complete this at:
@@ -14,104 +16,98 @@ namespace Rambler.Web.Services
     public class YoutubeBackgroundService : BackgroundService
     {
         private readonly ILogger<YoutubeBackgroundService> logger;
-        private readonly YoutubeService youtubeService;
-        private readonly ChatService chatService;
-        private readonly DashboardService dashboardService;
+        private YoutubeService youtubeService;
+        private ChatService chatService;
+        private DashboardService dashboardService;
+        private readonly IServiceScopeFactory serviceScopeFactory;
+
+        private const int minimumPollingInterval = 10000;
+        private const int defaultDelay = 1000;
 
         private string liveChatId;
-        private const int DefaultDelay = 20000;
+        private int pollingInterval;
         private int delay;
 
-        public YoutubeBackgroundService(ILogger<YoutubeBackgroundService> logger, YoutubeService youtubeService,
-            ChatService chatService, DashboardService dashboardService)
+        public YoutubeBackgroundService(ILogger<YoutubeBackgroundService> logger, IServiceScopeFactory serviceScopeFactory)
         {
             this.logger = logger;
-            this.youtubeService = youtubeService;
-            this.chatService = chatService;
-            this.dashboardService = dashboardService;
-        }
-
-        private async Task Delay(CancellationToken token)
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(delay), token);
+            this.serviceScopeFactory = serviceScopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            delay = DefaultDelay;
-            logger.LogDebug($"YoutubeBackgroundService is starting.");
-            await dashboardService.UpdateStatus(ApiSource.Youtube, "Starting", cancellationToken);
+            pollingInterval = minimumPollingInterval;
+            delay = defaultDelay;
 
-            cancellationToken.Register(async () =>
+            cancellationToken.Register(() =>
             {
-                await dashboardService.UpdateStatus(ApiSource.Youtube, "Stopping", cancellationToken);
-                logger.LogDebug($" YoutubeBackgroundService background task is stopping.");
+                logger.LogDebug($"YoutubeBackgroundService background task is stopping.");
             });
 
-            while (!cancellationToken.IsCancellationRequested)
+            using (var scope = serviceScopeFactory.CreateScope())
             {
-                try
+                youtubeService = scope.ServiceProvider.GetRequiredService<YoutubeService>();
+                chatService = scope.ServiceProvider.GetRequiredService<ChatService>();
+                dashboardService = scope.ServiceProvider.GetRequiredService<DashboardService>();
+
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (!await youtubeService.IsEnabled())
+                    try
                     {
-                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Disabled", cancellationToken);
-                        await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
-                        continue;
-                    }
-
-                    if (!youtubeService.IsConfigured())
-                    {
-                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Not Configured", cancellationToken);
-                        logger.LogError($"Youtube is not Configured");
-                        await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
-                        continue;
-                    }
-
-                    var token = await youtubeService.GetToken();
-                    if (token == null)
-                    {
-                        throw new UnauthorizedAccessException("Youtube token not found");
-                    }
-
-                    if (token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
-                    {
-                        await youtubeService.RefreshToken(token);
-                    }
-
-                    if (!youtubeService.IsValidToken(token))
-                    {
-                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Needs Authentication", cancellationToken);
-                        await Delay(cancellationToken);
-                        continue;
-                    }
-
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Running", cancellationToken);
-
-                        try
+                        if (!youtubeService.IsEnabled().Result)
                         {
-                            // get messages from youtube and publish them
+                            await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Disabled, cancellationToken);
+                            await Task.Delay(delay, cancellationToken);
+                            continue;
+                        }
+
+                        if (!youtubeService.IsConfigured())
+                        {
+                            await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.NotConfigured, cancellationToken);
+                            await Task.Delay(delay, cancellationToken);
+                            continue;
+                        }
+
+                        var token = await youtubeService.GetToken();
+                        if (token == null)
+                        {
+                            await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Forbidden, cancellationToken);
+                            await Task.Delay(delay, cancellationToken);
+                            continue;
+                        }
+
+                        if (token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
+                        {
+                            await youtubeService.RefreshToken(token);
+                        }
+
+                        if (!youtubeService.IsValidToken(token))
+                        {
+                            await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Forbidden, cancellationToken);
+                            await Task.Delay(delay, cancellationToken);
+                            continue;
+                        }
+
+                        while (!cancellationToken.IsCancellationRequested && youtubeService.IsEnabled().Result)
+                        {
                             if (string.IsNullOrEmpty(liveChatId))
                             {
-                                logger.LogDebug($"liveChatId is null");
                                 var liveBroadcast = await youtubeService.GetLiveBroadcast();
                                 if (liveBroadcast == null)
                                 {
-                                    logger.LogDebug("No live broadcasts found.");
-                                    await dashboardService.UpdateStatus(ApiSource.Youtube, "Live stream offline", cancellationToken);
-                                    await Delay(cancellationToken);
+                                    await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Offline, cancellationToken);
+                                    await Task.Delay(delay, cancellationToken);
                                     continue;
                                 }
 
                                 liveChatId = liveBroadcast.snippet.liveChatId;
                             }
 
-                            logger.LogDebug($"Getting liveChatMessages for {liveChatId}");
                             var liveChatMessages = await youtubeService.GetLiveChatMessages(liveChatId);
+                            await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Connected, cancellationToken);
                             if (liveChatMessages == null || !liveChatMessages.items.Any())
                             {
-                                await Task.Delay(TimeSpan.FromMilliseconds(delay), cancellationToken);
+                                await Task.Delay(TimeSpan.FromMilliseconds(pollingInterval), cancellationToken);
                                 continue;
                             }
 
@@ -120,30 +116,19 @@ namespace Rambler.Web.Services
                                 await chatService.CreateMessage(youtubeService.MapToChatMessage(item));
                             }
 
-                            logger.LogDebug($"Posted {liveChatMessages.items.Count()}.");
-                            delay = Math.Max(liveChatMessages.pollingIntervalMillis, DefaultDelay);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogDebug(ex.GetBaseException().ToString());
-                            logger.LogDebug($"{ex.GetBaseException().Message}");
-                            await dashboardService.UpdateStatus(ApiSource.Youtube, "Error", cancellationToken);
+                            pollingInterval = Math.Max(liveChatMessages.pollingIntervalMillis, minimumPollingInterval);
+                            await Task.Delay(pollingInterval, cancellationToken);
                         }
 
-                        logger.LogDebug($"Next poll in {delay}ms.");
-                        await dashboardService.UpdateStatus(ApiSource.Youtube, "Waiting", cancellationToken);
-                        await Delay(cancellationToken);
+                        await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Stopped, cancellationToken);
                     }
-
-                    await dashboardService.UpdateStatus(ApiSource.Youtube, "Stopped", cancellationToken);
-                    logger.LogDebug($"YoutubeBackgroundService background task is stopping.");
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
+                        await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Error, cancellationToken);
+                    }
+                    await Task.Delay(delay, cancellationToken);
                 }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
-                    await dashboardService.UpdateStatus(ApiSource.Youtube, "Error", cancellationToken);
-                }
-                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
             }
 
         }
