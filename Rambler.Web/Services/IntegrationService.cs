@@ -7,16 +7,33 @@ using Rambler.Web.Models;
 
 namespace Rambler.Web.Services
 {
+    public class IntegrationManager
+    {
+        public event EventHandler<IntegrationChangedEventArgs> IntegrationChanged;
+
+        public void IntegrationEvent(string name, bool isEnabled)
+        {
+            var handler = IntegrationChanged;
+            if (handler != null)
+            {
+                var args = new IntegrationChangedEventArgs(name, isEnabled);
+                handler(this, args);
+            }
+        }
+
+    }
+
+
     public class IntegrationService
     {
         private readonly DataContext db;
+        private readonly IntegrationManager integrationManager;
 
-        public IntegrationService(DataContext db)
+        public IntegrationService(DataContext db, IntegrationManager integrationManager)
         {
             this.db = db;
+            this.integrationManager = integrationManager;
         }
-
-        public event EventHandler<IntegrationChangedEventArgs> IntegrationChanged;
 
         public IQueryable<Integration> GetIntegrations()
         {
@@ -34,6 +51,8 @@ namespace Rambler.Web.Services
 
             db.Entry(record).CurrentValues.SetValues(integration);
             await db.SaveChangesAsync();
+
+            integrationManager.IntegrationEvent(integration.Name, integration.IsEnabled);
         }
 
         public async Task<bool> IsEnabled(string name)
@@ -47,19 +66,7 @@ namespace Rambler.Web.Services
                 return false;
             }
 
-
-
             return integration.IsEnabled;
-        }
-
-        public void IntegrationEvent(bool isEnabled)
-        {
-            var handler = IntegrationChanged;
-            if (handler != null)
-            {
-                var args = new IntegrationChangedEventArgs(isEnabled);
-                handler(this, args);
-            }
         }
 
     }

@@ -16,7 +16,7 @@ namespace Rambler.Web.Services
         private readonly IServiceScopeFactory serviceScopeFactory;
         private DashboardService dashboardService;
         private TwitchService twitchService;
-        private IntegrationService integrationService;
+        private readonly IntegrationManager integrationManager;
 
         private const int sendChunkSize = 510;
         private const int receiveChunkSize = 510; // RFC-2812
@@ -26,10 +26,11 @@ namespace Rambler.Web.Services
         private int delay;
 
         public TwitchBackgroundService(ILogger<TwitchBackgroundService> logger,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory, IntegrationManager integrationManager)
         {
             this.logger = logger;
             this.serviceScopeFactory = serviceScopeFactory;
+            this.integrationManager = integrationManager;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -45,7 +46,6 @@ namespace Rambler.Web.Services
             {
                 twitchService = scope.ServiceProvider.GetRequiredService<TwitchService>();
                 dashboardService = scope.ServiceProvider.GetRequiredService<DashboardService>();
-                integrationService = scope.ServiceProvider.GetRequiredService<IntegrationService>();
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -68,23 +68,26 @@ namespace Rambler.Web.Services
                         }
 
                         var webSocket = new ClientWebSocket();
-                        while (!cancellationToken.IsCancellationRequested && await twitchService.IsEnabled())
+                        if (webSocket.State != WebSocketState.Open)
                         {
-                            if (webSocket.State != WebSocketState.Open)
+                            await webSocket.ConnectAsync(new Uri("wss://irc-ws.chat.twitch.tv:443"), cancellationToken);
+
+                            var timeout = 0;
+                            while (webSocket.State == WebSocketState.Connecting && timeout < connectionTimeout &&
+                                   !cancellationToken.IsCancellationRequested)
                             {
-                                await webSocket.ConnectAsync(new Uri("wss://irc-ws.chat.twitch.tv:443"), cancellationToken);
-
-                                var timeout = 0;
-                                while (webSocket.State == WebSocketState.Connecting && timeout < connectionTimeout &&
-                                       !cancellationToken.IsCancellationRequested)
-                                {
-                                    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-                                    timeout++;
-                                }
-
-                                await TwitchHandshake(webSocket, cancellationToken);
+                                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                                timeout++;
                             }
 
+                            if (webSocket.State == WebSocketState.Open)
+                            {
+                                await TwitchHandshake(webSocket, cancellationToken);
+                            }
+                        }
+
+                        while (!cancellationToken.IsCancellationRequested && await twitchService.IsEnabled())
+                        {
                             await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Connected,
                                 cancellationToken);
                             await Send(webSocket, cancellationToken, "JOIN :#machacoder");
@@ -128,29 +131,27 @@ namespace Rambler.Web.Services
 
         private async Task Send(ClientWebSocket webSocket, CancellationToken cancellationToken, string message)
         {
+            if (webSocket.State != WebSocketState.Open)
+            {
+                throw new InvalidOperationException($"Twitch socket {webSocket.State.ToString()}");
+            }
+
             logger.LogDebug($"Twitch Chat > {message}");
             var encoder = new UTF8Encoding();
             var buffer = encoder.GetBytes(message);
-            if (webSocket.State == WebSocketState.Open)
-            {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
-                    cancellationToken);
-            }
-            else
-            {
-                throw new InvalidOperationException("Twitch socket Socket closed");
-            }
+            await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
+                cancellationToken);
         }
 
         private async Task<WebSocketReceiveResult> ReceiveAsync(ClientWebSocket webSocket, CancellationToken cancellationToken, byte[] buffer)
         {
-            var loopToken = new CancellationTokenSource();
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(loopToken.Token, cancellationToken);
+            //var loopToken = new CancellationTokenSource();
+            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             // TODO: Potential memory leak?
-            integrationService.IntegrationChanged += (s,e) =>
+            integrationManager.IntegrationChanged += (s, e) =>
             {
-                if (!e.IsEnabled)
+                if (e.Name == ApiSource.Twitch && !e.IsEnabled)
                 {
                     linkedToken.Cancel();
                 }
@@ -171,6 +172,11 @@ namespace Rambler.Web.Services
 
         private async Task Receive(ClientWebSocket webSocket, CancellationToken cancellationToken)
         {
+            if (webSocket.State != WebSocketState.Open)
+            {
+                throw new InvalidOperationException($"Twitch socket {webSocket.State.ToString()}");
+            }
+
             var encoder = new UTF8Encoding();
             var partial = string.Empty;
 

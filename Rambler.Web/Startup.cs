@@ -44,6 +44,7 @@ namespace Rambler.Web
 
             services.AddSingleton<IHostedService, YoutubeBackgroundService>();
             services.AddSingleton<IHostedService, TwitchBackgroundService>();
+            services.AddSingleton<IntegrationManager>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSignalR();
