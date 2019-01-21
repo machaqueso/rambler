@@ -28,8 +28,6 @@ namespace Rambler.Web.Services
             this.integrationService = integrationService;
         }
 
-        public event EventHandler<IntegrationChangedEventArgs> ToggleIntegrationChanged;
-
         public async Task<HttpResponseMessage> Get(string request)
         {
             return await Get(request, string.Empty);
