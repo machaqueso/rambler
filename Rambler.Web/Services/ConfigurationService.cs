@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -56,9 +58,9 @@ namespace Rambler.Web.Services
                    db.ConfigurationSettings.Any(x => x.Key == key && !string.IsNullOrEmpty(x.Value));
         }
 
-        public async Task<object> GetSettings()
+        public IEnumerable<ConfigurationSetting> GetSettings()
         {
-            var settings = await db.ConfigurationSettings.ToListAsync();
+            var settings = db.ConfigurationSettings.ToList();
 
             foreach (var setting in settings.Where(x => string.IsNullOrEmpty(x.Value)).ToList())
             {
@@ -66,6 +68,17 @@ namespace Rambler.Web.Services
             }
 
             return settings;
+        }
+
+        public async Task UpdateSetting(int id, ConfigurationSetting setting)
+        {
+            var entity = GetSettings().FirstOrDefault(x => x.Id == id);
+            if (entity == null)
+            {
+                throw new InvalidOperationException("Not found");
+            }
+            db.Entry(entity).CurrentValues.SetValues(setting);
+            await db.SaveChangesAsync();
         }
     }
 }

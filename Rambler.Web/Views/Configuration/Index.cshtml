@@ -2,14 +2,22 @@
     ViewData["Title"] = "Configuration";
 }
 
-<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
-<link rel="import" href="/components/paper-toast/paper-toast.html" />
-<link rel="import" href="/components/iron-ajax/iron-ajax.html" />
-<link rel="import" href="/components/paper-toggle-button/paper-toggle-button.html" />
-<link rel="import" href="/components/rambler-components/rambler-integrations.html" />
+<link rel="import" href="~/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="~/components/paper-toast/paper-toast.html" />
+<link rel="import" href="~/components/iron-ajax/iron-ajax.html" />
+<link rel="import" href="~/components/rambler-components/rambler-integrations.html" />
+<link rel="import" href="~/components/iron-icons/editor-icons.html" />
+<link rel="import" href="~/components/xenon-layout/xenon-dialog.html" />
 
 <dom-module id="page-module">
     <template>
+        <style is="custom-style">
+            paper-icon-button {
+                padding: 0;
+                width: 20px;
+                height: 20px;
+            }
+        </style>
         <iron-ajax id="ajax"
                    auto
                    url="/api/configuration"
@@ -19,13 +27,22 @@
                    debounce-duration="300">
         </iron-ajax>
 
+        <iron-ajax id="putSetting"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="PUT"
+                   on-response="_onUpdate"
+                   on-error="_onError"
+                   debounce-duration="300"></iron-ajax>
+
         <xenon-photo-card heading="Enable/Disable Integrations">
             <main>
                 <rambler-integrations></rambler-integrations>
             </main>
         </xenon-photo-card>
 
-        <xenon-photo-card heading="Settings">
+        <xenon-photo-card heading="Integration Setting">
             <main>
                 <table class="table table-bordered table-striped">
                     <thead>
@@ -33,7 +50,8 @@
                             <th>Id</th>
                             <th>Name</th>
                             <th>Key</th>
-                            <th>Status</th>
+                            <th>Configured?</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,12 +61,27 @@
                                 <td>{{item.name}}</td>
                                 <td>{{item.key}}</td>
                                 <td>{{item.status}}</td>
+                                <td><paper-icon-button icon="editor:mode-edit" on-click="_openEditor"></paper-icon-button></td>
                             </tr>
                         </template>
                     </tbody>
+
                 </table>
             </main>
         </xenon-photo-card>
+
+        <xenon-dialog id="dialog" heading="Edit Integration Setting">
+            <main>
+                <paper-input label="{{setting.name}}" type="password" value="{{setting.value}}"></paper-input>
+                <template is="dom-if" if="[[errorMessage]]">
+                    <div class="text-danger">[[errorMessage]]</div>
+                </template>
+            </main>
+            <buttons>
+                <paper-button on-click="_save">Save</paper-button>
+                <paper-button on-click="_cancel">Cancel</paper-button>
+            </buttons>
+        </xenon-dialog>
 
         <paper-toast id="toast"></paper-toast>
     </template>
@@ -56,9 +89,31 @@
         Polymer({
             is: "page-module",
             properties: {
+                setting: { type: Object, notify: true, value: {} },
+                errorMessage: { type: String, notify: true, value: "" }
             },
             observers: [
             ],
+            _openEditor: function (e) {
+                console.log(e.model.item);
+                this.set("setting", e.model.item);
+                this.$.dialog.open();
+            },
+            _save: function (e) {
+                this.$.putSetting.url = "/api/configuration/" + this.setting.id;
+                this.$.putSetting.body = JSON.stringify(this.setting);
+                this.$.putSetting.generateRequest();
+            },
+            _cancel: function () {
+                this.$.dialog.close();
+            },
+            _onUpdate: function () {
+                this.$.dialog.close();
+                this.$.ajax.generateRequest();
+            },
+            _onError: function (e) {
+                this.set("errorMessage", e.detail.request.xhr.response);
+            },
             ready: function () {
             }
         });

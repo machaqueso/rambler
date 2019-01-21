@@ -3,6 +3,7 @@
 <link rel="import" href="../paper-toast/paper-toast.html" />
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html" />
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
 
 <dom-module id="rambler-integrations">
     <template>
@@ -20,9 +21,10 @@
                    content-type="application/json"
                    loading="{{loading}}"
                    method="PUT"
+                   on-error="_onUpdateError"
                    debounce-duration="300"></iron-ajax>
 
-        <template is="dom-repeat" items="{{integrations}}">
+        <template is="dom-repeat" items="{{integrations}}" restamp>
             <div class="row">
                 <paper-toggle-button on-change="_toggle" checked="{{item.isEnabled}}">{{item.name}}</paper-toggle-button>
                 <div class="text-danger">[[item.error]]</div>
@@ -35,12 +37,24 @@
         Polymer({
             is: "rambler-integrations",
             properties: {
+                integrations: { Type: Array, notify: true, value: [] }
             },
             _toggle: function (e) {
-                console.log(e.model.item);
                 this.$.putIntegration.url = "/api/integration/" + e.model.item.id;
                 this.$.putIntegration.body = JSON.stringify(e.model.item);
                 this.$.putIntegration.generateRequest();
+            },
+            _onUpdateError: function (e) {
+                var item = JSON.parse(this.$.putIntegration.body);
+
+                for (var i = 0; i < this.integrations.length; i++) {
+                    if (this.integrations[i].id === item.id) {
+                        this.set("integrations." + i + ".isEnabled", false);
+                        this.set("integrations." + i + ".error", e.detail.request.xhr.response);
+                    }
+                }
+
+                console.log(this.integrations);
             },
             ready: function () {
             }

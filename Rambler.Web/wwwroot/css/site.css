@@ -1,33 +1,58 @@
 ﻿body {
-  margin: 0px;
-  font-family: "Roboto", Arial, Helvetica, sans-serif; }
+    margin: 0px;
+    font-family: "Roboto", Arial, Helvetica, sans-serif;
+}
 
 .primary {
-  background-color: #3e5b43;
-  color: white; }
+    background-color: #3e5b43;
+    color: white;
+}
 
 .chat {
-  color: #FAFAFA;
-  padding: 10px; }
-  .chat .row > * {
-    padding-right: 10px; }
-  .chat .author {
-    font-weight: bold;
-    color: #8A2BE2; }
-  .chat .message {
-    flex: 1 1 0;
-    overflow: visible; }
+    color: #FAFAFA;
+    padding: 10px;
+}
+
+    .chat .row > * {
+        padding-right: 10px;
+    }
+
+    .chat .author {
+        font-weight: bold;
+        color: #8A2BE2;
+    }
+
+    .chat .message {
+        flex: 1 1 0;
+        overflow: visible;
+    }
 
 .row > * {
-  padding-right: 10px; }
+    padding-right: 10px;
+}
 
 .row label {
-  font-weight: bold; }
+    font-weight: bold;
+}
 
 rambler-api-status {
-  font-size: 12px; }
-  rambler-api-status .table td {
-    padding: 0; }
-    rambler-api-status .table td paper-button {
-      margin: 0;
-      padding: 0; }
+    font-size: 12px;
+}
+
+    rambler-api-status .table td {
+        padding: 0;
+    }
+
+        rambler-api-status .table td paper-button {
+            margin: 0;
+            padding: 0;
+        }
+
+.rambler-integrations .text-danger {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.rambler-integrations .row .text-danger {
+    align-items: center;
+}

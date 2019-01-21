@@ -11,10 +11,14 @@ namespace Rambler.Web.Api
     public class IntegrationController : ControllerBase
     {
         private readonly IntegrationService integrationService;
+        private readonly YoutubeService youtubeService;
+        private readonly TwitchService twitchService;
 
-        public IntegrationController(IntegrationService integrationService)
+        public IntegrationController(IntegrationService integrationService, YoutubeService youtubeService, TwitchService twitchService)
         {
             this.integrationService = integrationService;
+            this.youtubeService = youtubeService;
+            this.twitchService = twitchService;
         }
 
         [Route("")]
@@ -27,6 +31,27 @@ namespace Rambler.Web.Api
         [HttpPut]
         public async Task<IActionResult> UpdateIntegration(int id, [FromBody] Integration integration)
         {
+            if (integration.IsEnabled)
+            {
+                switch (integration.Name)
+                {
+                    case "Youtube":
+                        if (!youtubeService.IsConfigured())
+                        {
+                            return UnprocessableEntity($"Please configure Youtube integration first.");
+                        }
+
+                        break;
+                    case "Twitch":
+                        if (!twitchService.IsConfigured())
+                        {
+                            return UnprocessableEntity($"Please configure Twitch integration first.");
+                        }
+
+                        break;
+                }
+            }
+
             await integrationService.UpdateIntegration(id, integration);
             return NoContent();
         }
