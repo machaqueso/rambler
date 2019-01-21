@@ -25,6 +25,7 @@ namespace Rambler.Web.Data
         public DbSet<AccessToken> AccessTokens { get; set; }
         public DbSet<ConfigurationSetting> ConfigurationSettings { get; set; }
         public DbSet<Integration> Integrations { get; set; }
+        public DbSet<Channel> Channels { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -68,6 +69,29 @@ namespace Rambler.Web.Data
                     Id = 2,
                     Name = "Twitch",
                     IsEnabled = false
+                }
+            );
+
+            builder.Entity<Channel>().HasData(
+                new Channel
+                {
+                    Id = 1,
+                    Name = "All"
+                },
+                new Channel
+                {
+                    Id = 2,
+                    Name = "Reader"
+                },
+                new Channel
+                {
+                    Id = 3,
+                    Name = "OBS"
+                },
+                new Channel
+                {
+                    Id = 4,
+                    Name = "TTS"
                 }
             );
         }

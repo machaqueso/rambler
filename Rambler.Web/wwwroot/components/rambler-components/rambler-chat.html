@@ -45,6 +45,7 @@
                 messages: { Type: Array, notify: true, value: [] },
                 connection: { Type: Object, value: {} },
                 showDate: { Type: Boolean, value: true },
+                channel: { Type: String, value: "All" }
             },
             _onMessageReceived: function (message) {
                 if (!message) return;
@@ -60,8 +61,10 @@
                 var that = this;
                 this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
-                this.connection.on("ReceiveMessage", function (message) {
-                    that._onMessageReceived(message);
+                this.connection.on("ReceiveChannelMessage", function (message) {
+                    if (message.channel == that.channel) {
+                        that._onMessageReceived(message.chatMessage);
+                    }
                 });
 
                 this.connection.start().catch(function (err) {

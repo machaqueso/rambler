@@ -41,6 +41,7 @@ namespace Rambler.Web
             services.AddScoped<TwitchService>();
             services.AddScoped<ConfigurationService>();
             services.AddScoped<IntegrationService>();
+            services.AddScoped<ChannelService>();
 
             services.AddSingleton<IHostedService, YoutubeBackgroundService>();
             services.AddSingleton<IHostedService, TwitchBackgroundService>();

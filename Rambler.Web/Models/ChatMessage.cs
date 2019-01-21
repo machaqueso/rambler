@@ -12,5 +12,8 @@ namespace Rambler.Web.Models
         public string Source { get; set; }
         public string SourceMessageId { get; set; }
         public string SourceAuthorId { get; set; }
+
+        [NotMapped] public string DisplayDate => DateTime.Now.DayOfYear != Date.ToLocalTime().DayOfYear ? Date.ToLocalTime().ToString("d") : "";
+        [NotMapped] public string DisplayTime => Date.ToLocalTime().ToString("t");
     }
 }
