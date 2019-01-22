@@ -1,0 +1,25 @@
+﻿@model ChatConfig
+
+@{
+    ViewData["Title"] = "Home Page";
+    Layout = "_Empty";
+}
+
+@section Styles{
+<style>
+        #container {
+            font-size: @Model.FontSize;
+            background-color: @Model.BackgroundColor;
+        }
+
+        #container .chat {
+            color: @Model.Color;
+        }
+</style>
+}
+
+<link rel="import" href="/components/rambler-components/rambler-chat.html" />
+
+<div id="container">
+    <rambler-chat show-date="false" channel="OBS"></rambler-chat>
+</div>

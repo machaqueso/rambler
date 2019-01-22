@@ -25,11 +25,11 @@
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
                 <div class="row">
-                    <template is="dom-if" if="[[showDate]]">
+                    <template is="dom-if" if="[[_showDate()]]">
                         <div>{{item.displayDate}} {{item.displayTime}}</div>
                     </template>
                     <template is="dom-if" if="[[item.source]]">
-                        <i class$="[[getIcon(item.source)]]" title="[[item.source]]"></i>
+                        <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
                     </template>
                     <div class="author">{{item.author}}</div>
                     <div class="message">{{item.message}}</div>
@@ -44,7 +44,7 @@
             properties: {
                 messages: { Type: Array, notify: true, value: [] },
                 connection: { Type: Object, value: {} },
-                showDate: { Type: Boolean, value: true },
+                showDate: { Type: Boolean, notify: true, value: true },
                 channel: { Type: String, value: "All" }
             },
             _onMessageReceived: function (message) {
@@ -54,8 +54,11 @@
                     this.shift("messages");
                 }
             },
-            getIcon: function (source) {
+            _getIcon: function (source) {
                 return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
+            },
+            _showDate: function () {
+                return this.showDate === true;
             },
             ready: function () {
                 var that = this;

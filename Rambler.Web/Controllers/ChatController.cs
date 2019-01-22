@@ -22,5 +22,22 @@ namespace Rambler.Web.Controllers
             return View();
         }
 
+        public IActionResult Chatbox(string fontSize = "inherit", string backgroundColor = "none", string color = "white")
+        {
+            var chatConfig = new ChatConfig
+            {
+                FontSize = fontSize,
+                BackgroundColor = backgroundColor,
+                Color = color
+            };
+
+            return View(chatConfig);
+        }
+
+        public IActionResult Reader()
+        {
+            return View();
+        }
+
     }
 }

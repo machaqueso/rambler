@@ -35,7 +35,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Views\Chat\Reader.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Chat\Index.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Chat\Chatbox.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Configuration\Index.cshtml">
