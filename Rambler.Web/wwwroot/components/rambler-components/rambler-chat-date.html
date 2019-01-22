@@ -8,9 +8,9 @@
         Polymer({
             is: "rambler-chat-date",
             properties: {
-                value: { Type: Date, notify: true, value: [] },
-                displayDate: { Type: String, notify: true },
-                format: { Type: String },
+                value: { type: Date, notify: true, value: [] },
+                displayDate: { type: String, notify: true },
+                format: { type: String },
             },
             observers: [
                 "_onDateChanged(value)"

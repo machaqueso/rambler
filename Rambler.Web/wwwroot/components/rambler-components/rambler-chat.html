@@ -1,21 +1,11 @@
 ﻿<script src="../../lib/signalr/dist/browser/signalr.js"></script>
 
 <link rel="import" href="../paper-toast/paper-toast.html" />
-<link rel="import" href="../xenon-date/xenon-date.html" />
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
-<link rel="import" href="rambler-chat-date.html" />
+<link rel="import" href="chat-message.html" />
 
 <dom-module id="rambler-chat">
     <template>
-        <style>
-            .youtube {
-                color: #ff0000;
-            }
-
-            .twitch {
-                color: #6441a4;
-            }
-        </style>
         <iron-ajax auto id="ajax"
                    url="/api/chat"
                    handle-as="json"
@@ -24,56 +14,48 @@
 
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
-                <div class="row">
-                    <template is="dom-if" if="[[_showDate()]]">
-                        <div>{{item.displayDate}} {{item.displayTime}}</div>
-                    </template>
-                    <template is="dom-if" if="[[item.source]]">
-                        <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
-                    </template>
-                    <div class="author">{{item.author}}</div>
-                    <div class="message">{{item.message}}</div>
-                </div>
+                <template is="dom-if" if="[[showDate]]">
+                    <chat-message item="{{item}}" show-date></chat-message>
+                </template>
+                <template is="dom-if" if="[[!showDate]]">
+                    <chat-message item="{{item}}"></chat-message>
+                </template>
             </template>
         </div>
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
-        Polymer({
-            is: "rambler-chat",
-            properties: {
-                messages: { Type: Array, notify: true, value: [] },
-                connection: { Type: Object, value: {} },
-                showDate: { Type: Boolean, notify: true, value: true },
-                channel: { Type: String, value: "All" }
-            },
-            _onMessageReceived: function (message) {
-                if (!message) return;
-                this.push("messages", message);
-                if (this.messages.length > 10) {
-                    this.shift("messages");
-                }
-            },
-            _getIcon: function (source) {
-                return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
-            },
-            _showDate: function () {
-                return this.showDate === true;
-            },
-            ready: function () {
-                var that = this;
-                this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
-
-                this.connection.on("ReceiveChannelMessage", function (message) {
-                    if (message.channel == that.channel) {
-                        that._onMessageReceived(message.chatMessage);
+        HTMLImports.whenReady(function () {
+            Polymer({
+                is: "rambler-chat",
+                properties: {
+                    messages: { type: Array, notify: true, value: [] },
+                    connection: { type: Object, value: {} },
+                    channel: { type: String, value: "All" },
+                    showDate: { type: Boolean, value: false }
+                },
+                _onMessageReceived: function (message) {
+                    if (!message) return;
+                    this.push("messages", message);
+                    if (this.messages.length > 10) {
+                        this.shift("messages");
                     }
-                });
+                },
+                ready: function () {
+                    var that = this;
+                    this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
-                this.connection.start().catch(function (err) {
-                    return console.error(err.toString());
-                });
-            }
+                    this.connection.on("ReceiveChannelMessage", function (message) {
+                        if (message.channel == that.channel) {
+                            that._onMessageReceived(message.chatMessage);
+                        }
+                    });
+
+                    this.connection.start().catch(function (err) {
+                        return console.error(err.toString());
+                    });
+                }
+            });
         });
     </script>
 </dom-module>

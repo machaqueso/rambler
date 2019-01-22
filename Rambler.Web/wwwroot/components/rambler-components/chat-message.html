@@ -1,0 +1,42 @@
+﻿
+<link rel="import" href="rambler-chat-date.html" />
+
+<dom-module id="chat-message">
+    <template>
+        <style>
+            .youtube {
+                color: #ff0000;
+            }
+
+            .twitch {
+                color: #6441a4;
+            }
+        </style>
+
+        <div class="row">
+            <template is="dom-if" if="[[showDate]]">
+                <div>{{item.displayDate}} {{item.displayTime}}</div>
+            </template>
+            <template is="dom-if" if="[[item.source]]">
+                <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
+            </template>
+            <div class="author">{{item.author}}</div>
+            <div class="message">{{item.message}}</div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "chat-message",
+            properties: {
+                item: { type: Object, value: {} },
+                showDate: { type: Boolean, value: false }
+            },
+            _getIcon: function (source) {
+                return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
+            },
+            ready: function () {
+            }
+        });
+    </script>
+</dom-module>

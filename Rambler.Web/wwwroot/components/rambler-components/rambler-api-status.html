@@ -32,8 +32,8 @@
         Polymer({
             is: "rambler-api-status",
             properties: {
-                items: { Type: Array, notify: true, value: [] },
-                connection: { Type: Object, value: {} }
+                items: { type: Array, notify: true, value: [] },
+                connection: { type: Object, value: {} }
             },
             _sendTest: function (e) {
                 console.log(e.model.item);

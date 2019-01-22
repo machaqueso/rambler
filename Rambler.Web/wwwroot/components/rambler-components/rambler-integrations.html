@@ -37,7 +37,7 @@
         Polymer({
             is: "rambler-integrations",
             properties: {
-                integrations: { Type: Array, notify: true, value: [] }
+                integrations: { type: Array, notify: true, value: [] }
             },
             _toggle: function (e) {
                 this.$.putIntegration.url = "/api/integration/" + e.model.item.id;
