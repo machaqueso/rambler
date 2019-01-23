@@ -13,16 +13,18 @@
             }
         </style>
 
-        <div class="row">
-            <template is="dom-if" if="[[showDate]]">
-                <div>{{item.displayDate}} {{item.displayTime}}</div>
-            </template>
-            <template is="dom-if" if="[[item.source]]">
-                <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
-            </template>
-            <div class="author">{{item.author}}</div>
-            <div class="message">{{item.message}}</div>
-        </div>
+        <template is="dom-if" if="[[!hideRow]]">
+            <div class="row">
+                <template is="dom-if" if="[[showDate]]">
+                    <div>{{item.displayDate}} {{item.displayTime}}</div>
+                </template>
+                <template is="dom-if" if="[[item.source]]">
+                    <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
+                </template>
+                <div class="author">{{item.author}}</div>
+                <div class="message">{{item.message}}</div>
+            </div>
+        </template>
 
     </template>
     <script>
@@ -30,12 +32,22 @@
             is: "chat-message",
             properties: {
                 item: { type: Object, value: {} },
-                showDate: { type: Boolean, value: false }
+                showDate: { type: Boolean, value: false },
+                hideRow: { type: Boolean, notify: true, value: false },
+                timeout: { type: Number, value: 30000 }
             },
             _getIcon: function (source) {
                 return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
             },
             ready: function () {
+                var that = this;
+
+                if (this.timeout > 0) {
+                    window.setTimeout(function () {
+                        console.log("timeout");
+                        that.set("hideRow", true)
+                    }, that.timeout);
+                }
             }
         });
     </script>

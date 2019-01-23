@@ -33,13 +33,16 @@
     </div>
     <xenon-photo-card heading="Chatbox">
         <actions>
-            <a href="@Url.Action("Popup", "Chat")" tabindex="-1" target="_blank">
-                <paper-button>Popup</paper-button>
+            <a href="@Url.Action("Reader", "Chat")" tabindex="-1" target="_blank">
+                <paper-button>Reader</paper-button>
+            </a>
+            <a href="@Url.Action("Chatbox", "Chat")" tabindex="-1" target="_blank">
+                <paper-button>OBS</paper-button>
             </a>
         </actions>
         <main>
             <div style="background-color: black;">
-                <rambler-chat show-date></rambler-chat>
+                <rambler-chat show-date timeout="0"></rambler-chat>
             </div>
         </main>
     </xenon-photo-card>
