@@ -1,4 +1,4 @@
-namespace Rambler.Web.Models.Youtube
+namespace Rambler.Models.Youtube
 {
     public class PageInfo
     {

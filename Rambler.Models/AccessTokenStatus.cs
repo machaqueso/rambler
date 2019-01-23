@@ -1,4 +1,4 @@
-namespace Rambler.Web.Models
+namespace Rambler.Models
 {
     public class AccessTokenStatus
     {

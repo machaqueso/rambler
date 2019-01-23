@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using Rambler.Web.Models;
+using Rambler.Models;
 using Rambler.Web.Services;
 
 namespace Rambler.Web.Hubs

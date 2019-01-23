@@ -35,6 +35,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rambler.Models\Rambler.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="Views\Chat\Reader.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

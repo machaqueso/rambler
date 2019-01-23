@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Rambler.Web.Models;
+using Rambler.Models;
 using Rambler.Web.Services;
 
 namespace Rambler.Web.Api

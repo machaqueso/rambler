@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Rambler.Web.Models
+namespace Rambler.Models
 {
     public class ChatMessage
     {

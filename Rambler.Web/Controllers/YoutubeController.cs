@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rambler.Web.Hubs;
-using Rambler.Web.Models;
+using Rambler.Models;
 using Rambler.Web.Services;
 
 namespace Rambler.Web.Controllers

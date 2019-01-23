@@ -6,9 +6,9 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Rambler.Web.Models;
-using Rambler.Web.Models.Youtube.LiveBroadcast;
-using Rambler.Web.Models.Youtube.LiveChat;
+using Rambler.Models;
+using Rambler.Models.Youtube.LiveBroadcast;
+using Rambler.Models.Youtube.LiveChat;
 
 namespace Rambler.Web.Services
 {

@@ -2,7 +2,7 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using Rambler.Web.Models;
+using Rambler.Models;
 
 namespace Rambler.Web.Data
 {

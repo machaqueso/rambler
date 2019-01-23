@@ -1,4 +1,4 @@
-namespace Rambler.Web.Models
+namespace Rambler.Models
 {
     /// <summary>
     /// Message sent to a "channel" through signalr

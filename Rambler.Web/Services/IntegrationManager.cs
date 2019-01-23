@@ -1,5 +1,5 @@
 ﻿using System;
-using Rambler.Web.Models;
+using Rambler.Models;
 
 namespace Rambler.Web.Services
 {

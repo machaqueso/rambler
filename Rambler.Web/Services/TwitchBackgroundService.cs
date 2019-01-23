@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Rambler.Web.Models;
+using Rambler.Models;
 
 namespace Rambler.Web.Services
 {

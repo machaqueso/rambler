@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rambler.Web.Models.Youtube.LiveChat
+namespace Rambler.Models.Youtube.LiveChat
 {
     public class LiveChatMessageList
     {

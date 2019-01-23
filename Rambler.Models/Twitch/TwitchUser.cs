@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rambler.Web.Models.Twitch
+namespace Rambler.Models.Twitch
 {
     public class TwitchUser
     {

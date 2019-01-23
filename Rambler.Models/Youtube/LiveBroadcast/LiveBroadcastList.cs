@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rambler.Web.Models.Youtube.LiveBroadcast
+namespace Rambler.Models.Youtube.LiveBroadcast
 {
     public class LiveBroadcastSnippet
     {

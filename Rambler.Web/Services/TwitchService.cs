@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Rambler.Web.Models;
+using Rambler.Models;
 
 namespace Rambler.Web.Services
 {

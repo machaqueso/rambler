@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Rambler.Web.Data;
 using Rambler.Web.Hubs;
-using Rambler.Web.Models;
+using Rambler.Models;
 
 namespace Rambler.Web.Services
 {

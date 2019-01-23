@@ -1,6 +1,6 @@
 using System;
 
-namespace Rambler.Web.Models
+namespace Rambler.Models
 {
     public class IntegrationChangedEventArgs : EventArgs
     {

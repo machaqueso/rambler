@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Rambler.Web.Models;
+using Rambler.Models;
 using Rambler.Web.Services;
 
 namespace Rambler.Web.Controllers
