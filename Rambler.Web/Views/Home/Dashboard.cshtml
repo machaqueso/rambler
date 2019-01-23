@@ -8,42 +8,67 @@
 <link rel="import" href="/components/rambler-components/rambler-api-status.html" />
 <link rel="import" href="/components/rambler-components/rambler-integrations.html" />
 
-<style>
-    .row > xenon-photo-card {
-        flex: 1 1 0;
-    }
-</style>
+<dom-module id="page-module">
+    <template>
 
-<div>
-    <div class="row">
-        <xenon-photo-card heading="Integrations">
-            <main>
-                <div>
-                    <rambler-integrations></rambler-integrations>
-                </div>
-            </main>
-        </xenon-photo-card>
-        <xenon-photo-card heading="API Status">
-            <main>
-                <div>
-                    <rambler-api-status></rambler-api-status>
-                </div>
-            </main>
-        </xenon-photo-card>
-    </div>
-    <xenon-photo-card heading="Chatbox">
-        <actions>
-            <a href="@Url.Action("Reader", "Chat")" tabindex="-1" target="_blank">
-                <paper-button>Reader</paper-button>
-            </a>
-            <a href="@Url.Action("Chatbox", "Chat")" tabindex="-1" target="_blank">
-                <paper-button>OBS</paper-button>
-            </a>
-        </actions>
-        <main>
-            <div style="background-color: black;">
-                <rambler-chat show-date timeout="0"></rambler-chat>
+        <style is="custom-style">
+            .row > xenon-photo-card {
+                flex: 1 1 0;
+            }
+
+            .xenon-photo-card actions a {
+                text-decoration: none;
+            }
+        </style>
+
+        <div>
+            <div class="row">
+                <xenon-photo-card heading="Integrations">
+                    <main>
+                        <div>
+                            <rambler-integrations></rambler-integrations>
+                        </div>
+                    </main>
+                </xenon-photo-card>
+                <xenon-photo-card heading="API Status">
+                    <main>
+                        <div>
+                            <rambler-api-status></rambler-api-status>
+                        </div>
+                    </main>
+                </xenon-photo-card>
             </div>
-        </main>
-    </xenon-photo-card>
-</div>
+            <xenon-photo-card heading="Chatbox">
+                <actions>
+                    <paper-button on-click="_openReader">Reader</paper-button>
+                    <a href="@Url.Action("Chatbox", "Chat")" tabindex="-1" target="_blank">
+                        <paper-button>OBS</paper-button>
+                    </a>
+                </actions>
+                <main>
+                    <div style="background-color: black;">
+                        <rambler-chat show-date timeout="0"></rambler-chat>
+                    </div>
+                </main>
+            </xenon-photo-card>
+        </div>
+
+
+    </template>
+    <script>
+        Polymer({
+            is: "page-module",
+            properties: {
+            },
+            observers: [
+            ],
+            _openReader: function() {
+                window.open("@Url.Action("Reader", "Chat")", "Rambler reader", "innerWidth=480,innerHeight=720,menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes");
+            },
+            ready: function () {
+            }
+        });
+    </script>
+</dom-module>
+
+<page-module></page-module>
