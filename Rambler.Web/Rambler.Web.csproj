@@ -22,7 +22,7 @@
     <PackageReference Include="Karambolo.Extensions.Logging.File" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.4" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.7" />
   </ItemGroup>
 
@@ -35,7 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rambler.Data\Rambler.Data.csproj" />
     <ProjectReference Include="..\Rambler.Models\Rambler.Models.csproj" />
+    <ProjectReference Include="..\Rambler.Services\Rambler.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Rambler.Models;
 
-namespace Rambler.Web.Data
+namespace Rambler.Data
 {
     public class DataContext : DbContext
     {

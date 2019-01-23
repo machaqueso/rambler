@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Rambler.Web.Data;
+using Rambler.Data;
 using Rambler.Models;
 
 namespace Rambler.Web.Services

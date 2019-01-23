@@ -7,21 +7,24 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rambler.Models;
+using Rambler.Services;
 using Rambler.Web.Services;
 
 namespace Rambler.Web.Controllers
 {
     public class TwitchController : Controller
     {
-        private readonly IConfiguration configuration;
         private readonly TwitchService twitchService;
         private readonly UserService userService;
+        private readonly TwitchManager twitchManager;
+        private readonly ConfigurationService configurationService;
 
-        public TwitchController(TwitchService twitchService, IConfiguration configuration, UserService userService)
+        public TwitchController(TwitchService twitchService, UserService userService, TwitchManager twitchManager, ConfigurationService configurationService)
         {
             this.twitchService = twitchService;
-            this.configuration = configuration;
             this.userService = userService;
+            this.twitchManager = twitchManager;
+            this.configurationService = configurationService;
         }
 
         public IActionResult Index()
@@ -36,9 +39,9 @@ namespace Rambler.Web.Controllers
                 return RedirectToAction("Twitch", "Configuration");
             }
 
-            var clientId = configuration["Authentication:Twitch:ClientId"];
+            var clientId = configurationService.GetValue("Authentication:Twitch:ClientId").Result;
             var redirectUrl = Url.Action("Callback", "Twitch", null, Request.Scheme, null).ToLower();
-            var oauthRequest = $"https://id.twitch.tv/oauth2/authorize?client_id={clientId}&redirect_uri={redirectUrl}&response_type=code&scope=chat:read";
+            var oauthRequest = $"https://id.twitch.tv/oauth2/authorize?client_id={clientId}&redirect_uri={redirectUrl}&response_type=code&scope=chat:read+user_read";
 
             return Redirect(oauthRequest);
         }
@@ -48,8 +51,8 @@ namespace Rambler.Web.Controllers
             var data = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("client_id", configuration["Authentication:Twitch:ClientId"]),
-                new KeyValuePair<string, string>("client_secret", configuration["Authentication:Twitch:ClientSecret"]),
+                new KeyValuePair<string, string>("client_id", configurationService.GetValue("Authentication:Twitch:ClientId").Result),
+                new KeyValuePair<string, string>("client_secret", configurationService.GetValue("Authentication:Twitch:ClientSecret").Result),
                 new KeyValuePair<string, string>("redirect_uri", Url.Action("Callback", "Twitch", null, Request.Scheme, null).ToLower()),
                 new KeyValuePair<string, string>("grant_type", "authorization_code")
             };
@@ -74,5 +77,14 @@ namespace Rambler.Web.Controllers
 
             return RedirectToAction("Index");
         }
+
+
+        public async Task<IActionResult> User()
+        {
+            var user = await twitchManager.GetUser();
+
+            return View(user);
+        }
+
     }
 }

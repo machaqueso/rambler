@@ -1,0 +1,29 @@
+﻿@model Rambler.Models.Twitch.TwitchUser
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>Twitch User</h2>
+
+<div class="row">
+    <label>Id</label>
+    <div>@Model._id</div>
+</div>
+<div class="row">
+    <label>Name</label>
+    <div>@Model.name</div>
+</div>
+<div class="row">
+    <label>Display Name</label>
+    <div>@Model.display_name</div>
+</div>
+<div class="row">
+    <label>Type</label>
+    <div>@Model.type</div>
+</div>
+<div class="row">
+    <label>Bio</label>
+    <div>@Model.bio</div>
+</div>

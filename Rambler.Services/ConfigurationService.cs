@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Rambler.Web.Data;
+using Rambler.Data;
 using Rambler.Models;
 
-namespace Rambler.Web.Services
+namespace Rambler.Services
 {
     public class ConfigurationService
     {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Rambler.Web.Data;
+using Rambler.Data;
 using Rambler.Models;
 
 // Details on how to complete this at:

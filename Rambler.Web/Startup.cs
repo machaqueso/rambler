@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Rambler.Web.Data;
+using Rambler.Data;
+using Rambler.Services;
 using Rambler.Web.Hubs;
 using Rambler.Web.Services;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
@@ -42,6 +43,9 @@ namespace Rambler.Web
             services.AddScoped<ConfigurationService>();
             services.AddScoped<IntegrationService>();
             services.AddScoped<ChannelService>();
+
+            services.AddScoped<TwitchAPIv5>();
+            services.AddScoped<TwitchManager>();
 
             services.AddSingleton<IHostedService, YoutubeBackgroundService>();
             services.AddSingleton<IHostedService, TwitchBackgroundService>();
