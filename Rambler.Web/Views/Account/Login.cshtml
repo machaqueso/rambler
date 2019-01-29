@@ -1,0 +1,63 @@
+﻿
+@{
+    ViewBag.Title = "Rambler Login";
+    Layout = "_Login";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/iron-form/iron-form.html" />
+<link rel="import" href="/components/paper-input/paper-input.html" />
+<link rel="import" href="/components/paper-button/paper-button.html" />
+
+<dom-module id="page-module">
+    <template>
+
+        <iron-ajax id="ajax"
+                   url="/api/account/login"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="POST"
+                   on-response="_onLogin"
+                   on-error="_onLoginError"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <main>
+                <form id="form" is="iron-form">
+                    <paper-input label="Username" value="{{user.userName}}"></paper-input>
+                    <paper-input label="Password" type="password" value="{{user.password}}"></paper-input>
+                    <paper-button on-click="_login">Login</paper-button>
+                </form>
+            </main>
+        </xenon-photo-card>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: "page-module",
+            properties: {
+                user: { Type: Object, notify: true, value: {} }
+            },
+            observers: [
+            ],
+            _login: function () {
+                console.log(this.user);
+                this.$.ajax.body = JSON.stringify(this.user);
+                this.$.ajax.generateRequest();
+            },
+            _onLogin: function () {
+                window.location.href = "/";
+            },
+            _onLoginError: function (e) {
+                this.$.toast.text = e.detail.error;
+                this.$.toast.open();
+            },
+            ready: function () {
+            }
+        });
+    </script>
+</dom-module>
+
+<page-module></page-module>

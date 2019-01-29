@@ -2,21 +2,23 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rambler.Data;
 
 namespace Rambler.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20190205005417_AddedLastLoginFields")]
+    partial class AddedLastLoginFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
 
-            modelBuilder.Entity("Rambler.Web.Models.AccessToken", b =>
+            modelBuilder.Entity("Rambler.Models.AccessToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -42,7 +44,7 @@ namespace Rambler.Web.Migrations
                     b.ToTable("AccessTokens");
                 });
 
-            modelBuilder.Entity("Rambler.Web.Models.Channel", b =>
+            modelBuilder.Entity("Rambler.Models.Channel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -67,7 +69,7 @@ namespace Rambler.Web.Migrations
                     );
                 });
 
-            modelBuilder.Entity("Rambler.Web.Models.ChatMessage", b =>
+            modelBuilder.Entity("Rambler.Models.ChatMessage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -89,7 +91,7 @@ namespace Rambler.Web.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("Rambler.Web.Models.ConfigurationSetting", b =>
+            modelBuilder.Entity("Rambler.Models.ConfigurationSetting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -114,7 +116,7 @@ namespace Rambler.Web.Migrations
                     );
                 });
 
-            modelBuilder.Entity("Rambler.Web.Models.Integration", b =>
+            modelBuilder.Entity("Rambler.Models.Integration", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -133,19 +135,37 @@ namespace Rambler.Web.Migrations
                     );
                 });
 
-            modelBuilder.Entity("Rambler.Web.Models.User", b =>
+            modelBuilder.Entity("Rambler.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("Email");
+
+                    b.Property<int>("FailedLogins");
+
+                    b.Property<bool>("IsLocked");
+
+                    b.Property<DateTime?>("LastLoginDate");
+
+                    b.Property<bool>("MustChangePassword");
+
+                    b.Property<string>("PasswordHash");
+
+                    b.Property<string>("UserName");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new { Id = 1, FailedLogins = 0, IsLocked = false, MustChangePassword = true, UserName = "Admin" }
+                    );
                 });
 
-            modelBuilder.Entity("Rambler.Web.Models.AccessToken", b =>
+            modelBuilder.Entity("Rambler.Models.AccessToken", b =>
                 {
-                    b.HasOne("Rambler.Web.Models.User", "User")
+                    b.HasOne("Rambler.Models.User", "User")
                         .WithMany("AccessTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);

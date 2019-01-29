@@ -94,6 +94,15 @@ namespace Rambler.Data
                     Name = "TTS"
                 }
             );
+
+            builder.Entity<User>().HasData(
+                new User()
+                {
+                    Id = 1,
+                    UserName = "Admin",
+                    MustChangePassword = true
+                }
+            );
         }
 
     }
