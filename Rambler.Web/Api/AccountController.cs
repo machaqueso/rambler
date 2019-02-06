@@ -64,6 +64,7 @@ namespace Rambler.Web.Api
                 && foundUser.MustChangePassword)
             {
                 await SignIn(user);
+                return Ok();
             }
 
             // From this point, password is required
