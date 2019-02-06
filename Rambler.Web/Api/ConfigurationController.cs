@@ -8,6 +8,7 @@ namespace Rambler.Web.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Area("api")]
     public class ConfigurationController : ControllerBase
     {
         private readonly ConfigurationService configurationService;

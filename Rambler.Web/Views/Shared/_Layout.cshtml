@@ -33,12 +33,13 @@
     <xenon-layout heading="Rambler: @ViewData["Title"]">
         <header>
             <xenon-search></xenon-search>
+            <div>@ViewData["username"]</div>
         </header>
         <nav>
             <nav-item icon="home" href="/">Home</nav-item>
             <nav-item icon="communication:chat" href="@Url.Action("Index", "Chat")">Chat</nav-item>
             <nav-item icon="social:people" href="@Url.Action("Index", "User")">Users</nav-item>
-            <hr />
+            <hr/>
             <nav-item href="@Url.Action("Index", "Youtube")"><i class="fab fa-youtube fa-2x"></i> Youtube</nav-item>
             <nav-item href="@Url.Action("Index", "Twitch")"><i class="fab fa-twitch fa-2x"></i> Twitch</nav-item>
             <nav-item icon="settings" href="/Configuration">Settings</nav-item>

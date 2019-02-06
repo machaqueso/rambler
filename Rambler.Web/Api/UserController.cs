@@ -7,6 +7,7 @@ namespace Rambler.Web.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Area("api")]
     public class UserController : ControllerBase
     {
         private readonly UserService userService;

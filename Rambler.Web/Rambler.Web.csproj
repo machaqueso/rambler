@@ -41,6 +41,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Views\Account\SetPassword.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Account\Login.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

@@ -1,26 +1,22 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 using Rambler.Data;
 using Rambler.Models;
+using Rambler.Models.Exceptions;
 
 namespace Rambler.Services
 {
     public class AccountService
     {
         private readonly DataContext db;
+        private readonly PasswordService passwordService;
 
-        private const int IterationCount = 10000;
-        private readonly RandomNumberGenerator rng;
-
-        public AccountService(DataContext db)
+        public AccountService(DataContext db, PasswordService passwordService)
         {
             this.db = db;
-
-            rng = new RNGCryptoServiceProvider();
+            this.passwordService = passwordService;
         }
 
         public IQueryable<User> GetUsers()
@@ -55,7 +51,7 @@ namespace Rambler.Services
                 throw new InvalidOperationException("Passwords do not match");
             }
 
-            user.PasswordHash = Convert.ToBase64String(HashPasswordV3(user.Password, rng));
+            user.PasswordHash = Convert.ToBase64String(passwordService.HashPasswordV3(user.Password));
 
             db.Users.Add(user);
             await db.SaveChangesAsync();
@@ -73,83 +69,66 @@ namespace Rambler.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task ChangePassword(int id, User user)
+        public async Task ChangePassword(User user)
         {
-            var entity = await GetUser(id);
+            if (string.IsNullOrEmpty(user.OldPassword))
+            {
+                throw new InvalidOperationException("Old password cannot be null");
+            }
+
+            if (!VerifyPassword(user, user.OldPassword))
+            {
+                throw new InvalidOperationException("Old password is wrong");
+            }
+
+            await SetPassword(user);
+        }
+
+        public async Task SetPassword(User user)
+        {
+            var entity = await GetUser(user.Id);
             if (entity == null)
             {
-                throw new InvalidOperationException($"User id '{id}' not found.");
+                throw new UnprocessableEntityException($"User id '{user.Id}' not found.");
             }
 
             if (string.IsNullOrEmpty(user.Password))
             {
-                throw new InvalidOperationException("Password cannot be null");
+                throw new UnprocessableEntityException("Password cannot be null");
             }
 
             if (string.IsNullOrEmpty(user.ConfirmPassword))
             {
-                throw new InvalidOperationException("Confirm password cannot be null");
+                throw new UnprocessableEntityException("Confirm password cannot be null");
             }
 
             if (user.Password != user.ConfirmPassword)
             {
-                throw new InvalidOperationException("Passwords do not match");
+                throw new UnprocessableEntityException("Passwords do not match");
             }
 
-            entity.PasswordHash = Convert.ToBase64String(HashPasswordV3(user.Password, rng));
+            entity.PasswordHash = Convert.ToBase64String(passwordService.HashPasswordV3(user.Password));
+            entity.MustChangePassword = false;
             await db.SaveChangesAsync();
         }
 
         public async Task<User> FindByUsername(string username)
         {
-            return await GetUsers().FirstOrDefaultAsync(x => string.Equals(x.UserName, username, StringComparison.CurrentCultureIgnoreCase)
-                                                             || string.Equals(x.Email, username, StringComparison.CurrentCultureIgnoreCase));
+            return await GetUsers().FirstOrDefaultAsync(x =>
+                string.Equals(x.UserName, username, StringComparison.CurrentCultureIgnoreCase)
+                || string.Equals(x.Email, username, StringComparison.CurrentCultureIgnoreCase));
         }
 
         public bool VerifyPassword(User user, string password)
         {
-            var passwordHash = Convert.ToBase64String(HashPasswordV3(password, rng));
-            return user.PasswordHash == passwordHash;
-        }
-
-        // stolen from Microsoft's identity: https://github.com/aspnet/Identity/blob/master/src/Core/PasswordHasher.cs
-        private byte[] HashPasswordV3(string password, RandomNumberGenerator rng)
-        {
-            return HashPasswordV3(password, rng,
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterCount: IterationCount,
-                saltSize: 128 / 8,
-                numBytesRequested: 256 / 8);
-        }
-
-        private static byte[] HashPasswordV3(string password, RandomNumberGenerator rng, KeyDerivationPrf prf, int iterCount, int saltSize, int numBytesRequested)
-        {
-            // Produce a version 3 (see comment above) text hash.
-            byte[] salt = new byte[saltSize];
-            rng.GetBytes(salt);
-            byte[] subkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, numBytesRequested);
-
-            var outputBytes = new byte[13 + salt.Length + subkey.Length];
-            outputBytes[0] = 0x01; // format marker
-            WriteNetworkByteOrder(outputBytes, 1, (uint)prf);
-            WriteNetworkByteOrder(outputBytes, 5, (uint)iterCount);
-            WriteNetworkByteOrder(outputBytes, 9, (uint)saltSize);
-            Buffer.BlockCopy(salt, 0, outputBytes, 13, salt.Length);
-            Buffer.BlockCopy(subkey, 0, outputBytes, 13 + saltSize, subkey.Length);
-            return outputBytes;
-        }
-
-        private static void WriteNetworkByteOrder(byte[] buffer, int offset, uint value)
-        {
-            buffer[offset + 0] = (byte)(value >> 24);
-            buffer[offset + 1] = (byte)(value >> 16);
-            buffer[offset + 2] = (byte)(value >> 8);
-            buffer[offset + 3] = (byte)(value >> 0);
+            byte[] decodedHashedPassword = Convert.FromBase64String(user.PasswordHash);
+            return passwordService.VerifyHashedPasswordV3(decodedHashedPassword, password, out int count);
         }
 
         public void Logout()
         {
             throw new NotImplementedException();
         }
+
     }
 }

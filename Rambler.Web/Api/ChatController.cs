@@ -9,6 +9,7 @@ namespace Rambler.Web.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Area("api")]
     public class ChatController : ControllerBase
     {
         private readonly ChatService chatService;

@@ -48,6 +48,7 @@ namespace Rambler.Web
             services.AddScoped<IntegrationService>();
             services.AddScoped<ChannelService>();
             services.AddScoped<AccountService>();
+            services.AddScoped<PasswordService>();
 
             services.AddScoped<TwitchAPIv5>();
             services.AddScoped<TwitchManager>();

@@ -9,8 +9,10 @@
 <xenon-photo-card heading="@ViewData["Title"]">
     <main>
         <p>You have been logged out.</p>
-        <a href="@Url.Action("Login", "Account")" tabindex="-1" target="_blank">
-            <paper-button>Login</paper-button>
-        </a>
     </main>
+    <buttons>
+        <a href="~/account/login" tabindex="-1">
+            <paper-button class="btn btn-primary">Login</paper-button>
+        </a>
+    </buttons>
 </xenon-photo-card>
