@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using Rambler.Web.Hubs;
 using Rambler.Models;
 using Rambler.Services;
+using Rambler.Web.Hubs;
 using Rambler.Web.Services;
 
 namespace Rambler.Web.Controllers
@@ -38,13 +40,16 @@ namespace Rambler.Web.Controllers
             return View(token);
         }
 
-        public async Task<IActionResult> Callback(string code)
+        [AllowAnonymous]
+        public async Task<IActionResult> Callback(string code, string state)
         {
             var data = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("client_id", await configurationService.GetValue("Authentication:Google:ClientId")),
-                new KeyValuePair<string, string>("client_secret", await configurationService.GetValue("Authentication:Google:ClientSecret")),
+                new KeyValuePair<string, string>("client_id",
+                    await configurationService.GetValue("Authentication:Google:ClientId")),
+                new KeyValuePair<string, string>("client_secret",
+                    await configurationService.GetValue("Authentication:Google:ClientSecret")),
                 new KeyValuePair<string, string>("redirect_uri",
                     Url.Action("Callback", "Youtube", null, Request.Scheme, null)),
                 new KeyValuePair<string, string>("grant_type", "authorization_code")
@@ -58,15 +63,33 @@ namespace Rambler.Web.Controllers
             }
 
             var token = JsonConvert.DeserializeObject<AccessToken>(content);
+            if (token == null)
+            {
+                throw new InvalidOperationException("Unable to deserialize OAuth token.");
+            }
 
-            var user = await userService.GetUsers().FirstOrDefaultAsync();
+            var username = await youtubeService.GetChannelTitle(token);
+            if (string.IsNullOrEmpty(username))
+            {
+                throw new InvalidOperationException("Youtube channel title not found.");
+            }
+
+            var user = await userService.GetUsers().FirstOrDefaultAsync(x => x.UserName == username);
             if (user == null)
             {
-                user = new User();
+                user = new User
+                {
+                    UserName = username
+                };
                 await userService.Create(user);
             }
 
             await userService.AddToken(user.Id, ApiSource.Youtube, token);
+
+            if (state == "login")
+            {
+                return RedirectToAction("tokenlogin", "Account", new { accessToken = token.access_token });
+            }
 
             return RedirectToAction("Index");
         }
@@ -80,8 +103,12 @@ namespace Rambler.Web.Controllers
 
             var clientId = await configurationService.GetValue("Authentication:Google:ClientId");
             var redirectUrl = WebUtility.UrlEncode(Url.Action("Callback", "Youtube", null, Request.Scheme, null));
-            var oauthRequest =
-                $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUrl}&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline";
+            var oauthRequest = $"https://accounts.google.com/o/oauth2/auth?" +
+                               $"client_id={clientId}" +
+                               $"&redirect_uri={redirectUrl}" +
+                               $"&scope=https://www.googleapis.com/auth/youtube.readonly" +
+                               $"&response_type=code" +
+                               $"&access_type=offline";
 
             return Redirect(oauthRequest);
         }
@@ -125,6 +152,27 @@ namespace Rambler.Web.Controllers
             }
 
             return View("Messages", liveChatMessageList);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> Login()
+        {
+            if (!youtubeService.IsConfigured())
+            {
+                throw new ApplicationException("Youtube API is not configured");
+            }
+
+            var clientId = await configurationService.GetValue("Authentication:Google:ClientId");
+            var redirectUrl = WebUtility.UrlEncode(Url.Action("Callback", "Youtube", null, Request.Scheme, null));
+            var oauthRequest = "https://accounts.google.com/o/oauth2/auth?" +
+                               $"client_id={clientId}" +
+                               $"&redirect_uri={redirectUrl}" +
+                               "&scope=https://www.googleapis.com/auth/youtube.readonly" +
+                               "&response_type=code" +
+                               "&access_type=offline" +
+                               "&state=login";
+
+            return Redirect(oauthRequest);
         }
     }
 }

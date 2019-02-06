@@ -8,5 +8,10 @@ namespace Rambler.Web.Controllers
         {
             return View();
         }
+
+        public IActionResult Token()
+        {
+            return View();
+        }
     }
 }

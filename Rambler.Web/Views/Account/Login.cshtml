@@ -22,6 +22,15 @@
                    on-response="_onLogin"
                    on-error="_onLoginError"
                    debounce-duration="300"></iron-ajax>
+        
+        <iron-ajax id="getIntegration"
+                   auto
+                   url="/api/integration"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{integrations}}"
+                   debounce-duration="300">
+        </iron-ajax>
 
         <xenon-photo-card heading="@ViewData["Title"]">
             <main>
@@ -33,6 +42,9 @@
             </main>
             <buttons>
                 <paper-button class="btn btn-primary" on-click="_login">Login</paper-button>
+                <template is="dom-repeat" items="{{integrations}}" restamp>
+                    <paper-button class="btn" on-click="_integrationLogin" hidden$="[[!item.isEnabled]]">Login with [[item.name]]</paper-button>
+                </template>
             </buttons>
         </xenon-photo-card>
         <paper-toast id="toast"></paper-toast>
@@ -55,6 +67,9 @@
             },
             _onLogin: function () {
                 window.location.href = "/account/loggedin?returnUrl=@ViewData["returnUrl"]";
+            },
+            _integrationLogin: function(e) {
+                window.location.href = "/" + e.model.item.name + "/login";
             },
             _onLoginError: function (e) {
                 var message = e.detail.error;

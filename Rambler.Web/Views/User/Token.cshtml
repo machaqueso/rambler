@@ -1,6 +1,6 @@
 ﻿
 @{
-    ViewData["Title"] = "User List";
+    ViewData["Title"] = "User oAuth tokens";
 }
 
 <link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
@@ -11,7 +11,7 @@
     <template>
         <iron-ajax id="ajax"
                    auto
-                   url="/api/user"
+                   url="/api/user/token"
                    handle-as="json"
                    loading="{{loading}}"
                    last-response="{{tokens}}"
@@ -20,30 +20,30 @@
         <xenon-photo-card heading="@ViewData["Title"]">
             <main>
                 <div class="row">
-                    <a href="@Url.Action("Token")" tabindex="-1">
-                        <paper-button>User Tokens</paper-button>
+                    <a href="@Url.Action("Index")" tabindex="-1">
+                        <paper-button>Users</paper-button>
                     </a>
                 </div>
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
-                            <th>Id</th>
                             <th>Username</th>
-                            <th>Email</th>
-                            <th>Last Login</th>
-                            <th>Locked?</th>
-                            <th></th>
+                            <th>Source</th>
+                            <th>Type</th>
+                            <th>Expiration Date</th>
+                            <th>Status</th>
+                            <th>Refresh Token?</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template is="dom-repeat" items="{{tokens}}">
                             <tr>
-                                <td>{{item.id}}</td>
-                                <td>{{item.userName}}</td>
-                                <td>{{item.email}}</td>
-                                <td>{{item.lastLoginDate}}</td>
-                                <td>{{item.isLocked}}</td>
-                                <td></td>
+                                <td>{{item.user.userName}}</td>
+                                <td>{{item.apiSource}}</td>
+                                <td>{{item.token_type}}</td>
+                                <td>{{item.expirationDate}}</td>
+                                <td>{{item.status}}</td>
+                                <td>{{item.hasRefreshToken}}</td>
                             </tr>
                         </template>
                     </tbody>
@@ -53,8 +53,6 @@
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
-    addEventListener('WebComponentsReady', function() {
-
         Polymer({
             is: "page-module",
             properties: {
@@ -64,7 +62,6 @@
             ready: function () {
             }
         });
-        })
     </script>
 </dom-module>
 

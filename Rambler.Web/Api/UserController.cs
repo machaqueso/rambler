@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Rambler.Web.Services;
 
 namespace Rambler.Web.Api
@@ -35,7 +36,16 @@ namespace Rambler.Web.Api
                 tokens = tokens.Where(x => x.ApiSource == apiSource);
             }
 
-            return Ok(tokens);
+            return Ok(tokens.Select(x=>new
+            {
+                x.Id,
+                x.ApiSource,
+                x.token_type,
+                x.ExpirationDate,
+                x.Status,
+                x.HasRefreshToken,
+                x.User
+            }));
         }
     }
 }

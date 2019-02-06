@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rambler.Models;
 using Rambler.Services;
@@ -19,7 +19,8 @@ namespace Rambler.Web.Controllers
         private readonly TwitchManager twitchManager;
         private readonly ConfigurationService configurationService;
 
-        public TwitchController(TwitchService twitchService, UserService userService, TwitchManager twitchManager, ConfigurationService configurationService)
+        public TwitchController(TwitchService twitchService, UserService userService, TwitchManager twitchManager,
+            ConfigurationService configurationService)
         {
             this.twitchService = twitchService;
             this.userService = userService;
@@ -41,19 +42,24 @@ namespace Rambler.Web.Controllers
 
             var clientId = configurationService.GetValue("Authentication:Twitch:ClientId").Result;
             var redirectUrl = Url.Action("Callback", "Twitch", null, Request.Scheme, null).ToLower();
-            var oauthRequest = $"https://id.twitch.tv/oauth2/authorize?client_id={clientId}&redirect_uri={redirectUrl}&response_type=code&scope=chat:read+user_read";
+            var oauthRequest =
+                $"https://id.twitch.tv/oauth2/authorize?client_id={clientId}&redirect_uri={redirectUrl}&response_type=code&scope=chat:read+user_read";
 
             return Redirect(oauthRequest);
         }
 
-        public async Task<IActionResult> Callback(string code)
+        [AllowAnonymous]
+        public async Task<IActionResult> Callback(string code, string state)
         {
             var data = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("client_id", configurationService.GetValue("Authentication:Twitch:ClientId").Result),
-                new KeyValuePair<string, string>("client_secret", configurationService.GetValue("Authentication:Twitch:ClientSecret").Result),
-                new KeyValuePair<string, string>("redirect_uri", Url.Action("Callback", "Twitch", null, Request.Scheme, null).ToLower()),
+                new KeyValuePair<string, string>("client_id",
+                    configurationService.GetValue("Authentication:Twitch:ClientId").Result),
+                new KeyValuePair<string, string>("client_secret",
+                    configurationService.GetValue("Authentication:Twitch:ClientSecret").Result),
+                new KeyValuePair<string, string>("redirect_uri",
+                    Url.Action("Callback", "Twitch", null, Request.Scheme, null).ToLower()),
                 new KeyValuePair<string, string>("grant_type", "authorization_code")
             };
 
@@ -65,26 +71,68 @@ namespace Rambler.Web.Controllers
             }
 
             var token = JsonConvert.DeserializeObject<AccessToken>(content);
+            if (token == null)
+            {
+                throw new InvalidOperationException("Unable to deserialize authentication token");
+            }
 
-            var user = await userService.GetUsers().FirstOrDefaultAsync();
+            var twitchUser = await twitchManager.GetUser(token);
+            var username = twitchUser.name;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                throw new InvalidOperationException("Twitch channel title not found.");
+            }
+
+            var user = await userService.GetUsers().SingleOrDefaultAsync(x => x.UserName == username);
             if (user == null)
             {
-                user = new User();
+                user = new User
+                {
+                    UserName = username
+                };
                 await userService.Create(user);
             }
 
             await userService.AddToken(user.Id, ApiSource.Twitch, token);
 
+            if (state == HttpContext.Session.GetString("state"))
+            {
+                return RedirectToAction("tokenlogin", "Account", new { accessToken = token.access_token });
+            }
+
             return RedirectToAction("Index");
         }
 
 
-        public async Task<IActionResult> User()
+        public async Task<IActionResult> TwitchUser()
         {
-            var user = await twitchManager.GetUser();
+            var token = await twitchService.GetToken();
+            var user = await twitchManager.GetUser(token);
 
             return View(user);
         }
 
+        [AllowAnonymous]
+        public async Task<IActionResult> Login()
+        {
+            if (!twitchService.IsConfigured())
+            {
+                throw new ApplicationException("Twitch API is not configured");
+            }
+
+            var state = Guid.NewGuid().ToString();
+            HttpContext.Session.SetString("state", state);
+
+            var clientId = configurationService.GetValue("Authentication:Twitch:ClientId").Result;
+            var redirectUrl = Url.Action("Callback", "Twitch", null, Request.Scheme, null).ToLower();
+            var oauthRequest = $"https://id.twitch.tv/oauth2/authorize?client_id={clientId}" +
+                               $"&redirect_uri={redirectUrl}" +
+                               $"&response_type=code" +
+                               $"&scope=chat:read+user_read" +
+                               $"&state={state}";
+
+            return Redirect(oauthRequest);
+        }
     }
 }
