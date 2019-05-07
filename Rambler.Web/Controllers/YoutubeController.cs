@@ -10,24 +10,25 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rambler.Web.Hubs;
 using Rambler.Models;
+using Rambler.Services;
 using Rambler.Web.Services;
 
 namespace Rambler.Web.Controllers
 {
     public class YoutubeController : Controller
     {
-        public IConfiguration configuration { get; }
         private readonly IHubContext<ChatHub> chatHubContext;
         private readonly YoutubeService youtubeService;
         private readonly UserService userService;
+        private readonly ConfigurationService configurationService;
 
         public YoutubeController(IConfiguration configuration, IHubContext<ChatHub> chatHubContext,
-            YoutubeService youtubeService, UserService userService)
+            YoutubeService youtubeService, UserService userService, ConfigurationService configurationService)
         {
-            this.configuration = configuration;
             this.chatHubContext = chatHubContext;
             this.youtubeService = youtubeService;
             this.userService = userService;
+            this.configurationService = configurationService;
         }
 
         public async Task<IActionResult> Index()
@@ -42,8 +43,8 @@ namespace Rambler.Web.Controllers
             var data = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("client_id", configuration["Authentication:Google:ClientId"]),
-                new KeyValuePair<string, string>("client_secret", configuration["Authentication:Google:ClientSecret"]),
+                new KeyValuePair<string, string>("client_id", await configurationService.GetValue("Authentication:Google:ClientId")),
+                new KeyValuePair<string, string>("client_secret", await configurationService.GetValue("Authentication:Google:ClientSecret")),
                 new KeyValuePair<string, string>("redirect_uri",
                     Url.Action("Callback", "Youtube", null, Request.Scheme, null)),
                 new KeyValuePair<string, string>("grant_type", "authorization_code")
@@ -70,14 +71,14 @@ namespace Rambler.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult Authorize()
+        public async Task<IActionResult> Authorize()
         {
             if (!youtubeService.IsConfigured())
             {
                 return RedirectToAction("Youtube", "Configuration");
             }
 
-            var clientId = configuration["Authentication:Google:ClientId"];
+            var clientId = await configurationService.GetValue("Authentication:Google:ClientId");
             var redirectUrl = WebUtility.UrlEncode(Url.Action("Callback", "Youtube", null, Request.Scheme, null));
             var oauthRequest =
                 $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUrl}&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline";
@@ -90,7 +91,7 @@ namespace Rambler.Web.Controllers
             var token = await youtubeService.GetToken();
             if (token == null)
             {
-                return Authorize();
+                return await Authorize();
             }
 
             if (token.Status == AccessTokenStatus.Expired)
@@ -107,7 +108,7 @@ namespace Rambler.Web.Controllers
             var token = await youtubeService.GetToken();
             if (token == null)
             {
-                return Authorize();
+                return await Authorize();
             }
 
             if (token.Status == AccessTokenStatus.Expired)
