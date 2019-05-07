@@ -29,6 +29,8 @@
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
+    addEventListener('WebComponentsReady', function() {
+
         Polymer({
             is: "page-module",
             properties: {
@@ -71,6 +73,7 @@
                 });
             }
         });
+        })
     </script>
 </dom-module>
 

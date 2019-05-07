@@ -41,15 +41,18 @@
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
-        Polymer({
-            is: "page-module",
-            properties: {
-            },
-            observers: [
-            ],
-            ready: function () {
-            }
-        });
+        addEventListener('WebComponentsReady', function () {
+
+            Polymer({
+                is: "page-module",
+                properties: {
+                },
+                observers: [
+                ],
+                ready: function () {
+                }
+            });
+        })
     </script>
 </dom-module>
 
