@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Rambler.Models;
 
 namespace Rambler.Web.Controllers
 {
     public class ChatController : Controller
     {
+        [AllowAnonymous]
         public IActionResult Popup(string fontSize = "inherit", string backgroundColor = "none", string color = "white")
         {
             var chatConfig = new ChatConfig
