@@ -36,7 +36,7 @@
                 },
                 _onMessageReceived: function (message) {
                     if (!message) return;
-                    console.log(message);
+                    //console.log(message);
                     this.push("messages", message);
                     if (this.messages.length > 10) {
                         this.shift("messages");

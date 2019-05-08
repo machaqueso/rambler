@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rambler.Models;
 using Rambler.Web.Services;
@@ -20,6 +21,7 @@ namespace Rambler.Web.Api
         }
 
         [Route("")]
+        [AllowAnonymous]
         public IActionResult GetMessages()
         {
             var messages = chatService.GetMessages()
