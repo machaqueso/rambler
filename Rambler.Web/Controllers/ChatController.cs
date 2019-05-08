@@ -6,7 +6,6 @@ namespace Rambler.Web.Controllers
 {
     public class ChatController : Controller
     {
-        [AllowAnonymous]
         public IActionResult Popup(string fontSize = "inherit", string backgroundColor = "none", string color = "white")
         {
             var chatConfig = new ChatConfig
@@ -24,6 +23,7 @@ namespace Rambler.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         public IActionResult Chatbox(string fontSize = "inherit", string backgroundColor = "none", string color = "white")
         {
             var chatConfig = new ChatConfig
@@ -36,6 +36,7 @@ namespace Rambler.Web.Controllers
             return View(chatConfig);
         }
 
+        [AllowAnonymous]
         public IActionResult Reader()
         {
             return View();
