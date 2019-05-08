@@ -6,7 +6,7 @@
 }
 
 @section Styles{
-<style>
+    <style>
         #container {
             font-size: @Model.FontSize;
             background-color: @Model.BackgroundColor;
@@ -15,11 +15,26 @@
         #container .chat {
             color: @Model.Color;
         }
-</style>
+    </style>
 }
 
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
 
-<div id="container">
-    <rambler-chat channel="OBS"></rambler-chat>
-</div>
+<dom-module id="page-module">
+    <template>
+
+        <div id="container">
+            <rambler-chat channel="OBS"></rambler-chat>
+        </div>
+    </template>
+    <script>
+        addEventListener('WebComponentsReady', function () {
+
+            Polymer({
+                is: "page-module"
+            });
+        })
+    </script>
+</dom-module>
+
+<page-module></page-module>
