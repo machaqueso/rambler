@@ -22,5 +22,6 @@ namespace Rambler.Models
         [NotMapped] public string OldPassword { get; set; }
 
         public virtual ICollection<Role> Roles { get; set; }
+        public virtual ICollection<ExternalAccount> ExternalAccounts { get; set; }
     }
 }
