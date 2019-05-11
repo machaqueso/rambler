@@ -20,5 +20,7 @@ namespace Rambler.Models
         [NotMapped] public string Password { get; set; }
         [NotMapped] public string ConfirmPassword { get; set; }
         [NotMapped] public string OldPassword { get; set; }
+
+        public virtual ICollection<Role> Roles { get; set; }
     }
 }
