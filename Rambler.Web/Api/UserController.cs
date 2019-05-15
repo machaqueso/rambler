@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rambler.Web.Services;
@@ -36,7 +37,7 @@ namespace Rambler.Web.Api
                 tokens = tokens.Where(x => x.ApiSource == apiSource);
             }
 
-            return Ok(tokens.Select(x=>new
+            return Ok(tokens.Select(x => new
             {
                 x.Id,
                 x.ApiSource,
@@ -45,6 +46,27 @@ namespace Rambler.Web.Api
                 x.Status,
                 x.HasRefreshToken,
                 x.User
+            }));
+        }
+
+        [Route("{id}/externalAccount")]
+        public async Task<IActionResult> GetExternalAccounts(int id)
+        {
+            var user = await userService.GetUsers()
+                .Include(x => x.ExternalAccounts)
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user.ExternalAccounts.Select(x => new
+            {
+                x.Id,
+                x.ApiSource,
+                x.ReferenceId,
+                x.Username
             }));
         }
     }

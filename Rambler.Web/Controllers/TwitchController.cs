@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -84,7 +85,7 @@ namespace Rambler.Web.Controllers
                 throw new InvalidOperationException("Twitch channel title not found.");
             }
 
-            var user = await userService.GetUsers().SingleOrDefaultAsync(x => x.UserName == username);
+            var user = await userService.GetUsers().SingleOrDefaultAsync(x => x.ExternalAccounts.Any(y => y.ReferenceId == twitchUser._id.ToString()));
             if (user == null)
             {
                 user = new User
@@ -93,8 +94,8 @@ namespace Rambler.Web.Controllers
                 };
                 await userService.Create(user);
             }
-
             await userService.AddToken(user.Id, ApiSource.Twitch, token);
+            await userService.AddExternalAccount(user.Id, ApiSource.Twitch, twitchUser._id.ToString(), twitchUser.name);
 
             if (state == HttpContext.Session.GetString("state"))
             {

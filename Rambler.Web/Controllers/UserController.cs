@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Rambler.Web.Controllers
 {
@@ -11,6 +12,12 @@ namespace Rambler.Web.Controllers
 
         public IActionResult Token()
         {
+            return View();
+        }
+
+        public IActionResult ExternalAccount()
+        {
+            ViewData["UserId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return View();
         }
     }
