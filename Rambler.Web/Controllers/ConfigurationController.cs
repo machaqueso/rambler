@@ -19,14 +19,5 @@ namespace Rambler.Web.Controllers
             return View();
         }
 
-        public IActionResult Youtube()
-        {
-            return View();
-        }
-
-        public IActionResult Twitch()
-        {
-            return View();
-        }
     }
 }

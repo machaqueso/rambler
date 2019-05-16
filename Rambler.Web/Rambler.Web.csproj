@@ -42,6 +42,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing">
+      <HintPath>C:\Users\vagrant\.nuget\packages\microsoft.aspnetcore.mvc.testing\2.1.3\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="Views\Account\SetPassword.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
