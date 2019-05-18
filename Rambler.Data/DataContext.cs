@@ -15,9 +15,10 @@ namespace Rambler.Data
             this.configuration = configuration;
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public DataContext(IConfiguration configuration, 
+            DbContextOptions options) : base(options)
         {
-            optionsBuilder.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
+            this.configuration = configuration;
         }
 
         public DbSet<User> Users { get; set; }

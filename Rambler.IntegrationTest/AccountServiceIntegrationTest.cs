@@ -1,9 +1,10 @@
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Rambler.Data;
+using Rambler.Services;
 using Xunit;
 
-namespace Rambler.Services.Test.Integration
+namespace Rambler.IntegrationTest
 {
     public class AccountServiceIntegrationTest
     {
