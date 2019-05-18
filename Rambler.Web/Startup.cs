@@ -38,7 +38,8 @@ namespace Rambler.Web
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddDbContext<DataContext>();
+            services.AddDbContext<DataContext>(options =>
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<UserService>();
             services.AddScoped<YoutubeService>();
@@ -67,7 +68,7 @@ namespace Rambler.Web
                 // Make the session cookie essential
                 options.Cookie.IsEssential = true;
             });
-            
+
             services.AddMvc(options =>
             {
                 options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
