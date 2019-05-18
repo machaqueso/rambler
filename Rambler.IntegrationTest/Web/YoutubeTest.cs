@@ -8,11 +8,11 @@ using Xunit;
 
 namespace Rambler.IntegrationTest.Web
 {
-    public class YoutubeTest : IClassFixture<WebApplicationFactory<Startup>>
+    public class YoutubeTest : IClassFixture<CustomWebApplicationFactory<Startup>>
     {
-        private readonly WebApplicationFactory<Startup> factory;
+        private readonly CustomWebApplicationFactory<Startup> factory;
 
-        public YoutubeTest(WebApplicationFactory<Startup> factory)
+        public YoutubeTest(CustomWebApplicationFactory<Startup> factory)
         {
             this.factory = factory;
         }

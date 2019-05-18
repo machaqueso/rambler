@@ -8,11 +8,11 @@ using Xunit;
 
 namespace Rambler.IntegrationTest.Web
 {
-    public class TwitchTest : IClassFixture<WebApplicationFactory<Startup>>
+    public class TwitchTest : IClassFixture<CustomWebApplicationFactory<Startup>>
     {
-        private readonly WebApplicationFactory<Startup> factory;
+        private readonly CustomWebApplicationFactory<Startup> factory;
 
-        public TwitchTest(WebApplicationFactory<Startup> factory)
+        public TwitchTest(CustomWebApplicationFactory<Startup> factory)
         {
             this.factory = factory;
         }
@@ -20,12 +20,7 @@ namespace Rambler.IntegrationTest.Web
         [Fact]
         public async Task Index_works()
         {
-            var client = factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(
-                services => services.AddMvc(
-                    options =>
-                    {
-                        options.Filters.Add(new FakeUserFilter());
-                    }))).CreateClient();
+            var client = factory.CreateClient();
 
             var response = await client.GetAsync("/twitch");
             response.EnsureSuccessStatusCode();
@@ -35,12 +30,7 @@ namespace Rambler.IntegrationTest.Web
         [Fact]
         public async Task Given_Unconfigured_API_Authorize_returns_configuration_view()
         {
-            var client = factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(
-                services => services.AddMvc(
-                    options =>
-                    {
-                        options.Filters.Add(new FakeUserFilter());
-                    }))).CreateClient();
+            var client = factory.CreateClient();
 
             var response = await client.GetAsync("/twitch/authorize");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

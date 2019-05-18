@@ -8,11 +8,11 @@ using Xunit;
 
 namespace Rambler.IntegrationTest.Web
 {
-    public class HomeTest : IClassFixture<WebApplicationFactory<Startup>>
+    public class HomeTest : IClassFixture<CustomWebApplicationFactory<Startup>>
     {
-        private readonly WebApplicationFactory<Startup> factory;
+        private readonly CustomWebApplicationFactory<Startup> factory;
 
-        public HomeTest(WebApplicationFactory<Startup> factory)
+        public HomeTest(CustomWebApplicationFactory<Startup> factory)
         {
             this.factory = factory;
         }
@@ -34,12 +34,7 @@ namespace Rambler.IntegrationTest.Web
         [Fact]
         public async Task Given_authenticated_user_homepage_redirects_to_dashboard()
         {
-            var client = factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(
-                services => services.AddMvc(
-                    options =>
-                    {
-                        options.Filters.Add(new FakeUserFilter());
-                    }))).CreateClient();
+            var client = factory.CreateClient();
 
             var response = await client.GetAsync("/");
             response.EnsureSuccessStatusCode();
