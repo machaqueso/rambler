@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -24,7 +25,8 @@ namespace Rambler.IntegrationTest
 
                 // Add a database context (ApplicationDbContext) using an in-memory 
                 // database for testing.
-                services.AddDbContext<DataContext>(options => { options.UseSqlite("Filename=./testdata.db"); });
+                var testFile = Path.GetTempFileName();
+                services.AddDbContext<DataContext>(options => { options.UseSqlite($"Filename={testFile}.db"); });
 
                 // Build the service provider.
                 var sp = services.BuildServiceProvider();
@@ -40,7 +42,7 @@ namespace Rambler.IntegrationTest
 
                     // Ensure the database is created.
                     db.Database.EnsureDeleted();
-                    //db.Database.EnsureCreated();
+                    db.Database.EnsureCreated();
                     //db.Database.Migrate();
 
                     try
