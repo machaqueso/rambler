@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Rambler.Data;
 using Rambler.Models;
 using Rambler.Web.Services;
+using System;
+using System.Linq;
 using Xunit;
 
 namespace Rambler.Services.Test.Services
@@ -22,7 +20,7 @@ namespace Rambler.Services.Test.Services
         {
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
             // Duplicate here any configuration sources you use.
-            configurationBuilder.AddJsonFile("AppSettings.json");
+            configurationBuilder.AddJsonFile("appsettings.json");
             configuration = configurationBuilder.Build();
 
             var options = new DbContextOptionsBuilder<DataContext>()
