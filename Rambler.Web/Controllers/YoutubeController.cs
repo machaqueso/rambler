@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Extensions;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +8,11 @@ using Rambler.Models;
 using Rambler.Services;
 using Rambler.Web.Hubs;
 using Rambler.Web.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Rambler.Web.Controllers
 {
@@ -98,7 +97,7 @@ namespace Rambler.Web.Controllers
         {
             if (!youtubeService.IsConfigured())
             {
-                return RedirectToAction("Youtube", "Configuration");
+                return RedirectToAction("Index", "Configuration");
             }
 
             var clientId = await configurationService.GetValue("Authentication:Google:ClientId");

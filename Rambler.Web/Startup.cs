@@ -38,7 +38,8 @@ namespace Rambler.Web
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddDbContext<DataContext>();
+            services.AddDbContext<DataContext>(options =>
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<UserService>();
             services.AddScoped<YoutubeService>();
@@ -67,11 +68,14 @@ namespace Rambler.Web
                 // Make the session cookie essential
                 options.Cookie.IsEssential = true;
             });
-            
+
             services.AddMvc(options =>
             {
                 options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
             });
+            services.AddDbContext<DataContext>(options =>
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddSignalR();
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -81,7 +85,7 @@ namespace Rambler.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, DataContext db)
         {
-            db.Database.Migrate();
+            //db.Database.Migrate();
 
             if (env.IsDevelopment())
             {
