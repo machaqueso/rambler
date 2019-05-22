@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rambler.Data;
 
 namespace Rambler.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20190511000512_AddedRoles")]
+    partial class AddedRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -114,26 +116,6 @@ namespace Rambler.Web.Migrations
                     );
                 });
 
-            modelBuilder.Entity("Rambler.Models.ExternalAccount", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ApiSource");
-
-                    b.Property<string>("ReferenceId");
-
-                    b.Property<int?>("UserId");
-
-                    b.Property<string>("Username");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ExternalAccount");
-                });
-
             modelBuilder.Entity("Rambler.Models.Integration", b =>
                 {
                     b.Property<int>("Id")
@@ -205,13 +187,6 @@ namespace Rambler.Web.Migrations
                         .WithMany("AccessTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Rambler.Models.ExternalAccount", b =>
-                {
-                    b.HasOne("Rambler.Models.User", "User")
-                        .WithMany("ExternalAccounts")
-                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Rambler.Models.Role", b =>

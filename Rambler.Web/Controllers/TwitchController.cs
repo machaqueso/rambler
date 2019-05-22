@@ -38,7 +38,7 @@ namespace Rambler.Web.Controllers
         {
             if (!twitchService.IsConfigured())
             {
-                return RedirectToAction("Index", "Configuration");
+                return RedirectToAction("Twitch", "Configuration");
             }
 
             var clientId = configurationService.GetValue("Authentication:Twitch:ClientId").Result;

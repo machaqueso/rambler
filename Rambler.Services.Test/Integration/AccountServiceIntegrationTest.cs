@@ -1,11 +1,9 @@
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Rambler.Data;
-using Rambler.Services;
 using Xunit;
 
-namespace Rambler.IntegrationTest.Service
+namespace Rambler.Services.Test.Integration
 {
     public class AccountServiceIntegrationTest
     {
@@ -22,9 +20,7 @@ namespace Rambler.IntegrationTest.Service
         public AccountServiceIntegrationTest()
         {
             var configuration = InitConfiguration();
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseSqlite(configuration.GetConnectionString("DefaultConnection")).Options;
-            var datacontext = new DataContext(configuration, options);
+            var datacontext = new DataContext(configuration);
             var passwordservice = new PasswordService();
 
             accountService = new AccountService(datacontext, passwordservice);

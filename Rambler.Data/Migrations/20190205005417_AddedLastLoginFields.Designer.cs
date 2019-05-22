@@ -6,17 +6,17 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rambler.Data;
 
-namespace Rambler.Data.Migrations
+namespace Rambler.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190519174008_ConsolidatedMigrations")]
-    partial class ConsolidatedMigrations
+    [Migration("20190205005417_AddedLastLoginFields")]
+    partial class AddedLastLoginFields
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.1-rtm-30846");
+                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
 
             modelBuilder.Entity("Rambler.Models.AccessToken", b =>
                 {
@@ -116,26 +116,6 @@ namespace Rambler.Data.Migrations
                     );
                 });
 
-            modelBuilder.Entity("Rambler.Models.ExternalAccount", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ApiSource");
-
-                    b.Property<string>("ReferenceId");
-
-                    b.Property<int?>("UserId");
-
-                    b.Property<string>("Username");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ExternalAccount");
-                });
-
             modelBuilder.Entity("Rambler.Models.Integration", b =>
                 {
                     b.Property<int>("Id")
@@ -153,24 +133,6 @@ namespace Rambler.Data.Migrations
                         new { Id = 1, IsEnabled = false, Name = "Youtube" },
                         new { Id = 2, IsEnabled = false, Name = "Twitch" }
                     );
-                });
-
-            modelBuilder.Entity("Rambler.Models.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description");
-
-                    b.Property<string>("Name");
-
-                    b.Property<int?>("UserId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Role");
                 });
 
             modelBuilder.Entity("Rambler.Models.User", b =>
@@ -207,20 +169,6 @@ namespace Rambler.Data.Migrations
                         .WithMany("AccessTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Rambler.Models.ExternalAccount", b =>
-                {
-                    b.HasOne("Rambler.Models.User", "User")
-                        .WithMany("ExternalAccounts")
-                        .HasForeignKey("UserId");
-                });
-
-            modelBuilder.Entity("Rambler.Models.Role", b =>
-                {
-                    b.HasOne("Rambler.Models.User", "User")
-                        .WithMany("Roles")
-                        .HasForeignKey("UserId");
                 });
 #pragma warning restore 612, 618
         }
