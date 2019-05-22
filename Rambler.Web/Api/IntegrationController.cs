@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Rambler.Models;
 using Rambler.Web.Services;
 
@@ -25,7 +23,6 @@ namespace Rambler.Web.Api
         }
 
         [Route("")]
-        [AllowAnonymous]
         public IActionResult GetIntegrations()
         {
             return Ok(integrationService.GetIntegrations().OrderBy(x => x.Name));
@@ -35,15 +32,9 @@ namespace Rambler.Web.Api
         [HttpPut]
         public async Task<IActionResult> UpdateIntegration(int id, [FromBody] Integration integration)
         {
-            var entity = await integrationService.GetIntegrations().SingleOrDefaultAsync(x => x.Id == id);
-            if (entity == null)
+            if (integration.IsEnabled)
             {
-                return NotFound();
-            }
-
-            if (entity.IsEnabled)
-            {
-                switch (entity.Name)
+                switch (integration.Name)
                 {
                     case "Youtube":
                         if (!youtubeService.IsConfigured())
@@ -64,18 +55,6 @@ namespace Rambler.Web.Api
 
             await integrationService.UpdateIntegration(id, integration);
             return NoContent();
-        }
-
-        [Route("{id}")]
-        public async Task<IActionResult> GetIntegration(int id)
-        {
-            var entity = await integrationService.GetIntegrations().SingleOrDefaultAsync(x => x.Id == id);
-            if (entity == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(entity);
         }
 
     }

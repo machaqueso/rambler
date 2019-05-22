@@ -2,7 +2,7 @@
 
 namespace Rambler.Web.Controllers
 {
-    public class UserController : Controller
+    public class SettingsController : Controller
     {
         public IActionResult Index()
         {

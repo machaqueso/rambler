@@ -28,7 +28,6 @@ namespace Rambler.Web.Api
         {
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
             identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
-            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
 
             //identity.AddClaim(new Claim(ClaimTypes.Role, RoleNames.Admin));
 
@@ -133,6 +132,5 @@ namespace Rambler.Web.Api
 
             return NoContent();
         }
-
     }
 }

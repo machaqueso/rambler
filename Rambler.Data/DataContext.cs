@@ -15,10 +15,9 @@ namespace Rambler.Data
             this.configuration = configuration;
         }
 
-        public DataContext(IConfiguration configuration,
-            DbContextOptions options) : base(options)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            this.configuration = configuration;
+            optionsBuilder.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
         }
 
         public DbSet<User> Users { get; set; }
@@ -28,13 +27,6 @@ namespace Rambler.Data
         public DbSet<Integration> Integrations { get; set; }
         public DbSet<Channel> Channels { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
-            }
-        }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

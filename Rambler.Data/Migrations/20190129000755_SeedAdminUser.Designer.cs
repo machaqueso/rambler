@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rambler.Data;
 
 namespace Rambler.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20190129000755_SeedAdminUser")]
+    partial class SeedAdminUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -140,14 +142,6 @@ namespace Rambler.Web.Migrations
 
                     b.Property<string>("Email");
 
-                    b.Property<int>("FailedLogins");
-
-                    b.Property<bool>("IsLocked");
-
-                    b.Property<DateTime?>("LastLoginDate");
-
-                    b.Property<bool>("MustChangePassword");
-
                     b.Property<string>("PasswordHash");
 
                     b.Property<string>("UserName");
@@ -157,7 +151,7 @@ namespace Rambler.Web.Migrations
                     b.ToTable("Users");
 
                     b.HasData(
-                        new { Id = 1, FailedLogins = 0, IsLocked = false, MustChangePassword = true, UserName = "Admin" }
+                        new { Id = 1, UserName = "Admin" }
                     );
                 });
 

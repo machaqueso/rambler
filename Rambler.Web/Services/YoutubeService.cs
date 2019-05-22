@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rambler.Models;
-using Rambler.Models.Youtube;
 using Rambler.Models.Youtube.LiveBroadcast;
 using Rambler.Models.Youtube.LiveChat;
 using Rambler.Services;
@@ -209,38 +208,6 @@ namespace Rambler.Web.Services
         {
             return await IntegrationService.IsEnabled(ApiSource.Youtube);
         }
-        
-        public async Task<YoutubeChannelList> GetChannels(AccessToken token)
-        {
-            var response = await Get(
-                "https://www.googleapis.com/youtube/v3/channels?part=id,snippet&mine=true",
-                token.access_token);
-
-            var content = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode)
-            {
-                logger.LogError(
-                    $"Channels error: {(int)response.StatusCode} - {response.ReasonPhrase}: {content}");
-                return null;
-            }
-
-            var channels = JsonConvert.DeserializeObject<YoutubeChannelList>(content);
-
-            return channels;
-        }
-
-        public async Task<string> GetChannelTitle(AccessToken token)
-        {
-            var channels = await GetChannels(token);
-
-            if (channels == null || !channels.items.Any())
-            {
-                return string.Empty;
-            }
-
-            return channels.items.First().snippet.title;
-        }
-
 
     }
 };

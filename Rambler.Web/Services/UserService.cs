@@ -86,34 +86,5 @@ namespace Rambler.Web.Services
             db.Users.Add(user);
             await db.SaveChangesAsync();
         }
-
-        public async Task AddExternalAccount(int id, string apiSource, string referenceId, string username)
-        {
-            var user = await db.Users
-                .Include(x => x.ExternalAccounts)
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-            if (user == null)
-            {
-                throw new InvalidOperationException("userid not found");
-            }
-
-            if (user.ExternalAccounts.Any(x => x.ApiSource == apiSource 
-                                               && x.ReferenceId == referenceId))
-            {
-                return;
-            }
-
-            var externalAccount = new ExternalAccount
-            {
-                ApiSource = apiSource,
-                ReferenceId = referenceId,
-                Username = username
-            };
-
-            user.ExternalAccounts.Add(externalAccount);
-            await db.SaveChangesAsync();
-        }
-
     }
 }

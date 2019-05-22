@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Rambler.Models;
 using Rambler.Services;
-using Rambler.Web.Services;
 
 namespace Rambler.Web.Controllers
 {
@@ -93,35 +87,5 @@ namespace Rambler.Web.Controllers
 
             return View(user);
         }
-
-        private async Task SignIn(User user)
-        {
-            var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
-            identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
-            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
-
-            //identity.AddClaim(new Claim(ClaimTypes.Role, RoleNames.Admin));
-
-            var principal = new ClaimsPrincipal(identity);
-            var authProperties = new AuthenticationProperties
-            {
-                AllowRefresh = true,
-                ExpiresUtc = DateTimeOffset.Now.AddDays(1),
-                IsPersistent = true,
-            };
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(principal), authProperties);
-        }
-
-        [AllowAnonymous]
-        public async Task<IActionResult> TokenLogin(string accessToken)
-        {
-            var user = await accountService.GetUsers()
-                .FirstOrDefaultAsync(x => x.AccessTokens.Any(y => y.access_token == accessToken));
-
-            await SignIn(user);
-            return RedirectToAction("Index", "Home");
-        }
-
     }
 }

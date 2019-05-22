@@ -23,8 +23,19 @@ namespace Rambler.Services
             this.configurationService = configurationService;
         }
 
-        public async Task<TwitchUser> GetUser(AccessToken token)
+        public async Task<TwitchUser> GetUser()
         {
+            var token = await db.AccessTokens.FirstOrDefaultAsync(x => x.ApiSource == ApiSource.Twitch);
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("access token not found");
+            }
+            if (token.Status == AccessTokenStatus.Expired)
+            {
+                throw new UnauthorizedAccessException("access token expired");
+            }
+
+
             var response = await api.Get("https://api.twitch.tv/kraken/user", token.access_token, configurationService.GetValue("Authentication:Twitch:ClientId").Result);
             var content = await response.Content.ReadAsStringAsync();
 

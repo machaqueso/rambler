@@ -196,6 +196,6 @@ namespace Rambler.Web.Services
         {
             return await integrationService.IsEnabled(ApiSource.Twitch);
         }
-    }
 
+    }
 };
