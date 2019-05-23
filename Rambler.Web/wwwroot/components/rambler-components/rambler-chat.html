@@ -15,10 +15,10 @@
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
                 <template is="dom-if" if="[[showDate]]">
-                    <chat-message item="{{item}}" show-date timeout="[[timeout]]" speak="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
+                    <chat-message item="{{item}}" show-date timeout="[[timeout]]" show-speaker="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
                 </template>
                 <template is="dom-if" if="[[!showDate]]">
-                    <chat-message item="{{item}}" timeout="[[timeout]]" speak="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
+                    <chat-message item="{{item}}" timeout="[[timeout]]" show-speaker="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
                 </template>
             </template>
         </div>
@@ -38,7 +38,7 @@
                     rate: { type: Number, value: 1.0 },
                     pitch: { type: Number, value: 1.0 },
                     speechSynthesis: { type: Object },
-                    speakEnabled: { type: Boolean, value: false }
+                    speakEnabled: { type: Boolean, value: true }
                 },
                 _onMessageReceived: function (message) {
                     if (!message) return;

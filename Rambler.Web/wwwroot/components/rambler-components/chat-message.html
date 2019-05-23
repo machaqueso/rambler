@@ -11,6 +11,10 @@
             .twitch {
                 color: #6441a4;
             }
+
+            .speaker {
+                color: greenyellow;
+            }
         </style>
 
         <template is="dom-if" if="[[!hideRow]]">
@@ -20,6 +24,9 @@
                 </template>
                 <template is="dom-if" if="[[item.source]]">
                     <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
+                </template>
+                <template is="dom-if" if="[[showSpeaker]]">
+                    <i class="fas fa-volume-down speaker" title="TTS enabled"></i>
                 </template>
                 <div class="author">{{item.author}}</div>
                 <div class="message">{{item.message}}</div>
@@ -34,7 +41,8 @@
                 item: { type: Object, value: {} },
                 showDate: { type: Boolean, value: false },
                 hideRow: { type: Boolean, notify: true, value: false },
-                timeout: { type: Number, value: 30000 }
+                timeout: { type: Number, value: 30000 },
+                showSpeaker: { type: Boolean, value: false }
             },
             _getIcon: function (source) {
                 return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
