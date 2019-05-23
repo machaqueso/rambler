@@ -15,10 +15,10 @@
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
                 <template is="dom-if" if="[[showDate]]">
-                    <chat-message item="{{item}}" show-date timeout="[[timeout]]"></chat-message>
+                    <chat-message item="{{item}}" show-date timeout="[[timeout]]" speak="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
                 </template>
                 <template is="dom-if" if="[[!showDate]]">
-                    <chat-message item="{{item}}" timeout="[[timeout]]"></chat-message>
+                    <chat-message item="{{item}}" timeout="[[timeout]]" speak="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
                 </template>
             </template>
         </div>
@@ -32,23 +32,92 @@
                     messages: { type: Array, notify: true, value: [] },
                     connection: { type: Object, value: {} },
                     channel: { type: String, value: "All" },
-                    showDate: { type: Boolean, value: false }
+                    showDate: { type: Boolean, value: false },
+                    voiceName: { type: String },
+                    voice: { type: Object },
+                    rate: { type: Number, value: 1.0 },
+                    pitch: { type: Number, value: 1.0 },
+                    speechSynthesis: { type: Object },
+                    speakEnabled: { type: Boolean, value: false }
                 },
                 _onMessageReceived: function (message) {
                     if (!message) return;
+
                     //console.log(message);
                     this.push("messages", message);
                     if (this.messages.length > 10) {
                         this.shift("messages");
                     }
                 },
+                _speak: function (message) {
+                    console.log("speak");
+
+                    console.log("voice", this.voice);
+                    if (this.voice === undefined) {
+                        this.voice = this._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
+                    }
+                    console.log("voice", this.voice);
+                    if (this.voice === undefined) {
+                        return;
+                    }
+                    if (speechSynthesis.speaking) {
+                        console.error('speechSynthesis.speaking');
+                        return;
+                    }
+                    if (message !== '') {
+                        var utterThis = new SpeechSynthesisUtterance(message);
+                        utterThis.onend = function (event) {
+                            console.log('SpeechSynthesisUtterance.onend');
+                        }
+                        utterThis.onerror = function (event) {
+                            console.error('SpeechSynthesisUtterance.onerror', event);
+                        }
+
+                        utterThis.voice = this.voice;
+                        utterThis.pitch = this.pitch;
+                        utterThis.rate = this.rate;
+                        speechSynthesis.speak(utterThis);
+                    }
+                },
+                _getVoiceByName: function (name) {
+                    var voices = [];
+                    voices = window.speechSynthesis.getVoices();
+                    console.log("voices", voices.length);
+
+                    for (i = 0; i < voices.length; i++) {
+                        console.log("voices[i].name", voices[i].name);
+                        if (voices[i].name === name) {
+                            console.log("returning voice", voices[i]);
+                            return voices[i];
+                        }
+                    }
+                },
+                _onVoicesChanged: function () {
+                    console.log("_onVoicesChanged");
+                    if (this.speechSynthesis === undefined) {
+                        return;
+                    }
+                    this.voice = this._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
+                },
+                _onChatClick: function (e) {
+                    console.log(e);
+                    this._speak(e.model.item.message);
+                },
                 ready: function () {
                     var that = this;
                     this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+                    this.speechSynthesis = window.speechSynthesis;
+
+                    //this._onVoicesChanged();
+                    console.log("speechSynthesis.onvoiceschanged", this.speechSynthesis);
+                    if (this.speechSynthesis.onvoiceschanged !== undefined) {
+                        this.speechSynthesis.onvoiceschanged = this._onVoicesChanged;
+                    }
 
                     this.connection.on("ReceiveChannelMessage", function (message) {
                         if (message.channel == that.channel) {
                             that._onMessageReceived(message.chatMessage);
+                            that._speak(message.chatMessage.message);
                         }
                     });
 
