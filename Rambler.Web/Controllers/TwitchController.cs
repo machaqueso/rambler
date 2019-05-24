@@ -86,5 +86,10 @@ namespace Rambler.Web.Controllers
             return View(user);
         }
 
+        public IActionResult Author()
+        {
+            return View();
+        }
+
     }
 }

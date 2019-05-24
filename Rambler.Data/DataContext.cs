@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Rambler.Models;
+using Rambler.Models.Twitch;
 
 namespace Rambler.Data
 {
@@ -26,6 +27,10 @@ namespace Rambler.Data
         public DbSet<ConfigurationSetting> ConfigurationSettings { get; set; }
         public DbSet<Integration> Integrations { get; set; }
         public DbSet<Channel> Channels { get; set; }
+        public DbSet<TwitchUser> TwitchUsers { get; set; }
+        public DbSet<Author> Authors { get; set; }
+        public DbSet<AuthorScoreHistory> AuthorScoreHistories { get; set; }
+        public DbSet<AuthorFilter> AuthorFilters { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

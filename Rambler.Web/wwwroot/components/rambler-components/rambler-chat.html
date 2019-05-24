@@ -38,12 +38,12 @@
                     rate: { type: Number, value: 1.0 },
                     pitch: { type: Number, value: 1.0 },
                     speechSynthesis: { type: Object },
-                    speakEnabled: { type: Boolean, value: true }
+                    speakEnabled: { type: Boolean, value: false }
                 },
                 _onMessageReceived: function (message) {
                     if (!message) return;
 
-                    //console.log(message);
+                    console.log(message);
                     this.push("messages", message);
                     if (this.messages.length > 10) {
                         this.shift("messages");
@@ -104,26 +104,28 @@
                     this._speak(e.model.item.message);
                 },
                 ready: function () {
-                    var that = this;
+                    var _this = this;
                     this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
-                    this.speechSynthesis = window.speechSynthesis;
-
-                    //this._onVoicesChanged();
-                    console.log("speechSynthesis.onvoiceschanged", this.speechSynthesis);
-                    if (this.speechSynthesis.onvoiceschanged !== undefined) {
-                        this.speechSynthesis.onvoiceschanged = this._onVoicesChanged;
-                    }
 
                     this.connection.on("ReceiveChannelMessage", function (message) {
-                        if (message.channel == that.channel) {
-                            that._onMessageReceived(message.chatMessage);
-                            that._speak(message.chatMessage.message);
+                        console.log("ReceiveChannelMessage", message);
+                        if (message.channel == _this.channel) {
+                            _this._onMessageReceived(message.chatMessage);
                         }
+                        if (_this.speakEnabled && message.channel === "TTS") {
+                            _this._speak(message.chatMessage.message);
+                        }
+
                     });
 
                     this.connection.start().catch(function (err) {
                         return console.error(err.toString());
                     });
+
+                    this.speechSynthesis = window.speechSynthesis;
+                    if (this.speechSynthesis.onvoiceschanged !== undefined) {
+                        this.speechSynthesis.onvoiceschanged = this._onVoicesChanged;
+                    }
                 }
             });
         });

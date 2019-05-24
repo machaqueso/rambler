@@ -57,6 +57,9 @@
     <Content Update="Views\Chat\Chatbox.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Twitch\Author.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Configuration\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

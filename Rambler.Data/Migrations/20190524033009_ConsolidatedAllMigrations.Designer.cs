@@ -6,17 +6,17 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rambler.Data;
 
-namespace Rambler.Web.Migrations
+namespace Rambler.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190205005417_AddedLastLoginFields")]
-    partial class AddedLastLoginFields
+    [Migration("20190524033009_ConsolidatedAllMigrations")]
+    partial class ConsolidatedAllMigrations
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
+                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085");
 
             modelBuilder.Entity("Rambler.Models.AccessToken", b =>
                 {
@@ -42,6 +42,64 @@ namespace Rambler.Web.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AccessTokens");
+                });
+
+            modelBuilder.Entity("Rambler.Models.Author", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.Property<int>("Points");
+
+                    b.Property<int>("Score");
+
+                    b.Property<string>("Source");
+
+                    b.Property<string>("SourceAuthorId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Authors");
+                });
+
+            modelBuilder.Entity("Rambler.Models.AuthorFilter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AuthorId");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<string>("FilterType");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("AuthorFilters");
+                });
+
+            modelBuilder.Entity("Rambler.Models.AuthorScoreHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AuthorId");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<string>("Reason");
+
+                    b.Property<int>("Value");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("AuthorScoreHistories");
                 });
 
             modelBuilder.Entity("Rambler.Models.Channel", b =>
@@ -74,7 +132,7 @@ namespace Rambler.Web.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Author");
+                    b.Property<int>("AuthorId");
 
                     b.Property<DateTime>("Date");
 
@@ -82,11 +140,11 @@ namespace Rambler.Web.Migrations
 
                     b.Property<string>("Source");
 
-                    b.Property<string>("SourceAuthorId");
-
                     b.Property<string>("SourceMessageId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
 
                     b.ToTable("Messages");
                 });
@@ -135,6 +193,58 @@ namespace Rambler.Web.Migrations
                     );
                 });
 
+            modelBuilder.Entity("Rambler.Models.Twitch.TwitchNotifications", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<bool>("email");
+
+                    b.Property<bool>("push");
+
+                    b.HasKey("id");
+
+                    b.ToTable("TwitchNotifications");
+                });
+
+            modelBuilder.Entity("Rambler.Models.Twitch.TwitchUser", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<ulong>("_id");
+
+                    b.Property<string>("bio");
+
+                    b.Property<DateTime>("created_at");
+
+                    b.Property<string>("display_name");
+
+                    b.Property<string>("email");
+
+                    b.Property<bool>("email_verified");
+
+                    b.Property<string>("logo");
+
+                    b.Property<string>("name");
+
+                    b.Property<int?>("notificationsid");
+
+                    b.Property<bool>("partnered");
+
+                    b.Property<bool>("twitter_connected");
+
+                    b.Property<string>("type");
+
+                    b.Property<DateTime?>("updated_at");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("notificationsid");
+
+                    b.ToTable("TwitchUsers");
+                });
+
             modelBuilder.Entity("Rambler.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -169,6 +279,37 @@ namespace Rambler.Web.Migrations
                         .WithMany("AccessTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Rambler.Models.AuthorFilter", b =>
+                {
+                    b.HasOne("Rambler.Models.Author", "Author")
+                        .WithMany("AuthorFilters")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Rambler.Models.AuthorScoreHistory", b =>
+                {
+                    b.HasOne("Rambler.Models.Author", "Author")
+                        .WithMany("AuthorScoreHistories")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Rambler.Models.ChatMessage", b =>
+                {
+                    b.HasOne("Rambler.Models.Author", "Author")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Rambler.Models.Twitch.TwitchUser", b =>
+                {
+                    b.HasOne("Rambler.Models.Twitch.TwitchNotifications", "notifications")
+                        .WithMany()
+                        .HasForeignKey("notificationsid");
                 });
 #pragma warning restore 612, 618
         }

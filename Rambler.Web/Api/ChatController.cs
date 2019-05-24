@@ -33,9 +33,9 @@ namespace Rambler.Web.Api
             {
                 x.Id,
                 x.Date,
-                x.Author,
+                Author = x.Author.Name,
                 x.Source,
-                x.SourceAuthorId,
+                SourceAuthorId = x.Author.SourceAuthorId,
                 x.SourceMessageId,
                 x.Message,
                 DisplayDate = DateTime.Now.DayOfYear != x.Date.ToLocalTime().DayOfYear ? x.Date.ToLocalTime().ToString("d") : "",

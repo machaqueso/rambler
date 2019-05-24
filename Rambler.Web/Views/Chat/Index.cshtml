@@ -18,7 +18,9 @@
                     <div class="form-row">
                         <paper-input style="max-width: 20%; padding-right: 10px;" label="Author" value="{{message.author}}"></paper-input>
                         <paper-input style="flex: 1 1 0;" label="Message" value="{{message.message}}"></paper-input>
-                        <paper-button on-tap="_send">Send</paper-button>
+                        <paper-button class="primary" on-tap="_send">Send</paper-button>
+                        <paper-button on-tap="_directSend">Direct</paper-button>
+                        <paper-button on-tap="_sendTest">Test</paper-button>
                     </div>
                 </form>
                 <hr />
@@ -29,51 +31,75 @@
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
-    addEventListener('WebComponentsReady', function() {
+        addEventListener('WebComponentsReady',
+            function () {
 
-        Polymer({
-            is: "page-module",
-            properties: {
-                messages: { Type: Array, notify: true, value: [] },
-                message: { Type: Object, value: {} },
-                connection: { Type: Object, value: {} },
-            },
-            observers: [
-                "_onMessagesChanged(messages)"
-            ],
-            _send: function () {
-                this.connection.invoke("SendMessage", this.message.author, this.message.message)
-                    .catch(function (err) {
-                        return console.error(err.toString());
-                    });
-            },
-            _onMessageReceived: function (author, message) {
-                console.log("received: author", author, "message", message, "messages");
+                Polymer({
+                    is: "page-module",
+                    properties: {
+                        messages: { Type: Array, notify: true, value: [] },
+                        message: { Type: Object, value: {} },
+                        connection: { Type: Object }
+                    },
+                    observers: [
+                        "_onMessagesChanged(messages)"
+                    ],
+                    _send: function () {
+                        console.log("SendMessage", this.message.author, this.message.message);
+                        this.connection.invoke("SendMessage", this.message.author, this.message.message)
+                            .catch(function (err) {
+                                return console.error(err.toString());
+                            });
+                    },
+                    _directSend: function () {
+                        console.log("DirectMessage", this.message.author, this.message.message);
+                        this.connection.invoke("DirectMessage", this.message.author, this.message.message)
+                            .catch(function (err) {
+                                return console.error(err.toString());
+                            });
+                    },
+                    _sendTest: function () {
+                        this.connection.invoke("TestMessage")
+                            .catch(function (err) {
+                                return console.error(err.toString());
+                            });
+                    },
+                    _onMessageReceived: function (author, message) {
+                        console.log("received: author", author, "message", message, "messages");
 
-                if (!author) return;
-                if (!message) return;
+                        if (!author) return;
+                        if (!message) return;
 
-                var msg = { "author": author, "message": message };
-                this.push("messages", msg);
-                console.log("messages:", this.messages);
-            },
-            _onMessagesChanged: function () {
-                console.log("_onMessagesChanged");
-            },
-            ready: function () {
-                var that = this;
-                this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+                        var msg = { "author": author, "message": message };
+                        this.push("messages", msg);
+                        console.log("messages:", this.messages);
+                    },
+                    _onMessagesChanged: function () {
+                        console.log("_onMessagesChanged");
+                    },
+                    ready: function () {
+                        var that = this;
+                        this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
-                this.connection.on("ReceiveMessage", function (author, message) {
-                    that._onMessageReceived(author, message);
+                        this.connection.on("ReceiveMessage",
+                            function (message) {
+                                console.log("ReceiveMessage", message);
+                                that._onMessageReceived(author, message);
+                            });
+
+                        this.connection.on("ReceiveTestMessage",
+                            function (message) {
+                                console.log("ReceiveTestMessage", message);
+                                that._onMessageReceived(author, message);
+                            });
+
+                        this.connection.start().catch(function (err) {
+                            return console.error(err.toString());
+                        });
+                    }
                 });
 
-                this.connection.start().catch(function (err) {
-                    return console.error(err.toString());
-                });
-            }
-        });
-        })
+            })
     </script>
 </dom-module>
 

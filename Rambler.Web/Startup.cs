@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -39,19 +37,20 @@ namespace Rambler.Web
 
             services.AddDbContext<DataContext>();
 
-            services.AddScoped<UserService>();
-            services.AddScoped<YoutubeService>();
-            services.AddScoped<ChatService>();
-            services.AddScoped<DashboardService>();
-            services.AddScoped<TwitchService>();
-            services.AddScoped<ConfigurationService>();
-            services.AddScoped<IntegrationService>();
-            services.AddScoped<ChannelService>();
-            services.AddScoped<AccountService>();
-            services.AddScoped<PasswordService>();
+            services.AddTransient<UserService>();
+            services.AddTransient<YoutubeService>();
+            services.AddTransient<ChatService>();
+            services.AddTransient<DashboardService>();
+            services.AddTransient<TwitchService>();
+            services.AddTransient<ConfigurationService>();
+            services.AddTransient<IntegrationService>();
+            services.AddTransient<ChannelService>();
+            services.AddTransient<AccountService>();
+            services.AddTransient<PasswordService>();
 
-            services.AddScoped<TwitchAPIv5>();
-            services.AddScoped<TwitchManager>();
+            services.AddTransient<TwitchAPIv5>();
+            services.AddTransient<TwitchManager>();
+            services.AddTransient<AuthorService>();
 
             services.AddSingleton<IHostedService, YoutubeBackgroundService>();
             services.AddSingleton<IHostedService, TwitchBackgroundService>();

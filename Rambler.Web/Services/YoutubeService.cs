@@ -28,7 +28,7 @@ namespace Rambler.Web.Services
             this.configurationService = configurationService;
             IntegrationService = integrationService;
         }
-        
+
         public async Task<HttpResponseMessage> Get(string request)
         {
             return await Get(request, string.Empty);
@@ -118,12 +118,15 @@ namespace Rambler.Web.Services
         {
             return new ChatMessage
             {
-                Author = item.AuthorDetails.displayName,
                 Message = item.snippet.displayMessage,
                 Date = item.snippet.publishedAt,
-                Source = "Youtube",
+                Source = ApiSource.Youtube,
                 SourceMessageId = item.id,
-                SourceAuthorId = item.AuthorDetails.channelId
+                Author = new Author
+                {
+                    Name = item.AuthorDetails.displayName,
+                    SourceAuthorId = item.AuthorDetails.channelId
+                }
             };
         }
 

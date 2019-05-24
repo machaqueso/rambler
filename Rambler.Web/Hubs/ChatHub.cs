@@ -20,10 +20,42 @@ namespace Rambler.Web.Hubs
             await chatService.CreateMessage(new ChatMessage
             {
                 Date = DateTime.UtcNow,
-                Author = author,
+                Author = new Author
+                {
+                    Name = author
+                },
                 Message = message,
                 Source = ApiSource.Rambler
             });
         }
+
+        public async Task DirectMessage(string author, string message)
+        {
+            var chatMessage = new ChatMessage
+            {
+                Source = ApiSource.Rambler,
+                Date = DateTime.UtcNow,
+                Message = message
+            };
+
+            await Clients.All.SendAsync("ReceiveChannelMessage", new ChannelMessage
+            {
+                Channel = "All",
+                ChatMessage = chatMessage
+            });
+
+        }
+
+        public async Task TestMessage()
+        {
+            await Clients.All.SendAsync("ReceiveTestMessage", new 
+            {
+                Date = DateTime.UtcNow,
+                Author = "Test",
+                Message = Guid.NewGuid().ToString()
+            });
+
+        }
+
     }
 }

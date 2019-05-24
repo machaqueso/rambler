@@ -18,15 +18,17 @@ namespace Rambler.Web.Services
         private readonly ChatService chatService;
         private readonly ConfigurationService configurationService;
         private readonly IntegrationService integrationService;
+        private readonly TwitchManager twitchManager;
 
         public TwitchService(UserService userService, ILogger<TwitchService> logger, ChatService chatService,
-            ConfigurationService configurationService, IntegrationService integrationService)
+            ConfigurationService configurationService, IntegrationService integrationService, TwitchManager twitchManager)
         {
             this.userService = userService;
             this.logger = logger;
             this.chatService = chatService;
             this.configurationService = configurationService;
             this.integrationService = integrationService;
+            this.twitchManager = twitchManager;
         }
 
         public async Task<HttpResponseMessage> Get(string request)
@@ -126,7 +128,7 @@ namespace Rambler.Web.Services
             var prefix = string.Empty;
             var command = string.Empty;
             var parameters = string.Empty;
-            var author = string.Empty;
+            var authorName = string.Empty;
 
             if (message.Contains(":") && !message.StartsWith(":"))
             {
@@ -167,7 +169,7 @@ namespace Rambler.Web.Services
                     index = 1;
                 }
 
-                author = prefix.Substring(1, index);
+                authorName = prefix.Substring(1, index);
             }
 
             if (command != "PRIVMSG")
@@ -176,14 +178,24 @@ namespace Rambler.Web.Services
             }
 
             var displayMessage = parameters.Substring(parameters.IndexOf(':') + 1);
-
-            await chatService.CreateMessage(new ChatMessage
+            var chatMessage = new ChatMessage
             {
-                Author = author,
                 Message = displayMessage,
                 Date = DateTime.UtcNow,
-                Source = ApiSource.Twitch
-            });
+                Source = ApiSource.Twitch,
+                Author = new Author
+                {
+                    Name = authorName
+                }
+            };
+            var twitchUser = await twitchManager.FindUser(authorName);
+            if (twitchUser != null)
+            {
+                chatMessage.Author.Source = ApiSource.Twitch;
+                chatMessage.Author.SourceAuthorId = twitchUser._id.ToString();
+            }
+
+            await chatService.CreateMessage(chatMessage);
         }
 
         public bool IsConfigured()

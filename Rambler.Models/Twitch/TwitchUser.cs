@@ -22,7 +22,14 @@ namespace Rambler.Models.Twitch
 
     public class TwitchNotifications
     {
+        public int id { get; set; }
         public bool email { get; set; }
         public bool push { get; set; }
+    }
+
+    public class TwitchGetUsersResponse
+    {
+        public ulong _total { get; set; }
+        public TwitchUser[] users { get; set; }
     }
 }
