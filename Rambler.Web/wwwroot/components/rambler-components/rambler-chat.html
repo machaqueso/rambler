@@ -34,12 +34,9 @@
                     connection: { type: Object, value: {} },
                     channel: { type: String, value: "All" },
                     showDate: { type: Boolean, value: false },
-                    voiceName: { type: String },
-                    voice: { type: Object },
-                    rate: { type: Number, value: 1.0 },
-                    pitch: { type: Number, value: 1.0 },
                     speechSynthesis: { type: Object },
-                    speakEnabled: { type: Boolean, value: false },
+                    speakEnabled: { type: Boolean, notify: true, value: false },
+                    voice: { type: Object, notify: true },
                     maxLines: { type: Number, value: 10 }
                 },
                 _onMessageReceived: function (message) {
@@ -53,35 +50,24 @@
                     this.fire("messageReceived");
                 },
                 _speak: function (message) {
-                    console.log("speak");
-
-                    //console.log("voice", this.voice);
-                    //if (this.voice === undefined) {
-                    //    this.voice = this._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
-                    //}
-                    //console.log("voice", this.voice);
-                    //if (this.voice === undefined) {
-                    //    return;
-                    //}
-
-                    if (speechSynthesis.speaking) {
-                        console.log("speechSynthesis.speaking", speechSynthesis.speaking);
-                    }
+                    //console.log("speak");
 
                     if (message !== '') {
                         var utterThis = new SpeechSynthesisUtterance(message);
-                        utterThis.onend = function (event) {
-                            console.log('SpeechSynthesisUtterance.onend');
-                        }
+                        //utterThis.onend = function (event) {
+                        //    console.log('SpeechSynthesisUtterance.onend');
+                        //}
                         utterThis.onerror = function (event) {
                             console.error('SpeechSynthesisUtterance.onerror', event);
                         }
 
+                        console.log("voice", utterThis.voice);
+                        console.log("lang", utterThis.lang);
                         if (this.voice !== undefined) {
                             utterThis.voice = this.voice;
                         }
-                        utterThis.pitch = this.pitch;
-                        utterThis.rate = this.rate;
+                        //utterThis.pitch = this.pitch;
+                        //utterThis.rate = this.rate;
                         speechSynthesis.speak(utterThis);
                     }
                 },
@@ -99,7 +85,7 @@
                     }
                 },
                 _onVoicesChanged: function () {
-                    console.log("_onVoicesChanged");
+                    console.log("_onVoicesChanged", this.speechSynthesis);
                     if (this.speechSynthesis === undefined) {
                         return;
                     }

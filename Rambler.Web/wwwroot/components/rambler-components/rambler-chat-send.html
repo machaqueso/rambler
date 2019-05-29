@@ -1,0 +1,51 @@
+﻿<script src="../../lib/signalr/dist/browser/signalr.js"></script>
+
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/iron-form/iron-form.html" />
+<link rel="import" href="/components/paper-input/paper-input.html" />
+<link rel="import" href="/components/paper-button/paper-button.html" />
+
+<dom-module id="rambler-chat-send">
+    <template>
+        <form id="form" is="iron-form">
+            <div class="form-row">
+                <paper-input style="max-width: 20%; padding-right: 10px;" label="Author" value="{{message.author}}"></paper-input>
+                <paper-input style="flex: 1 1 0;" label="Message" value="{{message.message}}"></paper-input>
+                <paper-button class="primary" on-tap="_send">Send</paper-button>
+            </div>
+        </form>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        HTMLImports.whenReady(function () {
+            Polymer({
+                is: "rambler-chat-send",
+                properties: {
+                    message: { Type: Object, value: {} },
+                    connection: { Type: Object }
+                },
+                _send: function () {
+                    console.log("SendMessage", this.message.author, this.message.message);
+                    this.connection.invoke("SendMessage", this.message.author, this.message.message)
+                        .catch(function (err) {
+                            return console.error(err.toString());
+                        });
+                },
+                ready: function () {
+                    var _this = this;
+                    this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+                    this.connection.on("ReceiveMessage",
+                        function (message) {
+                            console.log("ReceiveMessage", message);
+                            _this._onMessageReceived(author, message);
+                        });
+
+                    this.connection.start().catch(function (err) {
+                        return console.error(err.toString());
+                    });
+                }
+            });
+        });
+    </script>
+</dom-module>
