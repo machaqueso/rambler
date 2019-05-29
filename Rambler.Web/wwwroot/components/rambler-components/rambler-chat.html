@@ -21,7 +21,6 @@
                     <chat-message item="{{item}}" timeout="[[timeout]]" show-speaker="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
                 </template>
             </template>
-            <div id="anchor"></div>
         </div>
         <paper-toast id="toast"></paper-toast>
     </template>
@@ -34,7 +33,6 @@
                     connection: { type: Object, value: {} },
                     channel: { type: String, value: "All" },
                     showDate: { type: Boolean, value: false },
-                    speechSynthesis: { type: Object },
                     speakEnabled: { type: Boolean, notify: true, value: false },
                     voice: { type: Object, notify: true },
                     maxLines: { type: Number, value: 10 }
@@ -65,6 +63,8 @@
                         console.log("lang", utterThis.lang);
                         if (this.voice !== undefined) {
                             utterThis.voice = this.voice;
+                        } else {
+                            utterThis.lang = "es-ES";
                         }
                         //utterThis.pitch = this.pitch;
                         //utterThis.rate = this.rate;
@@ -77,19 +77,19 @@
                     console.log("voices", voices.length);
 
                     for (i = 0; i < voices.length; i++) {
-                        console.log("voices[i].name", voices[i].name);
+                        console.log(voices[i]);
                         if (voices[i].name === name) {
                             console.log("returning voice", voices[i]);
                             return voices[i];
                         }
                     }
                 },
-                _onVoicesChanged: function () {
-                    console.log("_onVoicesChanged", this.speechSynthesis);
-                    if (this.speechSynthesis === undefined) {
+                _onVoicesChanged: function (e, sender) {
+                    console.log("_onVoicesChanged", e, sender)
+                    if (speechSynthesis === undefined) {
                         return;
                     }
-                    this.voice = this._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
+                    sender.voice = sender._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
                 },
                 _onChatClick: function (e) {
                     //console.log(e);
@@ -110,16 +110,18 @@
                             if (_this.speakEnabled && message.channel === "TTS") {
                                 _this._speak(message.chatMessage.message);
                             }
-
                         });
 
                     this.connection.start().catch(function (err) {
                         return console.error(err.toString());
                     });
 
-                    this.speechSynthesis = window.speechSynthesis;
-                    if (this.speechSynthesis.onvoiceschanged !== undefined) {
-                        this.speechSynthesis.onvoiceschanged = this._onVoicesChanged;
+                    speechSynthesis = window.speechSynthesis;
+                    this._onVoicesChanged(undefined, this);
+                    if (speechSynthesis.onvoiceschanged !== undefined) {
+                        speechSynthesis.onvoiceschanged = function(e) {
+                             return _this._onVoicesChanged(e, _this);
+                        }
                     }
                 }
             });
