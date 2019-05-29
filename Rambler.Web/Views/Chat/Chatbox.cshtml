@@ -10,6 +10,14 @@
         #container {
             font-size: @Model.FontSize;
             background-color: @Model.BackgroundColor;
+            @if (Model.Width > 0)
+            {
+                @Html.Raw($"width: {Model.Width}px;");
+            }
+            @if (Model.Height > 0)
+            {
+                @Html.Raw($"height: {Model.Height}px;");
+            }
         }
 
         #container .chat {
@@ -22,16 +30,23 @@
 
 <dom-module id="page-module">
     <template>
-
         <div id="container">
-            <rambler-chat channel="OBS"></rambler-chat>
+            <rambler-chat channel="OBS" max-lines="@Model.MaxLines"></rambler-chat>
         </div>
     </template>
     <script>
         addEventListener('WebComponentsReady', function () {
 
             Polymer({
-                is: "page-module"
+                is: "page-module",
+                listeners: [
+                    "messageReceived", '_onMessageReceived'
+                ],
+                _onMessageReceived: function () {
+                    console.log("Chatbox_onMessageReceived");
+                    var container = document.querySelector('#container');
+                    container.scroller.scrollTop = container.scrollHeight;
+                }
             });
         })
     </script>

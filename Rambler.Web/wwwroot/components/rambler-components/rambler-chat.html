@@ -7,7 +7,7 @@
 <dom-module id="rambler-chat">
     <template>
         <iron-ajax auto id="ajax"
-                   url="/api/chat"
+                   url="/api/chat?maxItems=[[maxLines]]"
                    handle-as="json"
                    loading="{{loading}}"
                    last-response="{{messages}}"></iron-ajax>
@@ -21,6 +21,7 @@
                     <chat-message item="{{item}}" timeout="[[timeout]]" show-speaker="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
                 </template>
             </template>
+            <div id="anchor"></div>
         </div>
         <paper-toast id="toast"></paper-toast>
     </template>
@@ -38,16 +39,18 @@
                     rate: { type: Number, value: 1.0 },
                     pitch: { type: Number, value: 1.0 },
                     speechSynthesis: { type: Object },
-                    speakEnabled: { type: Boolean, value: false }
+                    speakEnabled: { type: Boolean, value: false },
+                    maxLines: { type: Number, value: 10 }
                 },
                 _onMessageReceived: function (message) {
                     if (!message) return;
 
-                    console.log(message);
+                    console.log(message, this.maxLines);
                     this.push("messages", message);
-                    if (this.messages.length > 10) {
+                    if (this.messages.length > this.maxLines) {
                         this.shift("messages");
                     }
+                    this.fire("messageReceived");
                 },
                 _speak: function (message) {
                     console.log("speak");
@@ -107,16 +110,17 @@
                     var _this = this;
                     this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
-                    this.connection.on("ReceiveChannelMessage", function (message) {
-                        console.log("ReceiveChannelMessage", message);
-                        if (message.channel == _this.channel) {
-                            _this._onMessageReceived(message.chatMessage);
-                        }
-                        if (_this.speakEnabled && message.channel === "TTS") {
-                            _this._speak(message.chatMessage.message);
-                        }
+                    this.connection.on("ReceiveChannelMessage",
+                        function (message) {
+                            console.log("ReceiveChannelMessage", message);
+                            if (message.channel == _this.channel) {
+                                _this._onMessageReceived(message.chatMessage);
+                            }
+                            if (_this.speakEnabled && message.channel === "TTS") {
+                                _this._speak(message.chatMessage.message);
+                            }
 
-                    });
+                        });
 
                     this.connection.start().catch(function (err) {
                         return console.error(err.toString());

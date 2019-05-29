@@ -24,13 +24,16 @@ namespace Rambler.Web.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Chatbox(string fontSize = "inherit", string backgroundColor = "none", string color = "white")
+        public IActionResult Chatbox(string fontSize = "inherit", string backgroundColor = "none", string color = "white", int width = 0, int height = 0, int maxLines = 10)
         {
             var chatConfig = new ChatConfig
             {
                 FontSize = fontSize,
                 BackgroundColor = backgroundColor,
-                Color = color
+                Color = color,
+                Width = width,
+                Height = height,
+                MaxLines = maxLines
             };
 
             return View(chatConfig);

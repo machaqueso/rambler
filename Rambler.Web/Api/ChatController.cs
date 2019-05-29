@@ -22,11 +22,11 @@ namespace Rambler.Web.Api
 
         [Route("")]
         [AllowAnonymous]
-        public IActionResult GetMessages()
+        public IActionResult GetMessages(int maxItems = 10)
         {
             var messages = chatService.GetMessages()
                 .OrderByDescending(x => x.Date)
-                .Take(10)
+                .Take(maxItems)
                 .OrderBy(x => x.Date);
 
             return Ok(messages.Select(x => new
