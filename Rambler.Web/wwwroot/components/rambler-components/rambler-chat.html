@@ -55,18 +55,19 @@
                 _speak: function (message) {
                     console.log("speak");
 
-                    console.log("voice", this.voice);
-                    if (this.voice === undefined) {
-                        this.voice = this._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
-                    }
-                    console.log("voice", this.voice);
-                    if (this.voice === undefined) {
-                        return;
-                    }
+                    //console.log("voice", this.voice);
+                    //if (this.voice === undefined) {
+                    //    this.voice = this._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
+                    //}
+                    //console.log("voice", this.voice);
+                    //if (this.voice === undefined) {
+                    //    return;
+                    //}
+
                     if (speechSynthesis.speaking) {
-                        console.error('speechSynthesis.speaking');
-                        return;
+                        console.log("speechSynthesis.speaking", speechSynthesis.speaking);
                     }
+
                     if (message !== '') {
                         var utterThis = new SpeechSynthesisUtterance(message);
                         utterThis.onend = function (event) {
@@ -76,7 +77,9 @@
                             console.error('SpeechSynthesisUtterance.onerror', event);
                         }
 
-                        utterThis.voice = this.voice;
+                        if (this.voice !== undefined) {
+                            utterThis.voice = this.voice;
+                        }
                         utterThis.pitch = this.pitch;
                         utterThis.rate = this.rate;
                         speechSynthesis.speak(utterThis);
@@ -103,8 +106,10 @@
                     this.voice = this._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
                 },
                 _onChatClick: function (e) {
-                    console.log(e);
-                    this._speak(e.model.item.message);
+                    //console.log(e);
+                    if (this.speakEnabled) {
+                        this._speak(e.model.item.message);
+                    }
                 },
                 ready: function () {
                     var _this = this;
