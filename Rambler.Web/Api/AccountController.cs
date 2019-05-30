@@ -28,6 +28,7 @@ namespace Rambler.Web.Api
         {
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
             identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
 
             //identity.AddClaim(new Claim(ClaimTypes.Role, RoleNames.Admin));
 
@@ -63,7 +64,7 @@ namespace Rambler.Web.Api
                 && !foundUser.LastLoginDate.HasValue
                 && foundUser.MustChangePassword)
             {
-                await SignIn(user);
+                await SignIn(foundUser);
                 return Ok();
             }
 
@@ -78,7 +79,7 @@ namespace Rambler.Web.Api
                 return UnprocessableEntity("Invalid username or password");
             }
 
-            await SignIn(user);
+            await SignIn(foundUser);
             return Ok();
         }
 

@@ -36,6 +36,7 @@ namespace Rambler.Web
             });
 
             services.AddDbContext<DataContext>();
+            services.AddHttpContextAccessor();
 
             services.AddTransient<UserService>();
             services.AddTransient<YoutubeService>();
