@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Rambler.Data;
-using Rambler.Web.Hubs;
 using Rambler.Models;
 using Rambler.Services;
+using Rambler.Web.Hubs;
 
 namespace Rambler.Web.Services
 {
@@ -17,7 +17,8 @@ namespace Rambler.Web.Services
         private readonly ChannelService channelService;
         private readonly AuthorService authorService;
 
-        public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, ChannelService channelService, AuthorService authorService)
+        public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, ChannelService channelService,
+            AuthorService authorService)
         {
             this.db = db;
             this.chatHubContext = chatHubContext;
@@ -56,10 +57,10 @@ namespace Rambler.Web.Services
         public async Task SendToChannel(string channel, ChatMessage message)
         {
             // SignalR appears to not like complex objects being passed down, so I changed this to send a dynamic instead of using ChannelMessage
-            await chatHubContext.Clients.All.SendAsync("ReceiveChannelMessage", new 
+            await chatHubContext.Clients.All.SendAsync("ReceiveChannelMessage", new
             {
                 Channel = channel,
-                ChatMessage = new 
+                ChatMessage = new
                 {
                     message.Id,
                     message.Date,
@@ -91,9 +92,13 @@ namespace Rambler.Web.Services
                 .ToListAsync();
 
             var channelNames = new List<string>();
+            var authorFilters = await authorService.GetFilters()
+                .Where(x => x.Author.SourceAuthorId == message.Author.SourceAuthorId)
+                .ToListAsync();
+
             foreach (var channel in channels)
             {
-                if (await AllowedMessage(message, channel.Name))
+                if (AllowedMessage(message, channel.Name, authorFilters))
                 {
                     channelNames.Add(channel.Name);
                 }
@@ -102,53 +107,79 @@ namespace Rambler.Web.Services
             return channelNames;
         }
 
-        public async Task<bool> AllowedMessage(ChatMessage message, string channel)
+        public bool AllowedMessage(ChatMessage message, string channel, IList<AuthorFilter> authorFilters)
         {
             switch (channel)
             {
                 case "Reader":
-                    return await ReaderRules(message);
+                    return ReaderRules(message, authorFilters);
                 case "OBS":
-                    return await OBSRules(message);
+                    return OBSRules(message, authorFilters);
                 case "TTS":
-                    return await TTSRules(message);
+                    return TTSRules(message, authorFilters);
                 default:
-                    return await GlobalRules(message);
+                    return GlobalRules(message, authorFilters);
             }
         }
 
-        private async Task<bool> TTSRules(ChatMessage message)
+        private bool TTSRules(ChatMessage message, IList<AuthorFilter> authorFilters)
         {
-            return await GlobalRules(message);
-        }
-
-        private async Task<bool> OBSRules(ChatMessage message)
-        {
-            return await GlobalRules(message);
-        }
-
-        private async Task<bool> ReaderRules(ChatMessage message)
-        {
-            return await GlobalRules(message);
-        }
-
-        public async Task<bool> GlobalRules(ChatMessage message)
-        {
-            var authorFilters = authorService.GetFilters()
-                .Where(x => x.Author.SourceAuthorId == message.Author.SourceAuthorId);
-
-            if (!await authorFilters.AnyAsync())
+            if (IsInList(message, authorFilters, FilterTypes.Whitelist))
             {
                 return true;
             }
 
-            if (!await authorFilters.AnyAsync(x => x.FilterType == FilterTypes.Whitelist))
+            if (message.Author.Score >= 0)
             {
                 return true;
             }
 
-            // add other global rules here
-            return true;
+            return false;
+        }
+
+        private bool OBSRules(ChatMessage message, IList<AuthorFilter> authorFilters)
+        {
+            if (IsInList(message, authorFilters, FilterTypes.Whitelist))
+            {
+                return true;
+            }
+
+            if (message.Author.Score >= 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool ReaderRules(ChatMessage message, IList<AuthorFilter> authorFilters)
+        {
+            if (IsInList(message, authorFilters, FilterTypes.Whitelist))
+            {
+                return true;
+            }
+
+            if (IsInList(message, authorFilters, FilterTypes.Ignorelist))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool GlobalRules(ChatMessage message, IList<AuthorFilter> authorFilters)
+        {
+            if (IsInList(message, authorFilters, FilterTypes.Whitelist))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool IsInList(ChatMessage message, IList<AuthorFilter> authorFilters, string filterType)
+        {
+            return authorFilters.Any(x => x.FilterType == filterType);
         }
     }
 }
