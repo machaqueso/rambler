@@ -34,6 +34,7 @@ namespace Rambler.Web.Api
                 x.Id,
                 x.Date,
                 Author = x.Author.Name,
+                AuthorId = x.Author.Id,
                 x.Source,
                 SourceAuthorId = x.Author.SourceAuthorId,
                 x.SourceMessageId,

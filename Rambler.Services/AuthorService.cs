@@ -65,5 +65,69 @@ namespace Rambler.Services
             return db.AuthorFilters;
         }
 
+        public async Task AuthorAction(int id, string action)
+        {
+            var author = await GetAuthors()
+                .Include(x => x.AuthorFilters)
+                .SingleOrDefaultAsync(x => x.Id == id);
+            if (author == null)
+            {
+                throw new InvalidOperationException($"Author Id {id} not found.");
+            }
+
+            if (action == ActionTypes.Upvote)
+            {
+                author.Score += 1;
+                await db.SaveChangesAsync();
+                return;
+            }
+
+            if (action == ActionTypes.Downvote)
+            {
+                author.Score -= 1;
+                await db.SaveChangesAsync();
+                return;
+            }
+
+            if (action == ActionTypes.Whitelist)
+            {
+                if (author.AuthorFilters.Any(x => x.FilterType == FilterTypes.Whitelist))
+                {
+                    await RemoveFilter(id, FilterTypes.Whitelist);
+                }
+                await AddFilter(id, FilterTypes.Whitelist);
+                return;
+            }
+
+            if (action == ActionTypes.Ignore)
+            {
+                if (author.AuthorFilters.Any(x => x.FilterType == FilterTypes.Ignorelist))
+                {
+                    await RemoveFilter(id, FilterTypes.Ignorelist);
+                }
+                await AddFilter(id, FilterTypes.Ignorelist);
+                return;
+            }
+
+            if (action == ActionTypes.Blacklist)
+            {
+                if (author.AuthorFilters.Any(x => x.FilterType == FilterTypes.Blacklist))
+                {
+                    await RemoveFilter(id, FilterTypes.Blacklist);
+                }
+                await AddFilter(id, FilterTypes.Blacklist);
+                return;
+            }
+
+            if (action == ActionTypes.Ban)
+            {
+                if (author.AuthorFilters.Any(x => x.FilterType == FilterTypes.Banlist))
+                {
+                    await RemoveFilter(id, FilterTypes.Banlist);
+                }
+                await AddFilter(id, FilterTypes.Banlist);
+            }
+        }
+
     }
 }

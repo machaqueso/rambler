@@ -1,5 +1,6 @@
 ﻿
 <link rel="import" href="rambler-chat-date.html" />
+<link rel="import" href="../paper-listbox/paper-listbox.html" />
 
 <dom-module id="chat-message">
     <template>
@@ -15,10 +16,31 @@
             .speaker {
                 color: greenyellow;
             }
+
+            paper-menu {
+                padding: 0;
+            }
+
+            paper-item {
+                min-height: auto;
+            }
+
+                paper-item:hover {
+                    background-color: gainsboro;
+                }
         </style>
 
+
+        <iron-ajax id="putAction"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="PUT"
+                   on-error="_onActionError"
+                   debounce-duration="300"></iron-ajax>
+
         <template is="dom-if" if="[[!hideRow]]">
-            <div class="row">
+            <paper-tooltip class="row">
                 <template is="dom-if" if="[[showDate]]">
                     <div>{{item.displayDate}} {{item.displayTime}}</div>
                 </template>
@@ -28,9 +50,14 @@
                 <template is="dom-if" if="[[showSpeaker]]">
                     <i class="fas fa-volume-down speaker" title="TTS enabled"></i>
                 </template>
-                <div class="author">{{item.author}}</div>
+                <div class="author" on-click="_onAuthorClick">{{item.author}}</div>
+                <paper-listbox hidden$="[[authorContextHidden]]" attr-for-selected="value" on-iron-select="_authorAction">
+                    <template is="dom-repeat" items="[[actions]]">
+                        <paper-item value="{{item}}">{{item}}</paper-item>
+                    </template>
+                </paper-listbox>
                 <div class="message">{{item.message}}</div>
-            </div>
+                </div>
         </template>
 
     </template>
@@ -42,13 +69,30 @@
                 showDate: { type: Boolean, value: false },
                 hideRow: { type: Boolean, notify: true, value: false },
                 timeout: { type: Number, value: 30000 },
-                showSpeaker: { type: Boolean, value: false }
+                showSpeaker: { type: Boolean, value: false },
+                authorContextHidden: { type: Boolean, notify: true, value: true },
+                actions: { type: Array }
             },
             _getIcon: function (source) {
                 return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
             },
+            _onAuthorClick: function (e) {
+                this.authorContextHidden = !this.authorContextHidden;
+            },
+            _authorAction: function (e) {
+                console.log(e.detail.item.value, e.model.item);
+                this.$.putAction.url = "/api/author/" + e.model.item.authorId + "/" + e.detail.item.value;
+                //this.$.putAction.body = JSON.stringify(e.model.item);
+                this.$.putAction.generateRequest();
+                this.authorContextHidden = true;
+            },
+            _onActionError: function (e) {
+                console.log(e.detail.request.xhr.response);
+            },
             ready: function () {
                 var that = this;
+
+                this.set("actions", ["Upvote", "Downvote", "Whitelist", "Ignore", "Blacklist", "Ban"])
 
                 if (this.timeout > 0) {
                     window.setTimeout(function () {
