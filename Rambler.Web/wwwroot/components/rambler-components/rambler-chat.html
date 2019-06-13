@@ -6,11 +6,36 @@
 
 <dom-module id="rambler-chat">
     <template>
+        <style>
+            .authorContext {
+                z-index: 10;
+                position: absolute;
+                display: block;
+                color: black;
+                background-color: whitesmoke;
+                list-style-type: none;
+                list-style: none;
+                margin: 0;
+                padding: 5px;
+            }
+
+                .authorContext li:hover {
+                    background-color: gainsboro;
+                }
+        </style>
         <iron-ajax auto id="ajax"
                    url="/api/chat?maxItems=[[maxLines]]"
                    handle-as="json"
                    loading="{{loading}}"
                    last-response="{{messages}}"></iron-ajax>
+
+        <iron-ajax id="putAction"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="PUT"
+                   on-error="_onActionError"
+                   debounce-duration="300"></iron-ajax>
 
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
@@ -22,6 +47,11 @@
                 </template>
             </template>
         </div>
+        <ul hidden$="[[hideAuthorContext]]" id="context-menu" class="authorContext">
+            <template is="dom-repeat" items="[[actions]]">
+                <li value="{{item}}" on-click="_authorAction">{{item}}</li>
+            </template>
+        </ul>
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
@@ -35,8 +65,15 @@
                     showDate: { type: Boolean, value: false },
                     speakEnabled: { type: Boolean, notify: true, value: false },
                     voice: { type: Object, notify: true },
-                    maxLines: { type: Number, value: 10 }
+                    maxLines: { type: Number, value: 10 },
+                    hideAuthorContext: { type: Boolean, notify: true, value: true },
+                    actions: { type: Array }
                 },
+
+                listeners: {
+                    'author-click': '_onAuthorClick',
+                },
+
                 _onMessageReceived: function (message) {
                     if (!message) return;
 
@@ -97,6 +134,29 @@
                         this._speak(e.model.item.message);
                     }
                 },
+                _onAuthorClick: function (e) {
+                    //console.log('_onAuthorClick', e.detail.author);
+
+                    this.author = e.detail.author;
+
+                    this.hideAuthorContext = !this.hideAuthorContext;
+                    if (!this.hideAuthorContext) {
+                        //console.log(e.detail.x, e.detail.y, e.target.offsetLeft, e.target.offsetTop);
+
+                        var menu = document.querySelector("#context-menu");
+                        menu.style.left = e.detail.x + "px";
+                        menu.style.top = e.detail.y + "px";
+                    }
+                },
+                _authorAction: function (e) {
+                    console.log("_authorAction", e.model.item, this.author.authorId);
+                    this.$.putAction.url = "/api/author/" + this.author.authorId + "/" + e.model.item;
+                    this.$.putAction.generateRequest();
+                    this.hideAuthorContext = true;
+                },
+                _onActionError: function (e) {
+                    console.log(e.detail.request.xhr.response);
+                },
                 ready: function () {
                     var _this = this;
                     this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
@@ -119,10 +179,13 @@
                     speechSynthesis = window.speechSynthesis;
                     this._onVoicesChanged(undefined, this);
                     if (speechSynthesis.onvoiceschanged !== undefined) {
-                        speechSynthesis.onvoiceschanged = function(e) {
-                             return _this._onVoicesChanged(e, _this);
+                        speechSynthesis.onvoiceschanged = function (e) {
+                            return _this._onVoicesChanged(e, _this);
                         }
                     }
+
+                    this.set("actions", ["Upvote", "Downvote", "Whitelist", "Ignore", "Blacklist", "Ban"])
+
                 }
             });
         });
