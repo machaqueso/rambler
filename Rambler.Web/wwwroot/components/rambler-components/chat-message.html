@@ -13,10 +13,6 @@
                 color: #6441a4;
             }
 
-            .speaker {
-                color: greenyellow;
-            }
-
             paper-menu {
                 padding: 0;
             }
@@ -38,9 +34,6 @@
                 <template is="dom-if" if="[[item.source]]">
                     <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
                 </template>
-                <template is="dom-if" if="[[showSpeaker]]">
-                    <i class="fas fa-volume-down speaker" title="TTS enabled"></i>
-                </template>
                 <div class="author" on-click="_onAuthorClick">{{item.author}}</div>
                 <div class="message">{{item.message}}</div>
             </div>
@@ -55,7 +48,6 @@
                 showDate: { type: Boolean, value: false },
                 hideRow: { type: Boolean, notify: true, value: false },
                 timeout: { type: Number, value: 30000 },
-                showSpeaker: { type: Boolean, value: false },
                 actions: { type: Array }
             },
             _getIcon: function (source) {

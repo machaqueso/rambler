@@ -40,10 +40,10 @@
         <div class="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
                 <template is="dom-if" if="[[showDate]]">
-                    <chat-message item="{{item}}" show-date timeout="[[timeout]]" show-speaker="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
+                    <chat-message item="{{item}}" show-date timeout="[[timeout]]" on-click="_onChatClick"></chat-message>
                 </template>
                 <template is="dom-if" if="[[!showDate]]">
-                    <chat-message item="{{item}}" timeout="[[timeout]]" show-speaker="[[speakEnabled]]" on-click="_onChatClick"></chat-message>
+                    <chat-message item="{{item}}" timeout="[[timeout]]" on-click="_onChatClick"></chat-message>
                 </template>
             </template>
         </div>
@@ -63,8 +63,6 @@
                     connection: { type: Object, value: {} },
                     channel: { type: String, value: "All" },
                     showDate: { type: Boolean, value: false },
-                    speakEnabled: { type: Boolean, notify: true, value: false },
-                    voice: { type: Object, notify: true },
                     maxLines: { type: Number, value: 10 },
                     hideAuthorContext: { type: Boolean, notify: true, value: true },
                     actions: { type: Array }
@@ -83,50 +81,6 @@
                         this.shift("messages");
                     }
                     this.fire("messageReceived");
-                },
-                _speak: function (message) {
-                    //console.log("speak");
-
-                    if (message !== '') {
-                        var utterThis = new SpeechSynthesisUtterance(message);
-                        //utterThis.onend = function (event) {
-                        //    console.log('SpeechSynthesisUtterance.onend');
-                        //}
-                        utterThis.onerror = function (event) {
-                            console.error('SpeechSynthesisUtterance.onerror', event);
-                        }
-
-                        console.log("voice", utterThis.voice);
-                        console.log("lang", utterThis.lang);
-                        if (this.voice !== undefined) {
-                            utterThis.voice = this.voice;
-                        } else {
-                            utterThis.lang = "es-ES";
-                        }
-                        //utterThis.pitch = this.pitch;
-                        //utterThis.rate = this.rate;
-                        speechSynthesis.speak(utterThis);
-                    }
-                },
-                _getVoiceByName: function (name) {
-                    var voices = [];
-                    voices = window.speechSynthesis.getVoices();
-                    console.log("voices", voices.length);
-
-                    for (i = 0; i < voices.length; i++) {
-                        console.log(voices[i]);
-                        if (voices[i].name === name) {
-                            console.log("returning voice", voices[i]);
-                            return voices[i];
-                        }
-                    }
-                },
-                _onVoicesChanged: function (e, sender) {
-                    console.log("_onVoicesChanged", e, sender)
-                    if (speechSynthesis === undefined) {
-                        return;
-                    }
-                    sender.voice = sender._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
                 },
                 _onChatClick: function (e) {
                     //console.log(e);
@@ -167,22 +121,11 @@
                             if (message.channel == _this.channel) {
                                 _this._onMessageReceived(message.chatMessage);
                             }
-                            if (_this.speakEnabled && message.channel === "TTS") {
-                                _this._speak(message.chatMessage.message);
-                            }
                         });
 
                     this.connection.start().catch(function (err) {
                         return console.error(err.toString());
                     });
-
-                    speechSynthesis = window.speechSynthesis;
-                    this._onVoicesChanged(undefined, this);
-                    if (speechSynthesis.onvoiceschanged !== undefined) {
-                        speechSynthesis.onvoiceschanged = function (e) {
-                            return _this._onVoicesChanged(e, _this);
-                        }
-                    }
 
                     this.set("actions", ["Upvote", "Downvote", "Whitelist", "Ignore", "Blacklist", "Ban"])
 

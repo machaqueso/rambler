@@ -8,6 +8,7 @@
 <link rel="import" href="/components/rambler-components/rambler-api-status.html" />
 <link rel="import" href="/components/rambler-components/rambler-integrations.html" />
 <link rel="import" href="/components/rambler-components/rambler-chat-send.html" />
+<link rel="import" href="/components/rambler-components/rambler-chat-tts.html" />
 
 <dom-module id="page-module">
     <template>
@@ -47,9 +48,7 @@
                     </a>
                 </actions>
                 <main>
-                    <div style="display: flex;">
-                        <paper-toggle-button checked="{{speakEnabled}}">TTS</paper-toggle-button>
-                    </div>
+                    <rambler-chat-tts></rambler-chat-tts>
                     <div style="background-color: black;">
                         <rambler-chat show-date timeout="0" speak-enabled="[[speakEnabled]]"></rambler-chat>
                     </div>
@@ -59,7 +58,6 @@
                 </main>
             </xenon-photo-card>
         </div>
-
 
     </template>
     <script>

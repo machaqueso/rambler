@@ -1,0 +1,132 @@
+﻿<script src="../../lib/signalr/dist/browser/signalr.js"></script>
+
+<link rel="import" href="../paper-toast/paper-toast.html" />
+<link rel="import" href="../iron-ajax/iron-ajax.html" />
+
+<dom-module id="rambler-chat-tts">
+    <style>
+
+        .enabled {
+            color: greenyellow;
+        }
+
+    </style>
+
+    <template>
+
+        <div>
+            <p hidden$="{{notSpeaking}}">
+                <i class$="fas fa-volume-down {{_computeClass(enabled)}}" title="TTS" on-click="_onSpeakerClick"></i> TTS: {{message}}
+            </p>
+        </div>
+
+        <paper-toast id="toast"></paper-toast>
+
+    </template>
+    <script>
+        HTMLImports.whenReady(function() {
+            Polymer({
+                is: "rambler-chat-tts",
+                properties: {
+                    connection: { type: Object, value: {} },
+                    channel: { type: String, value: "All" },
+                    voice: { type: Object, notify: true },
+                    message: { type: String, notify: true },
+                    notSpeaking: { type: Boolean, notify: true },
+                    enabled: { type: Boolean, notify: true, value: false },
+                },
+
+                _speak: function(message) {
+
+                    if (!this.enabled) {
+                        return;
+                    }
+
+                    if (message !== '') {
+                        var utterThis = new SpeechSynthesisUtterance(message);
+
+                        utterThis.onend = function(event) {
+                            this.notSpeaking = true;
+                            this.message = '';
+                        }
+
+                        utterThis.onerror = function(e) {
+                            console.error('SpeechSynthesisUtterance.onerror', e);
+                            if (e.error === 'not-allowed') {
+                                toast.text = 'Please activate TTS';
+                                toast.open();
+                            }
+                        }
+
+                        console.log("voice", utterThis.voice);
+                        console.log("lang", utterThis.lang);
+                        if (this.voice !== undefined) {
+                            utterThis.voice = this.voice;
+                        } else {
+                            utterThis.lang = "es-ES";
+                        }
+                        //utterThis.pitch = this.pitch;
+                        //utterThis.rate = this.rate;
+                        this.notSpeaking = false;
+                        this.message = message;
+                        speechSynthesis.speak(utterThis);
+                    }
+                },
+                _getVoiceByName: function(name) {
+                    var voices = [];
+                    voices = window.speechSynthesis.getVoices();
+                    console.log("voices", voices.length);
+
+                    for (i = 0; i < voices.length; i++) {
+                        console.log(voices[i]);
+                        if (voices[i].name === name) {
+                            console.log("returning voice", voices[i]);
+                            return voices[i];
+                        }
+                    }
+                },
+                _onVoicesChanged: function(e, sender) {
+                    console.log("_onVoicesChanged", e, sender)
+                    if (speechSynthesis === undefined) {
+                        return;
+                    }
+                    sender.voice = sender._getVoiceByName("Microsoft Helena Desktop - Spanish (Spain)");
+                },
+                _onSpeakerClick: function (e) {
+                    this.enabled = !this.enabled;
+                    if (this.enabled) {
+                        this._speak("TTS activated");
+                    }
+                },
+                _computeClass: function (isEnabled) {
+                    return isEnabled ? "enabled" : "";
+                },
+                ready: function() {
+                    var _this = this;
+                    this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+                    this.connection.on("ReceiveChannelMessage",
+                        function(message) {
+                            console.log("ReceiveChannelMessage", message);
+                            if (message.channel === "TTS") {
+                                _this._speak(message.chatMessage.message);
+                            }
+                        });
+
+                    this.connection.start().catch(function(err) {
+                        return console.error(err.toString());
+                    });
+
+                    speechSynthesis = window.speechSynthesis;
+                    this._onVoicesChanged(undefined, this);
+                    if (speechSynthesis.onvoiceschanged !== undefined) {
+                        speechSynthesis.onvoiceschanged = function(e) {
+                            return _this._onVoicesChanged(e, _this);
+                        }
+                    }
+
+                }
+            });
+        });
+    </script>
+</dom-module>
