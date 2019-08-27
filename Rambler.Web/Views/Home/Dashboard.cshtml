@@ -40,6 +40,11 @@
                     </main>
                 </xenon-photo-card>
             </div>
+            <xenon-photo-card heading="TTS">
+                <main>
+                    <rambler-chat-tts></rambler-chat-tts>
+                </main>
+            </xenon-photo-card>
             <xenon-photo-card heading="Chatbox">
                 <actions>
                     <paper-button on-click="_openReader">Reader</paper-button>
@@ -48,7 +53,6 @@
                     </a>
                 </actions>
                 <main>
-                    <rambler-chat-tts></rambler-chat-tts>
                     <div style="background-color: black;">
                         <rambler-chat show-date timeout="0" speak-enabled="[[speakEnabled]]"></rambler-chat>
                     </div>
