@@ -47,11 +47,13 @@
                 </template>
             </template>
         </div>
-        <ul hidden$="[[hideAuthorContext]]" id="context-menu" class="authorContext">
-            <template is="dom-repeat" items="[[actions]]">
-                <li value="{{item}}" on-click="_authorAction">{{item}}</li>
-            </template>
-        </ul>
+        <template is="dom-if" if="[[showAuthorContext]]">
+            <ul id="context-menu" class="authorContext">
+                <template is="dom-repeat" items="[[actions]]">
+                    <li value="{{item}}" on-click="_authorAction">{{item}}</li>
+                </template>
+            </ul>
+        </template>
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
@@ -64,7 +66,7 @@
                     channel: { type: String, value: "All" },
                     showDate: { type: Boolean, value: false },
                     maxLines: { type: Number, value: 10 },
-                    hideAuthorContext: { type: Boolean, notify: true, value: true },
+                    showAuthorContext: { type: Boolean, notify: true, value: false },
                     actions: { type: Array }
                 },
 
@@ -93,8 +95,8 @@
 
                     this.author = e.detail.author;
 
-                    this.hideAuthorContext = !this.hideAuthorContext;
-                    if (!this.hideAuthorContext) {
+                    this.showAuthorContext = !this.showAuthorContext;
+                    if (!this.showAuthorContext) {
                         //console.log(e.detail.x, e.detail.y, e.target.offsetLeft, e.target.offsetTop);
 
                         var menu = document.querySelector("#context-menu");
@@ -106,13 +108,15 @@
                     console.log("_authorAction", e.model.item, this.author.authorId);
                     this.$.putAction.url = "/api/author/" + this.author.authorId + "/" + e.model.item;
                     this.$.putAction.generateRequest();
-                    this.hideAuthorContext = true;
+                    this.showAuthorContext = false;
                 },
                 _onActionError: function (e) {
                     console.log(e.detail.request.xhr.response);
                 },
                 ready: function () {
                     var _this = this;
+                    //this.showAuthorContext = false;
+
                     this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
                     this.connection.on("ReceiveChannelMessage",
