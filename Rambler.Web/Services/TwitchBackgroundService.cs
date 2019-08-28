@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rambler.Models;
+using Rambler.Services;
 
 namespace Rambler.Web.Services
 {
@@ -14,9 +15,11 @@ namespace Rambler.Web.Services
     {
         private readonly ILogger<TwitchBackgroundService> logger;
         private readonly IServiceScopeFactory serviceScopeFactory;
+        private readonly IntegrationManager integrationManager;
+
         private DashboardService dashboardService;
         private TwitchService twitchService;
-        private readonly IntegrationManager integrationManager;
+        private  TwitchManager twitchManager;
 
         private const int sendChunkSize = 510;
         private const int receiveChunkSize = 510; // RFC-2812
@@ -46,6 +49,7 @@ namespace Rambler.Web.Services
             {
                 twitchService = scope.ServiceProvider.GetRequiredService<TwitchService>();
                 dashboardService = scope.ServiceProvider.GetRequiredService<DashboardService>();
+                twitchManager = scope.ServiceProvider.GetRequiredService<TwitchManager>();
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -66,6 +70,8 @@ namespace Rambler.Web.Services
                             await Task.Delay(delay, cancellationToken);
                             continue;
                         }
+
+                        var user = await twitchManager.GetUser();
 
                         var webSocket = new ClientWebSocket();
                         if (webSocket.State != WebSocketState.Open)
@@ -90,7 +96,7 @@ namespace Rambler.Web.Services
                         {
                             await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Connected,
                                 cancellationToken);
-                            await Send(webSocket, cancellationToken, "JOIN :#machacoder");
+                            await Send(webSocket, cancellationToken, $"JOIN :#{user.name}");
                             await Receive(webSocket, cancellationToken);
                         }
                     }
@@ -125,8 +131,10 @@ namespace Rambler.Web.Services
                 return;
             }
 
+            var user = await twitchManager.GetUser();
+
             await Send(webSocket, cancellationToken, $"PASS oauth:{token.access_token}");
-            await Send(webSocket, cancellationToken, $"NICK machacoder"); // TODO: get nick from twitch API
+            await Send(webSocket, cancellationToken, $"NICK {user.name}"); // TODO: get nick from twitch API
         }
 
         private async Task Send(ClientWebSocket webSocket, CancellationToken cancellationToken, string message)
