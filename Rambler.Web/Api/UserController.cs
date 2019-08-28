@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Rambler.Web.Services;
 
@@ -37,5 +38,15 @@ namespace Rambler.Web.Api
 
             return Ok(tokens);
         }
+
+        [HttpDelete]
+        [Route("token/{id}")]
+        public async Task<IActionResult> DeleteToken(int id)
+        {
+            await userService.DeleteToken(id);
+            return Ok();
+        }
+
+
     }
 }

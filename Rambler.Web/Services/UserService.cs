@@ -86,5 +86,20 @@ namespace Rambler.Web.Services
             db.Users.Add(user);
             await db.SaveChangesAsync();
         }
+
+        public async Task DeleteToken(int id)
+        {
+            var existingToken = await db.AccessTokens
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (existingToken == null)
+            {
+                throw new InvalidOperationException("token not found");
+            }
+
+            db.AccessTokens.Remove(existingToken);
+            await db.SaveChangesAsync();
+        }
+
     }
 }
