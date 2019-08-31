@@ -22,6 +22,7 @@
                 .authorContext li:hover {
                     background-color: gainsboro;
                 }
+
         </style>
         <iron-ajax auto id="ajax"
                    url="/api/chat?maxItems=[[maxLines]]"
@@ -37,7 +38,7 @@
                    on-error="_onActionError"
                    debounce-duration="300"></iron-ajax>
 
-        <div class="chat">
+        <div class="chat" id="chat">
             <template is="dom-repeat" items="{{messages}}" restamp>
                 <template is="dom-if" if="[[showDate]]">
                     <chat-message item="{{item}}" show-date timeout="[[timeout]]" on-click="_onChatClick"></chat-message>
@@ -79,7 +80,9 @@
 
                     console.log(message, this.maxLines);
                     this.push("messages", message);
-                    if (this.messages.length > this.maxLines) {
+                    var element = document.getElementById("chat");
+                    element.scrollIntoView({ block: "end" });
+                    if (this.maxLines > 0 && this.messages.length > this.maxLines) {
                         this.shift("messages");
                     }
                     this.fire("messageReceived");

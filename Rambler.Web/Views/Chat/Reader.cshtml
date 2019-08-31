@@ -1,18 +1,18 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Reader";
     Layout = "_Empty";
 }
 
 @section Styles{
-<style>
+    <style>
         #container {
             background-color: black;
         }
-</style>
+    </style>
 }
 
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
 
 <div id="container">
-    <rambler-chat channel="Reader" show-date timeout="0" speak-enabled></rambler-chat>
+    <rambler-chat channel="Reader" show-date timeout="0" max-lines="0" speak-enabled></rambler-chat>
 </div>
