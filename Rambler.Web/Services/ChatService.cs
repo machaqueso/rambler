@@ -154,17 +154,14 @@ namespace Rambler.Web.Services
 
         private bool ReaderRules(ChatMessage message, IList<AuthorFilter> authorFilters)
         {
-            if (IsInList(message, authorFilters, FilterTypes.Whitelist))
+            if (IsInList(message, authorFilters, FilterTypes.Banlist) 
+                || IsInList(message, authorFilters, FilterTypes.Blacklist)
+                || message.Author.Score < -10 )
             {
-                return true;
+                return false;
             }
 
-            if (IsInList(message, authorFilters, FilterTypes.Ignorelist))
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         public bool GlobalRules(ChatMessage message, IList<AuthorFilter> authorFilters)

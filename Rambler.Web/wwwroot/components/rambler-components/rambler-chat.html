@@ -118,14 +118,18 @@
                 },
                 ready: function () {
                     var _this = this;
+
+                    if (this.maxLines === undefined || this.maxLines === 0) {
+                        this.maxLines = 10;
+                    }
                     //this.showAuthorContext = false;
 
                     this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
                     this.connection.on("ReceiveChannelMessage",
                         function (message) {
-                            console.log("ReceiveChannelMessage", message);
-                            if (message.channel == _this.channel) {
+                            console.log("ReceiveChannelMessage", message, _this.channel);
+                            if (message.channel === _this.channel) {
                                 _this._onMessageReceived(message.chatMessage);
                             }
                         });

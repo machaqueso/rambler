@@ -56,3 +56,20 @@ rambler-api-status {
 .rambler-integrations .row .text-danger {
     align-items: center;
 }
+
+.sendrow {
+    display: flex;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.sendrow #author {
+    max-width: 15%;
+    padding-right: 10px;
+}
+
+.sendrow #button {
+    display: flex;
+    flex-direction: column;
+    align-self: baseline;
+}

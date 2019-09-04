@@ -5,14 +5,31 @@
 
 @section Styles{
     <style>
+
         #container {
-            background-color: black;
+            display: flex;
+            flex-flow: column;
+            height: 95vh;
         }
+
+        #reader {
+            background-color: black;
+            flex: 1;
+            max-height: 80vh;
+            overflow-y: scroll;
+        }
+
+        #sender {
+            max-height: 80px;
+        }
+
     </style>
 }
 
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
+<link rel="import" href="/components/rambler-components/rambler-chat-send.html" />
 
 <div id="container">
-    <rambler-chat channel="Reader" show-date timeout="0" max-lines="0" speak-enabled></rambler-chat>
+    <rambler-chat id="reader" channel="Reader" show-date timeout="0" max-lines="20" speak-enabled></rambler-chat>
+    <rambler-chat-send id="sender"></rambler-chat-send>
 </div>

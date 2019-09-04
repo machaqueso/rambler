@@ -6,12 +6,15 @@
 <link rel="import" href="/components/paper-button/paper-button.html" />
 
 <dom-module id="rambler-chat-send">
+
     <template>
         <form id="form" is="iron-form">
-            <div class="form-row">
-                <paper-input style="max-width: 20%; padding-right: 10px;" label="Author" value="{{message.author}}"></paper-input>
+            <div class="sendrow">
+                <paper-input id="author" label="Author" value="{{message.author}}"></paper-input>
                 <paper-input style="flex: 1 1 0;" label="Message" value="{{message.message}}"></paper-input>
-                <paper-button class="primary" on-tap="_send">Send</paper-button>
+                <div id="button">
+                    <paper-button raised noink on-click="_send">Send</paper-button>
+                </div>
             </div>
         </form>
         <paper-toast id="toast"></paper-toast>
