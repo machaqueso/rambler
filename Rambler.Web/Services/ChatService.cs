@@ -16,14 +16,16 @@ namespace Rambler.Web.Services
         private readonly IHubContext<ChatHub> chatHubContext;
         private readonly ChannelService channelService;
         private readonly AuthorService authorService;
+        private readonly WordFilterService wordFilterService;
 
         public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, ChannelService channelService,
-            AuthorService authorService)
+            AuthorService authorService, WordFilterService wordFilterService)
         {
             this.db = db;
             this.chatHubContext = chatHubContext;
             this.channelService = channelService;
             this.authorService = authorService;
+            this.wordFilterService = wordFilterService;
         }
 
         public IQueryable<ChatMessage> GetMessages()
@@ -129,6 +131,11 @@ namespace Rambler.Web.Services
                 return true;
             }
 
+            if (wordFilterService.GetWordFilters().Any(x => message.Message.Contains(x.Word)))
+            {
+                return false;
+            }
+
             if (message.Author.Score >= 0)
             {
                 return true;
@@ -144,6 +151,11 @@ namespace Rambler.Web.Services
                 return true;
             }
 
+            if (wordFilterService.GetWordFilters().Any(x => message.Message.Contains(x.Word)))
+            {
+                return false;
+            }
+
             if (message.Author.Score >= 0)
             {
                 return true;
@@ -154,9 +166,9 @@ namespace Rambler.Web.Services
 
         private bool ReaderRules(ChatMessage message, IList<AuthorFilter> authorFilters)
         {
-            if (IsInList(message, authorFilters, FilterTypes.Banlist) 
+            if (IsInList(message, authorFilters, FilterTypes.Banlist)
                 || IsInList(message, authorFilters, FilterTypes.Blacklist)
-                || message.Author.Score < -10 )
+                || message.Author.Score < -10)
             {
                 return false;
             }

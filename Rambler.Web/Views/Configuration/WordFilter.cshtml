@@ -1,0 +1,160 @@
+﻿@{
+    ViewData["Title"] = "Word Filter";
+}
+
+<link rel="import" href="~/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="~/components/paper-toast/paper-toast.html" />
+<link rel="import" href="~/components/iron-ajax/iron-ajax.html" />
+<link rel="import" href="~/components/rambler-components/rambler-integrations.html" />
+<link rel="import" href="~/components/iron-icons/editor-icons.html" />
+<link rel="import" href="~/components/xenon-layout/xenon-dialog.html" />
+
+<dom-module id="page-module">
+    <template>
+        <style is="custom-style">
+            paper-icon-button {
+                padding: 0;
+                width: 20px;
+                height: 20px;
+            }
+        </style>
+        <iron-ajax id="ajax"
+                   auto
+                   url="/api/wordfilter"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{words}}"
+                   debounce-duration="300">
+        </iron-ajax>
+
+        <iron-ajax id="addWord"
+                   method="POST"
+                   url="/api/wordfilter"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   on-error="_onError"
+                   on-response="_refresh"
+                   debounce-duration="300"></iron-ajax>
+
+        <iron-ajax id="updateWord"
+                   method="PUT"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   on-error="_onError"
+                   on-response="_refresh"
+                   debounce-duration="300"></iron-ajax>
+
+        <iron-ajax id="deleteWord"
+                   method="DELETE"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   on-error="_onError"
+                   on-response="_refresh"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-photo-card heading="Word Filters">
+            <actions>
+                <paper-input label="Add word" value="{{word}}" on-keydown="_checkForEnter"></paper-input>
+            </actions>
+            <main>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Word</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="{{words}}">
+                            <tr>
+                                <td>{{item.id}}</td>
+                                <td>{{item.word}}</td>
+                                <td>
+                                    <paper-icon-button icon="editor:mode-edit" on-click="_openEditor"></paper-icon-button>
+                                    <paper-icon-button icon="icons:delete" on-click="_delete"></paper-icon-button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+
+                </table>
+            </main>
+        </xenon-photo-card>
+
+        <xenon-dialog id="dialog" heading="Edit Word">
+            <main>
+                <paper-input label="{{setting.id}}" value="{{setting.word}}"></paper-input>
+                <template is="dom-if" if="[[errorMessage]]">
+                    <div class="text-danger">[[errorMessage]]</div>
+                </template>
+            </main>
+            <buttons>
+                <paper-button on-click="_save">Save</paper-button>
+                <paper-button on-click="_cancel">Cancel</paper-button>
+            </buttons>
+        </xenon-dialog>
+
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        addEventListener('WebComponentsReady', function () {
+
+            Polymer({
+                is: "page-module",
+                properties: {
+                    setting: { type: Object, notify: true, value: {} },
+                    errorMessage: { type: String, notify: true, value: "" },
+                    word: { type: String, notify: true, value: "" },
+                    words: { type: Array, notify: true, value: [] }
+                },
+                observers: [
+                ],
+                _openEditor: function (e) {
+                    console.log(e.model.item);
+                    this.set("setting", e.model.item);
+                    this.$.dialog.open();
+                },
+                _checkForEnter: function (e) {
+                    var _this = this;
+                    if (e.keyCode === 13) {
+                        _this._add();
+                    }
+                },
+                _add: function () {
+                    this.$.addWord.body = JSON.stringify({ word: this.word });
+                    this.$.addWord.generateRequest();
+                },
+                _save: function (e) {
+                    this.$.putSetting.url = "/api/wordfilter/" + this.setting.id;
+                    this.$.putSetting.body = JSON.stringify(this.setting);
+                    this.$.putSetting.generateRequest();
+                },
+                _delete: function (e) {
+                    this.$.deleteWord.url = "/api/wordfilter";
+                    this.$.deleteWord.body = JSON.stringify(e.model.item);
+                    this.$.deleteWord.generateRequest();
+                },
+                _cancel: function () {
+                    this.$.dialog.close();
+                },
+                _refresh: function () {
+                    this.word = "";
+                    this.$.dialog.close();
+                    this.$.ajax.generateRequest();
+                },
+                _onError: function (e) {
+                    this.$.toast.text = "ERROR: " + e.detail.request.xhr.response;
+                    this.$.toast.show();
+                },
+                ready: function () {
+                }
+            });
+        })
+    </script>
+</dom-module>
+
+<page-module></page-module>

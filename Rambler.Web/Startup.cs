@@ -52,6 +52,7 @@ namespace Rambler.Web
             services.AddTransient<TwitchAPIv5>();
             services.AddTransient<TwitchManager>();
             services.AddTransient<AuthorService>();
+            services.AddTransient<WordFilterService>();
 
             services.AddSingleton<IHostedService, YoutubeBackgroundService>();
             services.AddSingleton<IHostedService, TwitchBackgroundService>();

@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Authors";
+    ViewData["Title"] = "Author Filters";
 }
 
 <link rel="import" href="~/components/xenon-photo-card/xenon-photo-card.html" />
@@ -20,25 +20,31 @@
         </style>
         <iron-ajax id="ajax"
                    auto
-                   url="/api/author"
+                   url="/api/authorFilter"
                    handle-as="json"
                    loading="{{loading}}"
                    last-response="{{items}}"
                    debounce-duration="300">
         </iron-ajax>
+        <iron-ajax id="deleteFilter"
+                   url="/api/authorFilter"
+                   method="DELETE"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   on-error="_onError"
+                   on-response="_refresh"
+                   debounce-duration="300"></iron-ajax>
 
-        <xenon-photo-card heading="Chat Authors">
+        <xenon-photo-card heading="@ViewData["Title"]">
             <main>
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>Id</th>
-                            <th>Source</th>
-                            <th>Source Id</th>
-                            <th>Username</th>
-                            <th>Points</th>
-                            <th>Score</th>
-                            <th>Lists</th>
+                            <th>Type</th>
+                            <th>Author</th>
+                            <th>Date</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -46,14 +52,10 @@
                         <template is="dom-repeat" items="{{items}}">
                             <tr>
                                 <td>{{item.id}}</td>
-                                <td>{{item.source}}</td>
-                                <td>{{item.sourceAuthorId}}</td>
+                                <td>{{item.filterType}}</td>
                                 <td>{{item.name}}</td>
-                                <td>{{item.points}}</td>
-                                <td>{{item.score}}</td>
-                                <td>{{item.lists}}</td>
+                                <td>{{item.date}}</td>
                                 <td>
-                                    <paper-icon-button icon="editor:mode-edit" on-click="_openEditor"></paper-icon-button>
                                     <paper-icon-button icon="icons:delete" on-click="_delete"></paper-icon-button>
                                 </td>
                             </tr>
@@ -61,21 +63,34 @@
                     </tbody>
 
                 </table>
+
             </main>
         </xenon-photo-card>
 
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
-    addEventListener('WebComponentsReady', function() {
+        addEventListener('WebComponentsReady', function () {
 
-        Polymer({
-            is: "page-module",
-            properties: {
-            },
-            ready: function () {
-            }
-        });
+            Polymer({
+                is: "page-module",
+                properties: {
+                    tiempo: { type: String, notify: true }
+                },
+                _refresh: function () {
+                    this.$.ajax.generateRequest();
+                },
+                _delete: function (e) {
+                    this.$.deleteFilter.body = JSON.stringify(e.model.item);
+                    this.$.deleteFilter.generateRequest();
+                },
+                _onError: function (e) {
+                    this.$.toast.text = "ERROR: " + e.detail.request.xhr.response;
+                    this.$.toast.show();
+                },
+                ready: function () {
+                }
+            });
         })
     </script>
 </dom-module>

@@ -129,5 +129,17 @@ namespace Rambler.Services
             }
         }
 
+        public async Task DeleteFilter(int id)
+        {
+            var entity = await db.AuthorFilters.SingleOrDefaultAsync(x => x.Id == id);
+
+            if (entity == null)
+            {
+                throw new InvalidOperationException($"Filter id '{id}' not found.");
+            }
+
+            db.AuthorFilters.Remove(entity);
+            await db.SaveChangesAsync();
+        }
     }
 }
