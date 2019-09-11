@@ -46,7 +46,7 @@
                                 <td>{{item.apiSource}}</td>
                                 <td>{{item.token_type}}</td>
                                 <td>{{item.expires_in}}</td>
-                                <td>{{item.expirationDate}}</td>
+                                <td>[[_toLocalDate(item.expirationDate)]]</td>
                                 <td>{{item.status}}</td>
                                 <td>{{item.hasRefreshToken}}</td>
                                 <td><i class="fa fa-trash" on-click="_delete"></i> </td>
@@ -78,6 +78,10 @@
                 },
                 _onError: function (e) {
                     console.log(e);
+                },
+                _toLocalDate: function (date) {
+                    var options = { dateStyle: 'short', timeStyle: 'medium', timeZoneName: 'short' };
+                    return new Date(date).toLocaleDateString('en-US', options);
                 },
                 ready: function () {
                 }
