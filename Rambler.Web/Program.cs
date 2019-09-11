@@ -1,4 +1,5 @@
 ﻿using System;
+using Karambolo.Extensions.Logging.File;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,7 +19,7 @@ namespace Rambler.Web
                 .ConfigureLogging((ctx, builder) =>
                 {
                     builder.AddConfiguration(ctx.Configuration.GetSection("Logging"));
-                    builder.AddFile(o => o.RootPath = AppContext.BaseDirectory);
+                    builder.AddFile(o => o.RootPath = ctx.HostingEnvironment.ContentRootPath);
                 })
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {

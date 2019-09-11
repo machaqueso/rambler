@@ -71,6 +71,7 @@ namespace Rambler.Web.Services
                             continue;
                         }
 
+                        await CheckToken(cancellationToken);
                         var user = await twitchManager.GetUser();
 
                         var webSocket = new ClientWebSocket();
@@ -111,7 +112,7 @@ namespace Rambler.Web.Services
             }
         }
 
-        private async Task TwitchHandshake(ClientWebSocket webSocket, CancellationToken cancellationToken)
+        private async Task CheckToken(CancellationToken cancellationToken)
         {
             var token = await twitchService.GetToken();
             if (token == null)
@@ -130,7 +131,12 @@ namespace Rambler.Web.Services
                 await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Forbidden, cancellationToken);
                 return;
             }
+        }
 
+        private async Task TwitchHandshake(ClientWebSocket webSocket, CancellationToken cancellationToken)
+        {
+            await CheckToken(cancellationToken);
+            var token = await twitchService.GetToken();
             var user = await twitchManager.GetUser();
 
             await Send(webSocket, cancellationToken, $"PASS oauth:{token.access_token}");
