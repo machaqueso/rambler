@@ -50,8 +50,8 @@ namespace Rambler.Web.Services
             var existingToken = user.AccessTokens.SingleOrDefault(x => x.ApiSource == apiSource);
             if (existingToken != null)
             {
-                user.AccessTokens.Remove(existingToken);
-                await db.SaveChangesAsync();
+                await UpdateToken(existingToken);
+                return;
             }
 
             token.ExpirationDate = DateTime.UtcNow.AddSeconds(token.expires_in);
@@ -72,10 +72,7 @@ namespace Rambler.Web.Services
 
             existingToken.access_token = token.access_token;
             // Youtube doesn't send a new refresh_token
-            if (!string.IsNullOrEmpty(token.refresh_token))
-            {
-                existingToken.refresh_token = token.refresh_token;
-            }
+            // existingToken.refresh_token = token.refresh_token;
             existingToken.expires_in = token.expires_in;
             existingToken.ExpirationDate = DateTime.UtcNow.AddSeconds(token.expires_in);
             await db.SaveChangesAsync();

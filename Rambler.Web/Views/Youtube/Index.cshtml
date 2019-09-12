@@ -16,9 +16,10 @@
                 {
                     <div class="flex">
                         <div>Token Type : @Model.token_type</div>
-                        <div>Expires in : @Model.expires_in</div>
+                        <div>Expires in : @Model.expires_in (@((Model.ExpirationDate- DateTime.UtcNow).TotalSeconds)))</div>
                         <div>Expiration Date : @Model.ExpirationDate</div>
                         <div>Status: @Model.Status</div>
+                        <div>Refresh Token?: @Model.HasRefreshToken</div>
                     </div>
                 }
                 else
