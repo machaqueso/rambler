@@ -13,6 +13,7 @@ using Rambler.Data;
 using Rambler.Services;
 using Rambler.Web.Hubs;
 using Rambler.Web.Services;
+using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Rambler.Web
@@ -86,6 +87,8 @@ namespace Rambler.Web
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+
+            app.UseSerilogRequestLogging();
 
             app.UseAuthentication();
             app.UseHttpsRedirection();

@@ -1,26 +1,42 @@
 ﻿using System;
-using Karambolo.Extensions.Logging.File;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 
 namespace Rambler.Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.File("_logs\\rambler-debug-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            try
+            {
+                Log.Information("Starting web host");
+                CreateWebHostBuilder(args).Build().Run();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Host terminated unexpectedly");
+                return 1;
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .ConfigureLogging((ctx, builder) =>
-                {
-                    builder.AddConfiguration(ctx.Configuration.GetSection("Logging"));
-                    builder.AddFile(o => o.RootPath = ctx.HostingEnvironment.ContentRootPath);
-                })
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     // Call additional providers here as needed.
@@ -28,6 +44,7 @@ namespace Rambler.Web
                     // variables to override values from other providers.
                     config.AddEnvironmentVariables(prefix: "Authentication");
                 })
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .UseSerilog();
     }
 }

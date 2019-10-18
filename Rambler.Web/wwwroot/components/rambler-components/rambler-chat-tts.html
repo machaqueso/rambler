@@ -70,8 +70,7 @@
                             }
                         }
 
-                        console.log("voice", utterThis.voice);
-                        console.log("lang", utterThis.lang);
+                        console.log("this.voice", this.voice);
                         if (this.voice !== undefined) {
                             utterThis.voice = this.voice;
                         } else {
@@ -79,6 +78,9 @@
                         }
                         //utterThis.pitch = this.pitch;
                         //utterThis.rate = this.rate;
+                        console.log("voice", utterThis.voice);
+                        console.log("lang", utterThis.lang);
+
                         this.notSpeaking = false;
                         this.message = message;
                         speechSynthesis.speak(utterThis);

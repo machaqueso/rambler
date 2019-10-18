@@ -237,3 +237,4 @@ _Pvt_Extensions
 *.db
 .vscode
 **/package-lock.json
+**/_logs
