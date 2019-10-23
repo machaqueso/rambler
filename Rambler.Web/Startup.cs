@@ -50,6 +50,7 @@ namespace Rambler.Web
             services.AddTransient<ChannelService>();
             services.AddTransient<AccountService>();
             services.AddTransient<PasswordService>();
+            services.AddTransient<BotService>();
 
             services.AddTransient<TwitchAPIv5>();
             services.AddTransient<TwitchManager>();

@@ -32,6 +32,7 @@ namespace Rambler.Data
         public DbSet<AuthorScoreHistory> AuthorScoreHistories { get; set; }
         public DbSet<AuthorFilter> AuthorFilters { get; set; }
         public DbSet<WordFilter> WordFilters { get; set; }
+        public DbSet<BotAction> BotActions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

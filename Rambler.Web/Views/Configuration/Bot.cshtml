@@ -1,0 +1,196 @@
+﻿@{
+    ViewData["Title"] = "Bot Configuration";
+}
+
+<link rel="import" href="~/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="~/components/paper-toast/paper-toast.html" />
+<link rel="import" href="~/components/iron-ajax/iron-ajax.html" />
+<link rel="import" href="~/components/rambler-components/rambler-integrations.html" />
+<link rel="import" href="~/components/iron-icons/editor-icons.html" />
+<link rel="import" href="~/components/xenon-layout/xenon-dialog.html" />
+
+<dom-module id="page-module">
+    <template>
+        <style is="custom-style">
+            paper-icon-button {
+                padding: 0;
+                width: 20px;
+                height: 20px;
+            }
+        </style>
+        <iron-ajax id="ajax"
+                   auto
+                   url="/api/bot/action"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{words}}"
+                   debounce-duration="300">
+        </iron-ajax>
+
+        <iron-ajax id="ajaxAdd"
+                   method="POST"
+                   url="/api/bot/action"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   on-error="_onError"
+                   on-response="_added"
+                   debounce-duration="300"></iron-ajax>
+
+        <iron-ajax id="ajaxUpdate"
+                   method="PUT"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   on-error="_onError"
+                   on-response="_updated"
+                   debounce-duration="300"></iron-ajax>
+
+        <iron-ajax id="ajaxDelete"
+                   method="DELETE"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   on-error="_onError"
+                   on-response="_refresh"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <actions>
+                <paper-icon-button icon="icons:add-circle" on-click="_openAdd"></paper-icon-button>
+            </actions>
+            <main>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Command</th>
+                            <th>Action</th>
+                            <th>Parameters</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="{{words}}">
+                            <tr>
+                                <td>{{item.id}}</td>
+                                <td>{{item.command}}</td>
+                                <td>{{item.action}}</td>
+                                <td>{{item.parameters}}</td>
+                                <td>
+                                    <paper-icon-button icon="editor:mode-edit" on-click="_openEditor"></paper-icon-button>
+                                    <paper-icon-button icon="icons:delete" on-click="_delete"></paper-icon-button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+
+                </table>
+            </main>
+        </xenon-photo-card>
+
+        <xenon-dialog id="addDialog" heading="Add">
+            <main>
+                <paper-input label="Command" value="{{setting.command}}"></paper-input>
+                <paper-input label="Action" value="{{setting.action}}"></paper-input>
+                <paper-input label="Parameters" value="{{setting.parameters}}"></paper-input>
+                <template is="dom-if" if="[[errorMessage]]">
+                    <div class="text-danger">[[errorMessage]]</div>
+                </template>
+            </main>
+            <buttons>
+                <paper-button on-click="_add">Save</paper-button>
+                <paper-button on-click="_cancelAdd">Cancel</paper-button>
+            </buttons>
+        </xenon-dialog>
+
+        <xenon-dialog id="editDialog" heading="Edit">
+            <main>
+                <paper-input label="Command" value="{{setting.command}}"></paper-input>
+                <paper-input label="Action" value="{{setting.action}}"></paper-input>
+                <paper-input label="Parameters" value="{{setting.parameters}}"></paper-input>
+                <template is="dom-if" if="[[errorMessage]]">
+                    <div class="text-danger">[[errorMessage]]</div>
+                </template>
+            </main>
+            <buttons>
+                <paper-button on-click="_update">Save</paper-button>
+                <paper-button on-click="_cancel">Cancel</paper-button>
+            </buttons>
+        </xenon-dialog>
+
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        addEventListener('WebComponentsReady', function () {
+
+            Polymer({
+                is: "page-module",
+                properties: {
+                    setting: { type: Object, notify: true, value: {} },
+                    errorMessage: { type: String, notify: true, value: "" },
+                    word: { type: String, notify: true, value: "" },
+                    words: { type: Array, notify: true, value: [] }
+                },
+                observers: [
+                ],
+                _openEditor: function (e) {
+                    console.log(e.model.item);
+                    this.set("setting", e.model.item);
+                    this.$.editDialog.open();
+                },
+                _openAdd: function () {
+                    this.set("setting", {});
+                    this.$.addDialog.open();
+                },
+                _checkForEnter: function (e) {
+                    var _this = this;
+                    if (e.keyCode === 13) {
+                        _this._add();
+                    }
+                },
+                _add: function () {
+                    this.$.ajaxAdd.body = JSON.stringify(this.setting);
+                    this.$.ajaxAdd.generateRequest();
+                },
+                _added: function () {
+                    this.$.addDialog.close();
+                    this._refresh();
+                },
+                _update: function (e) {
+                    this.$.putSetting.url = "/api/bot/action/" + this.setting.id;
+                    this.$.putSetting.body = JSON.stringify(this.setting);
+                    this.$.putSetting.generateRequest();
+                },
+                _updated: function () {
+                    this.$.editDialog.close();
+                    this._refresh();
+                },
+                _delete: function (e) {
+                    this.$.ajaxDelete.url = "/api/bot/action";
+                    this.$.ajaxDelete.body = JSON.stringify(e.model.item);
+                    this.$.ajaxDelete.generateRequest();
+                },
+                _cancel: function () {
+                    this.$.editDialog.close();
+                },
+                _cancelAdd: function () {
+                    this.$.addDialog.close();
+                },
+                _refresh: function () {
+                    this.word = "";
+                    this.$.editDialog.close();
+                    this.$.ajax.generateRequest();
+                },
+                _onError: function (e) {
+                    this.$.toast.text = "ERROR: " + e.detail.request.xhr.response;
+                    this.$.toast.show();
+                },
+                ready: function () {
+                }
+            });
+        })
+    </script>
+</dom-module>
+
+<page-module></page-module>

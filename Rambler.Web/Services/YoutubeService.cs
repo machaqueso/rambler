@@ -137,7 +137,8 @@ namespace Rambler.Web.Services
                     Name = item.AuthorDetails.displayName,
                     Source = ApiSource.Youtube,
                     SourceAuthorId = item.AuthorDetails.channelId
-                }
+                },
+                Type = item.snippet.type
             };
         }
 

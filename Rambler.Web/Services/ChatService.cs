@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -17,15 +18,17 @@ namespace Rambler.Web.Services
         private readonly ChannelService channelService;
         private readonly AuthorService authorService;
         private readonly WordFilterService wordFilterService;
+        private readonly BotService botService;
 
         public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, ChannelService channelService,
-            AuthorService authorService, WordFilterService wordFilterService)
+            AuthorService authorService, WordFilterService wordFilterService, BotService botService)
         {
             this.db = db;
             this.chatHubContext = chatHubContext;
             this.channelService = channelService;
             this.authorService = authorService;
             this.wordFilterService = wordFilterService;
+            this.botService = botService;
         }
 
         public IQueryable<ChatMessage> GetMessages()
@@ -54,6 +57,33 @@ namespace Rambler.Web.Services
             await db.SaveChangesAsync();
 
             await SendToChannels(message);
+
+            var action = botService.Process(message);
+            if (action == null)
+            {
+                return;
+            }
+
+            switch (action.Action)
+            {
+                case "Say":
+                    var botMessage = new ChatMessage
+                    {
+                        Date = DateTime.UtcNow,
+                        Author = new Author
+                        {
+                            Name = "RamblerBot",
+                            Source = ApiSource.Rambler
+                        },
+                        Message = action.Parameters,
+                        Source = ApiSource.RamblerBot
+                    };
+                    await SendToChannels(botMessage);
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         public async Task SendToChannel(string channel, ChatMessage message)

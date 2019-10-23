@@ -14,7 +14,10 @@ namespace Rambler.Models
         public int AuthorId { get; set; }
         public virtual Author Author { get; set; }
 
+        public string Type { get; set; }
+
         [NotMapped] public string DisplayDate => DateTime.Now.DayOfYear != Date.ToLocalTime().DayOfYear ? Date.ToLocalTime().ToString("d") : "";
         [NotMapped] public string DisplayTime => Date.ToLocalTime().ToString("t");
     }
+
 }

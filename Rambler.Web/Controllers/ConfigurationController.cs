@@ -34,5 +34,10 @@ namespace Rambler.Web.Controllers
             return View();
         }
 
+        public IActionResult Bot()
+        {
+            return View();
+        }
+
     }
 }

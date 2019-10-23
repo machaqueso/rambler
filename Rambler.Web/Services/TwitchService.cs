@@ -186,7 +186,8 @@ namespace Rambler.Web.Services
                 Author = new Author
                 {
                     Name = authorName
-                }
+                },
+                Type = "textMessageEvent"
             };
             var twitchUser = await twitchManager.FindUser(authorName);
             if (twitchUser != null)

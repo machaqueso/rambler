@@ -6,6 +6,9 @@
 
   <ItemGroup>
     <Compile Remove="Migrations\20190905011201_AddedWordFilter.cs" />
+    <Compile Remove="Migrations\20191026171848_AddedBotActions.cs" />
+    <Compile Remove="Migrations\20191030005856_AddedChatMessageType.cs" />
+    <Compile Remove="Migrations\20191101015036_BotEntities.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +29,10 @@
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
