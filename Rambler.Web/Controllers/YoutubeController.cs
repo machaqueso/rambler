@@ -116,7 +116,7 @@ namespace Rambler.Web.Controllers
                 await youtubeService.RefreshToken(token);
             }
 
-            var liveChatMessageList = await youtubeService.GetLiveChatMessages(id);
+            var liveChatMessageList = await youtubeService.GetLiveChatMessages(id, string.Empty);
 
             foreach (var item in liveChatMessageList.items.Where(x => x.snippet.hasDisplayContent))
             {

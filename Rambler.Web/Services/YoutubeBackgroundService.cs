@@ -27,6 +27,7 @@ namespace Rambler.Web.Services
         private string liveChatId;
         private int pollingInterval;
         private int delay;
+        private string nextPageToken;
 
         public YoutubeBackgroundService(ILogger<YoutubeBackgroundService> logger, IServiceScopeFactory serviceScopeFactory)
         {
@@ -38,6 +39,7 @@ namespace Rambler.Web.Services
         {
             pollingInterval = minimumPollingInterval;
             delay = defaultDelay;
+            nextPageToken = string.Empty;
 
             cancellationToken.Register(() =>
             {
@@ -114,7 +116,7 @@ namespace Rambler.Web.Services
                             }
                             logger.LogDebug($"liveChatId: {liveChatId}");
 
-                            var liveChatMessages = await youtubeService.GetLiveChatMessages(liveChatId);
+                            var liveChatMessages = await youtubeService.GetLiveChatMessages(liveChatId, nextPageToken);
                             await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Connected, cancellationToken);
                             if (liveChatMessages == null || !liveChatMessages.items.Any())
                             {
@@ -128,6 +130,7 @@ namespace Rambler.Web.Services
                             {
                                 await chatService.CreateMessage(youtubeService.MapToChatMessage(item));
                             }
+                            nextPageToken = liveChatMessages.nextPageToken;
 
                             // TODO: Switch this to Min when going production
                             logger.LogDebug($"New polling interval: {liveChatMessages.pollingIntervalMillis}");

@@ -85,7 +85,7 @@ namespace Rambler.Web.Services
             return IsValidToken(token);
         }
 
-        public async Task<LiveChatMessageList> GetLiveChatMessages(string liveChatId)
+        public async Task<LiveChatMessageList> GetLiveChatMessages(string liveChatId, string nextPageToken)
         {
             if (string.IsNullOrEmpty(liveChatId))
             {
@@ -98,9 +98,14 @@ namespace Rambler.Web.Services
                 return null;
             }
 
-            var response = await Get(
-                $"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={liveChatId}&part=id,snippet,authorDetails",
-                token.access_token);
+            var url = $"https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId={liveChatId}&part=id,snippet,authorDetails";
+            if (!string.IsNullOrWhiteSpace(nextPageToken))
+            {
+                logger.LogDebug($"calling GetLiveChatMessages with nextPageToken='{nextPageToken}'");
+                url += $"&nextPageToken ={nextPageToken}";
+            }
+
+            var response = await Get(url, token.access_token);
 
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
