@@ -43,9 +43,9 @@ namespace Rambler.Web.Services
 
             cancellationToken.Register(() =>
             {
-                logger.LogDebug($"YoutubeBackgroundService background task is stopping.");
+                logger.LogDebug($"[YoutubeBackgroundService] background task is stopping.");
             });
-            logger.LogDebug($"YoutubeBackgroundService background task is starting.");
+            logger.LogDebug($"[YoutubeBackgroundService] background task is starting.");
 
             using (var scope = serviceScopeFactory.CreateScope())
             {
@@ -55,12 +55,12 @@ namespace Rambler.Web.Services
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    logger.LogDebug($"YoutubeBackgroundService entering primary loop.");
+                    logger.LogDebug($"[YoutubeBackgroundService] entering primary loop.");
                     try
                     {
                         if (!youtubeService.IsEnabled().Result)
                         {
-                            logger.LogWarning($"Youtube service disabled, skipping.");
+                            logger.LogWarning($"[YoutubeBackgroundService] Youtube service disabled, skipping.");
                             await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Disabled, cancellationToken);
                             await Task.Delay(delay, cancellationToken);
                             continue;
@@ -68,7 +68,7 @@ namespace Rambler.Web.Services
 
                         if (!youtubeService.IsConfigured())
                         {
-                            logger.LogWarning($"Youtube service not configured, skipping.");
+                            logger.LogWarning($"[YoutubeBackgroundService] Youtube service not configured, skipping.");
                             await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.NotConfigured, cancellationToken);
                             await Task.Delay(delay, cancellationToken);
                             continue;
@@ -77,7 +77,7 @@ namespace Rambler.Web.Services
                         var token = await youtubeService.GetToken();
                         if (token == null)
                         {
-                            logger.LogWarning($"Youtube token missing, skipping.");
+                            logger.LogWarning($"[YoutubeBackgroundService] Youtube token missing, skipping.");
                             await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Forbidden, cancellationToken);
                             await Task.Delay(delay, cancellationToken);
                             continue;
@@ -85,28 +85,28 @@ namespace Rambler.Web.Services
 
                         if (token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
                         {
-                            logger.LogWarning($"Youtube token expired, refreshing");
+                            logger.LogWarning($"[YoutubeBackgroundService] Youtube token expired, refreshing");
                             await youtubeService.RefreshToken(token);
                         }
 
                         if (!youtubeService.IsValidToken(token))
                         {
-                            logger.LogWarning($"Youtube token invalid.");
+                            logger.LogWarning($"[YoutubeBackgroundService] Youtube token invalid.");
                             await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Forbidden, cancellationToken);
                             await Task.Delay(delay, cancellationToken);
                             continue;
                         }
 
-                        logger.LogDebug($"YoutubeBackgroundService entering secondary loop.");
+                        logger.LogDebug($"[YoutubeBackgroundService] entering secondary loop.");
                         while (!cancellationToken.IsCancellationRequested && youtubeService.IsEnabled().Result)
                         {
-                            logger.LogDebug($"Secondary loop.");
+                            logger.LogDebug($"[YoutubeBackgroundService] Secondary loop.");
                             if (string.IsNullOrEmpty(liveChatId))
                             {
                                 var liveBroadcast = await youtubeService.GetLiveBroadcast();
                                 if (liveBroadcast == null)
                                 {
-                                    logger.LogWarning($"liveBroadcast not found.");
+                                    logger.LogWarning($"[YoutubeBackgroundService] liveBroadcast not found.");
                                     await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Offline, cancellationToken);
                                     await Task.Delay(delay, cancellationToken);
                                     continue;
@@ -114,17 +114,17 @@ namespace Rambler.Web.Services
 
                                 liveChatId = liveBroadcast.snippet.liveChatId;
                             }
-                            logger.LogDebug($"liveChatId: {liveChatId}");
+                            logger.LogDebug($"[YoutubeBackgroundService] liveChatId: {liveChatId}");
 
                             var liveChatMessages = await youtubeService.GetLiveChatMessages(liveChatId, nextPageToken);
                             await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Connected, cancellationToken);
                             if (liveChatMessages == null || !liveChatMessages.items.Any())
                             {
-                                logger.LogDebug($"No messages found.");
+                                logger.LogDebug($"[YoutubeBackgroundService] No messages found.");
                                 await Task.Delay(TimeSpan.FromMilliseconds(pollingInterval), cancellationToken);
                                 continue;
                             }
-                            logger.LogDebug($"Received {liveChatMessages.items.Count()} messages");
+                            logger.LogDebug($"[YoutubeBackgroundService] Received {liveChatMessages.items.Count()} messages");
 
                             foreach (var item in liveChatMessages.items)
                             {
@@ -133,8 +133,8 @@ namespace Rambler.Web.Services
                             nextPageToken = liveChatMessages.nextPageToken;
 
                             // TODO: Switch this to Min when going production
-                            logger.LogDebug($"New polling interval: {liveChatMessages.pollingIntervalMillis}");
-                            logger.LogDebug($"Next page: {liveChatMessages.nextPageToken}");
+                            logger.LogDebug($"[YoutubeBackgroundService] New polling interval: {liveChatMessages.pollingIntervalMillis}");
+                            logger.LogDebug($"[YoutubeBackgroundService] Next page: {liveChatMessages.nextPageToken}");
                             pollingInterval = Math.Max(liveChatMessages.pollingIntervalMillis, minimumPollingInterval);
                             await Task.Delay(pollingInterval, cancellationToken);
                         }
@@ -146,7 +146,7 @@ namespace Rambler.Web.Services
                         logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
                         await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Error, cancellationToken);
                     }
-                    logger.LogDebug($"YoutubeBackgroundService waiting {delay}ms.");
+                    logger.LogDebug($"[YoutubeBackgroundService] waiting {delay}ms.");
                     await Task.Delay(delay, cancellationToken);
                 }
             }

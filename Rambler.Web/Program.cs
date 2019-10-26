@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -11,11 +12,13 @@ namespace Rambler.Web
     {
         public static int Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.File("_logs\\rambler-debug-.txt", rollingInterval: RollingInterval.Day)
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
+            var logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
                 .CreateLogger();
 
             try
@@ -44,7 +47,7 @@ namespace Rambler.Web
                     // variables to override values from other providers.
                     config.AddEnvironmentVariables(prefix: "Authentication");
                 })
-                .UseStartup<Startup>()
-                .UseSerilog();
+                .UseSerilog((ctx, config) => { config.ReadFrom.Configuration(ctx.Configuration); })
+                .UseStartup<Startup>();
     }
 }
