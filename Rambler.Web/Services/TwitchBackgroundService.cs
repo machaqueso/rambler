@@ -40,7 +40,7 @@ namespace Rambler.Web.Services
         {
             cancellationToken.Register(() =>
             {
-                logger.LogDebug($"TwitchBackgroundService background task is stopping.");
+                logger.LogDebug($"[TwitchBackgroundService] background task is stopping.");
             });
 
             delay = defaultDelay;
@@ -150,7 +150,7 @@ namespace Rambler.Web.Services
                 throw new InvalidOperationException($"Twitch socket {webSocket.State.ToString()}");
             }
 
-            logger.LogDebug($"Twitch Chat > {message}");
+            logger.LogDebug($"[TwitchBackgroundService] Twitch Chat > {message}");
             var encoder = new UTF8Encoding();
             var buffer = encoder.GetBytes(message);
             await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
@@ -188,7 +188,7 @@ namespace Rambler.Web.Services
         {
             if (webSocket.State != WebSocketState.Open)
             {
-                throw new InvalidOperationException($"Twitch socket {webSocket.State.ToString()}");
+                throw new InvalidOperationException($"[TwitchBackgroundService] Twitch socket {webSocket.State.ToString()}");
             }
 
             var encoder = new UTF8Encoding();
@@ -218,7 +218,7 @@ namespace Rambler.Web.Services
 
                     foreach (var line in lines)
                     {
-                        logger.LogDebug($"Twitch Chat < {line}");
+                        logger.LogDebug($"[TwitchBackgroundService] Twitch Chat < {line}");
 
                         if (line.Contains("PING"))
                         {
