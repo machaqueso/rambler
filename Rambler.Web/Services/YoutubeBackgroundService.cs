@@ -98,7 +98,9 @@ namespace Rambler.Web.Services
                         }
 
                         logger.LogDebug($"[YoutubeBackgroundService] entering secondary loop.");
-                        while (!cancellationToken.IsCancellationRequested && youtubeService.IsEnabled().Result)
+                        while (!cancellationToken.IsCancellationRequested
+                               && youtubeService.IsEnabled().Result
+                               && token.Status == AccessTokenStatus.Ok)
                         {
                             logger.LogDebug($"[YoutubeBackgroundService] Secondary loop.");
                             if (string.IsNullOrEmpty(liveChatId))
