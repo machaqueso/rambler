@@ -93,8 +93,13 @@ namespace Rambler.Web.Services
             }
 
             var token = await GetToken();
+            if (token != null && token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
+            {
+                await RefreshToken(token);
+            }
             if (!IsValidToken(token))
             {
+                logger.LogWarning($"[YoutubeService:GetLiveChatMessages] Invalid Token");
                 return null;
             }
 
