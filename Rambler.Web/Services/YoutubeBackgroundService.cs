@@ -22,7 +22,7 @@ namespace Rambler.Web.Services
         private readonly IServiceScopeFactory serviceScopeFactory;
 
         private const int minimumPollingInterval = 10000;
-        private const int defaultDelay = 1000;
+        private const int defaultDelay = 60000;
 
         private string liveChatId;
         private int pollingInterval;
@@ -97,26 +97,32 @@ namespace Rambler.Web.Services
                             continue;
                         }
 
+                        var liveBroadcast = await youtubeService.GetLiveBroadcast();
+                        if (liveBroadcast == null)
+                        {
+                            logger.LogWarning($"[YoutubeBackgroundService] liveBroadcast not found.");
+                            await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Error, cancellationToken);
+                            await Task.Delay(delay, cancellationToken);
+                            continue;
+                        }
+
+                        // TODO: make sure it only returns one liveBroadcast
+                        liveChatId = liveBroadcast.snippet.liveChatId;
+                        logger.LogDebug($"[YoutubeBackgroundService] liveChatId: {liveChatId}");
+                        await dashboardService.UpdateStatus(ApiSource.Youtube, liveBroadcast.status?.lifeCycleStatus, cancellationToken);
+                        if (liveBroadcast.status?.lifeCycleStatus != "live")
+                        {
+                            pollingInterval = delay;
+                        }
+
+                        var liveBroadcastCheckDate = DateTime.UtcNow.AddMinutes(5);
+
                         logger.LogDebug($"[YoutubeBackgroundService] entering secondary loop.");
                         while (!cancellationToken.IsCancellationRequested
                                && youtubeService.IsEnabled().Result
                                && token.Status == AccessTokenStatus.Ok)
                         {
                             logger.LogDebug($"[YoutubeBackgroundService] Secondary loop.");
-                            if (string.IsNullOrEmpty(liveChatId))
-                            {
-                                var liveBroadcast = await youtubeService.GetLiveBroadcast();
-                                if (liveBroadcast == null)
-                                {
-                                    logger.LogWarning($"[YoutubeBackgroundService] liveBroadcast not found.");
-                                    await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Offline, cancellationToken);
-                                    await Task.Delay(delay, cancellationToken);
-                                    continue;
-                                }
-
-                                liveChatId = liveBroadcast.snippet.liveChatId;
-                            }
-                            logger.LogDebug($"[YoutubeBackgroundService] liveChatId: {liveChatId}");
 
                             var liveChatMessages = await youtubeService.GetLiveChatMessages(liveChatId, nextPageToken);
                             await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Connected, cancellationToken);
@@ -137,7 +143,26 @@ namespace Rambler.Web.Services
                             // TODO: Switch this to Min when going production
                             logger.LogDebug($"[YoutubeBackgroundService] New polling interval: {liveChatMessages.pollingIntervalMillis}");
                             logger.LogDebug($"[YoutubeBackgroundService] Next page: {liveChatMessages.nextPageToken}");
-                            pollingInterval = Math.Max(liveChatMessages.pollingIntervalMillis, minimumPollingInterval);
+
+                            if (liveBroadcast.status?.lifeCycleStatus == "live")
+                            {
+                                pollingInterval = Math.Max(liveChatMessages.pollingIntervalMillis, minimumPollingInterval);
+                            }
+
+                            if (DateTime.UtcNow > liveBroadcastCheckDate)
+                            {
+                                liveBroadcastCheckDate = DateTime.UtcNow.AddMinutes(5);
+                                liveBroadcast = await youtubeService.GetLiveBroadcast();
+                                if (liveBroadcast != null)
+                                {
+                                    await dashboardService.UpdateStatus(ApiSource.Youtube, liveBroadcast.status?.lifeCycleStatus, cancellationToken);
+                                    if (liveBroadcast.status.lifeCycleStatus != "live")
+                                    {
+                                        pollingInterval = delay;
+                                    }
+                                }
+                            }
+
                             await Task.Delay(pollingInterval, cancellationToken);
                         }
 

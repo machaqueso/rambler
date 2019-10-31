@@ -141,7 +141,7 @@ namespace Rambler.Web.Services
             };
         }
 
-        public async Task<LiveBroadcastItem> GetLiveBroadcast()
+        public async Task<LiveBroadcastItem> GetLiveBroadcast(string id = null)
         {
             var token = await GetToken();
             if (token != null && token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
@@ -154,9 +154,13 @@ namespace Rambler.Web.Services
                 return null;
             }
 
-            var response = await Get(
-                "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastType=persistent&mine=true",
-                token.access_token);
+            var url = "https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet,status&broadcastType=persistent&mine=true";
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                url += $"&id={id}";
+            }
+
+            var response = await Get(url, token.access_token);
 
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
@@ -170,6 +174,11 @@ namespace Rambler.Web.Services
             if (liveBroadcastList?.items == null || !liveBroadcastList.items.Any())
             {
                 return null;
+            }
+
+            if (liveBroadcastList.items.Count() > 1 && liveBroadcastList.items.Any(x => x.status.lifeCycleStatus == "live"))
+            {
+                return liveBroadcastList.items.FirstOrDefault(x => x.status.lifeCycleStatus == "live");
             }
 
             return liveBroadcastList.items.FirstOrDefault();

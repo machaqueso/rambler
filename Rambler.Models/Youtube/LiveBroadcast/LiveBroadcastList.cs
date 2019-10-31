@@ -22,6 +22,14 @@ namespace Rambler.Models.Youtube.LiveBroadcast
 
         public string id { get; set; }
         public LiveBroadcastSnippet snippet { get; set; }
+        public LiveBroadcastStatus status { get; set; }
+    }
+
+    public class LiveBroadcastStatus
+    {
+        public string lifeCycleStatus { get; set; }
+        public string privacyStatus { get; set; }
+        public string recordingStatus { get; set; }
     }
 
     public class LiveBroadcastList
