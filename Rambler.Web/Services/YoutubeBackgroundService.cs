@@ -125,7 +125,6 @@ namespace Rambler.Web.Services
                             logger.LogDebug($"[YoutubeBackgroundService] Secondary loop.");
 
                             var liveChatMessages = await youtubeService.GetLiveChatMessages(liveChatId, nextPageToken);
-                            await dashboardService.UpdateStatus(ApiSource.Youtube, BackgroundServiceStatus.Connected, cancellationToken);
                             if (liveChatMessages == null || !liveChatMessages.items.Any())
                             {
                                 logger.LogDebug($"[YoutubeBackgroundService] No messages found.");
