@@ -59,7 +59,7 @@ namespace Rambler.Web.Api
             return CreatedAtRoute("GetBotAction", new { id = botAction.Id }, botAction);
         }
 
-        [Route("action")]
+        [Route("action/{id}")]
         [HttpPut]
         public async Task<IActionResult> UpdateBotAction(int id, BotAction botAction)
         {
@@ -72,7 +72,7 @@ namespace Rambler.Web.Api
             return NoContent();
         }
 
-        [Route("action")]
+        [Route("action/{id}")]
         [HttpDelete]
         public async Task<IActionResult> DeleteBotAction(BotAction botAction)
         {
@@ -83,6 +83,13 @@ namespace Rambler.Web.Api
 
             await botService.DeleteBotAction(botAction.Id);
             return NoContent();
+        }
+
+        [Route("actionType")]
+        [AllowAnonymous]
+        public IActionResult GetBotActionTypes()
+        {
+            return Ok(BotActionType.All);
         }
     }
 }

@@ -1,0 +1,110 @@
+<!--
+
+`<xenon-dropdown>` provides a simple dropdown list. Simply wrap your content with the `<xenon-dropdown>` component.
+
+Example:
+
+           `<xenon-dropdown-flags label="Payments" selected="{{app.paymentMethod.paymentEnabled}}" flag="8">
+                <div value="true">Enabled</div>
+                <div value="false">Disabled</div>
+            </xenon-dropdown-flags>`
+
+@group Xenon Elements
+@element xenon-dropdown
+@demo demo/index.html
+-->
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../iron-dropdown/iron-dropdown.html"/>
+<link rel="import" href="../iron-selector/iron-selector.html"/>
+<link rel="import" href="../iron-icons/iron-icons.html"/>
+<link rel="import" href="../iron-icon/iron-icon.html"/>
+<link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html"/>
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html"/>
+<link rel="import" href="../paper-input/paper-input.html"/>
+
+<dom-module is="xenon-dropdown-flags">
+    <template>
+        <style>
+            #dropdown { background-color:white; box-shadow: 0px 1px 3px 1px rgba(0,0,0,0.25); }
+            #input { margin-bottom: 12px; }
+            iron-selector > ::content div { cursor:pointer; padding:5px; min-width:250px;  }
+            iron-selector > ::content div:hover { background-color: gainsboro; }
+            iron-icon { float: right; color:#aaa; }
+            .wrap { padding-top: 10px; }
+        </style>
+        <div>
+        <paper-input on-tap="open" id="input" value="{{_text}}" allowed-pattern="[[allowedPattern]]" prevent-invalid-input label="{{label}}" required$="{{required}}" error-message="{{errorMessage}}">
+            <iron-icon icon="arrow-drop-down" suffix></iron-icon>
+        </paper-input>
+        <iron-dropdown id="dropdown" allow-outside-scroll="true" vertical-offset="54">
+                <div class="dropdown-content">
+                    <div class="wrapper">
+                        <iron-selector on-iron-items-changed="_ironItemsChanged" id="selector" selected="{{index}}">
+                            <content></content>
+                        </iron-selector>
+                    </div>
+                </div>
+            </iron-dropdown>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "xenon-dropdown-flags",
+            properties: {
+                /* Binds the selected items value to a local property. */
+                selected: { type: Object, notify: true, bindToAttribute: true },
+                /* which bit should be set. This should be 1,2,4,8,16,32, etc. */
+                flag: { type: Number },
+                /* index of selected item in the list. */
+                index: { type: Number, observer: "indexChange" },
+                /* Gives the dropdown list a lable. */
+                label: { type: String, notify: true, reflectToAttribute: true },
+                /* Sets the list to be required. */
+                required: { type: Boolean, value: false },
+                /* Displays a message to the message. */
+                errorMessage: String, 
+                /*  */
+                allowedPattern: { type: String, notify: true, reflectToAttribute: true, value:"[]" },
+                _items: { type:Array }
+            },
+            behaviors: [
+              Polymer.IronValidatableBehavior,
+              Polymer.IronFormElementBehavior
+            ],
+            observers: [
+                "_setSelections(_items, flag, selected)"
+            ],
+            ready: function() {
+                this.$.input.addOwnKeyBinding();
+            },
+            /* Opens the list */
+            open: function () {
+                this.$.dropdown.open();
+            },
+            /* Validate is called if the reqired attribute is set. */
+            validate: function () {
+                return this.$.input.validate();
+            },
+            /* Keeps track of the index of the list. */
+            indexChange: function (index) {
+                var e = this.$.selector.items[index];
+                var val = e.getAttribute("value") == "true";
+                this.set("selected", val ? this.selected |= this.flag : this.selected &= ~(this.flag));
+                this._text = e.innerText;
+                this.$.dropdown.close();
+            },
+            _setSelections: function(items, flag, selected) {
+                var hasFlag = ((selected & flag) == flag) ? "true" : "false";
+                for(i = 0; i < items.length; i++) {
+                    if(items[i].getAttribute("value") == hasFlag) { 
+                        this.index = i;
+                        this._text = items[i].innerText;
+                    }; 
+                } 
+            },
+            _ironItemsChanged: function(e) {
+                this._items = this.$.selector.items;
+            }
+        });
+    </script>
+</dom-module>

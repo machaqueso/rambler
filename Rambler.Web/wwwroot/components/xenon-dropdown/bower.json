@@ -1,0 +1,30 @@
+{
+  "name": "xenon-dropdown",
+  "authors": [
+    "ACA[X]Labs"
+  ],
+  "description": "Dropdown that allows pre-selection",
+  "main": "xenon-dropdown.html",
+  "license": "MIT",
+  "homepage": "https://github.com/acaxlabs/xenon-dropdown.git",
+  "private": true,
+  "ignore": [],
+  "dependencies": {
+    "iron-dropdown": "PolymerElements/iron-dropdown#1",
+    "iron-selector": "PolymerElements/iron-selector#1",
+    "iron-icons": "PolymerElements/iron-icons#1",
+    "iron-icon": "PolymerElements/iron-icon#1",
+    "paper-input": "PolymerElements/paper-input#1",
+    "iron-validatable-behavior": "PolymerElements/iron-validatable-behavior#1",
+    "iron-form-element-behavior": "PolymerElements/iron-form-element-behavior#1"
+  },
+  "_release": "7e4c88aec3",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "7e4c88aec3ad2bfa24dc98894959e3cd21cd819a"
+  },
+  "_source": "git://github.com/acaxlabs/xenon-dropdown.git",
+  "_target": "*",
+  "_originalSource": "acaxlabs/xenon-dropdown"
+}

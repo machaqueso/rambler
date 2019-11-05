@@ -1,0 +1,19 @@
+﻿<link rel="import" href="../../polymer/polymer.html" />
+<dom-module id="demo-people-service">
+    <script>
+        Polymer({
+            is: "demo-people-service",
+            properties: {
+                output: { type: Array, notify: true },
+            },
+            ready: function () {
+                this.output = [
+                    { Id: 10, LastName: "Mouse", FirstName: "Minnie" },
+                    { Id: 20, LastName: "Mouse", FirstName: "Mickey" },
+                    { Id: 30, LastName: "Duck", FirstName: "Daffy" }
+                ];
+            }
+        });
+    </script>
+</dom-module>
+

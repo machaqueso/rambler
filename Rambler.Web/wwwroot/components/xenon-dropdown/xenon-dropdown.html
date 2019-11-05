@@ -1,0 +1,179 @@
+<!--
+
+`<xenon-dropdown>` provides a simple dropdown list. Simply wrap your content with the `<xenon-dropdown>` component.
+
+Example:
+
+           `<xenon-dropdown label="Payment Method" selected="{{app.paymentMethod.paymentType}}">
+                <div value="CreditCard">Credit Card</div>
+                <div value="BankDraft">Bank Draft</div>
+            </xenon-dropdown>`
+
+@group Xenon Elements
+@element xenon-dropdown
+@demo demo/index.html
+-->
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../iron-dropdown/iron-dropdown.html" />
+<link rel="import" href="../iron-selector/iron-selector.html" />
+<link rel="import" href="../iron-icons/iron-icons.html" />
+<link rel="import" href="../iron-icon/iron-icon.html" />
+<link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html" />
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html" />
+<link rel="import" href="../paper-input/paper-input.html" />
+
+<dom-module is="xenon-dropdown">
+    <template>
+        <style>
+            :host { display: block; }
+            paper-input { border: none; margin: 0 !important; }
+                paper-input:hover { border: none; margin: 0 !important; }
+            #dropdown { background-color: white; box-shadow: 0px 1px 3px 1px rgba(0,0,0,0.25); }
+            iron-selector > ::content div { cursor: pointer; padding: 5px; min-width: 250px; }
+                iron-selector > ::content div:hover { background-color: gainsboro; }
+            iron-icon { float: right; color: #aaa; }
+            .wrap { padding-top: 10px; }
+        </style>
+        <div>
+            <paper-input always-float-label="[[alwaysFloatLabel]]" disabled="[[disabled]]" on-tap="open" id="input" value="{{_text}}" autocomplete="none" allowed-pattern="[[allowedPattern]]" prevent-invalid-input label="{{label}}" required$="{{required}}" error-message="{{errorMessage}}" on-keydown="_onKeyDown" no-label-float="[[noLabelFloat]]">
+                <iron-icon disabled="[[disabled]]" icon="arrow-drop-down" suffix></iron-icon>
+            </paper-input>
+            <iron-dropdown disabled="[[disabled]]" id="dropdown" allow-outside-scroll="true" vertical-offset="54">
+                <div class="dropdown-content">
+                    <div class="wrapper">
+                        <iron-selector id="selector" disabled="[[disabled]]" on-iron-items-changed="_selectedChange" selected="{{index}}">
+                            <content></content>
+                        </iron-selector>
+                    </div>
+                </div>
+            </iron-dropdown>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "xenon-dropdown",
+            properties: {
+                /* Binds the selected items value to a local property. */
+                selected: { type: Object, notify: true, bindToAttribute: true, observer: "_selectedChange" },
+                /* index of selected item in the list. */
+                index: { type: Number, observer: "_indexChange" },
+                /* Gives the dropdown list a lable. */
+                label: { type: String, notify: true, reflectToAttribute: true },
+                /* Sets the list to be required. */
+                required: { type: Boolean, value: false },
+                /* Displays a message to the message. */
+                errorMessage: String,
+                /* Output value */
+                _text: { type: String, notify: true },
+                /*  */
+                disabled: { type: Boolean, notify: true, reflectToAttribute: true },
+                allowedPattern: { type: String, notify: true, reflectToAttribute: true, value: "[]" },
+                alwaysFloatLabel: { type: Boolean, value: false, reflectToAttribute: true }
+            },
+            behaviors: [
+                Polymer.IronValidatableBehavior,
+                Polymer.IronFormElementBehavior
+            ],
+            ready: function () {
+                this.$.input.addOwnKeyBinding();
+            },
+            /* Opens the list */
+            open: function () {
+                this.$.dropdown.open();
+            },
+            /* Validate is called if the reqired attribute is set. */
+            validate: function () {
+                return this.$.input.validate();
+            },
+            /* Keeps track of the index of the list. */
+            _indexChange: function (index) {
+                var e = this.$.selector.items[index];
+                this.$.dropdown.close();
+                if (typeof e != "undefined") {
+                    if (typeof e.value != "undefined")
+                        this.set("selected", e.value);
+                    else if (e.attributes["value"].value === "true" || e.attributes["value"].value === "false") {
+                        this.set("selected", e.attributes["value"].value === "true");
+                    }
+                    else {
+                        this.set("selected", e.attributes["value"].value);
+                    }
+                }
+            },
+            /* Updates the selected item. */
+            _selectedChange: function () {
+                var items = this.$.selector.items;
+                if (this.selected == undefined || this.selected == null || this.selected === "") {
+                    this._text = "";
+                    this.index = -1;
+                } else {
+                    for (var i = 0; i < items.length; i++) {
+                        if (items[i].value != undefined && JSON.stringify(items[i].value) == JSON.stringify(this.selected)) {
+                            this._text = items[i].innerText;
+                            break;
+                        }
+                        if (items[i].attributes["value"] != undefined && items[i].attributes["value"].value == this.selected.toString()) {
+                            this._text = items[i].innerText;
+                            break;
+                        }
+                    }
+                }
+            },
+            /* capture key events for up/dn etc */
+            _onKeyDown: function (e) {
+                switch (e.keyCode) {
+                    case 37: //left
+                        this._onPrev();
+                        break;
+                    case 38: // up
+                        this._onPrev();
+                        break;
+                    case 39: // right
+                        this._onNext();
+                        break;
+                    case 40:  // down
+                        this._onNext();
+                        break;
+                    default:
+                        this._seek(e.key);
+                        break;
+                }
+            },
+            /* select the next item in the list */
+            _onNext: function () {
+                var items = this.$.selector.items;
+                var i = this.index + 1;
+                if (i >= items.length) i = 0;
+                this.index = i;
+            },
+            /* select the first item in the list */
+            _onPrev: function () {
+                var items = this.$.selector.items;
+                var i = this.index - 1;
+                if (i == -1) i = items.length - 1;
+                this.index = i;
+            },
+            /* select the first item starting with the pressed character */
+            _seek: function (letter) {
+                var items = this.$.selector.items;
+                if (items.length < 1) return;
+                var idx = this.index == undefined ? -1 : this.index;
+                // seek from the index point down
+                for (var i = idx + 1; i < items.length; i++) {
+                    if (items[i].innerText.toLowerCase()[0] == letter.toLowerCase()) {
+                        this.index = i;
+                        return;
+                    }
+                }
+                // then seek from the top to the index point
+                for (var i = 0; i < idx; i++) {
+                    if (items[i].innerText.toLowerCase()[0] == letter.toLowerCase()) {
+                        this.index = i;
+                        return;
+                    }
+                }
+
+            }
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,78 @@
+<link rel="import" href="../../polymer/polymer.html"/>
+<link rel="import" href="../xenon-dropdown.html" />
+<link rel="import" href="../../iron-form/iron-form.html" />
+<link rel="import" href="demo-people-service.html" />
+<dom-module id="dropdown-demo">
+    <template>
+        <style>
+            .section { margin-bottom:40px; }
+        </style>
+        <div class="section">
+            <xenon-dropdown label="Choose A Number" selected="{{number}}">
+                <div value="1">First</div>
+                <div value="2">Second</div>
+            </xenon-dropdown>
+            <div>{{number}}</div>
+        </div>
+
+        <div class="section">
+            <xenon-dropdown label="Choose A Person" selected="{{person}}">
+                <template is="dom-repeat" items="[[people]]">
+                    <div value="{{item}}">{{item.FirstName}}</div>
+                </template>
+            </xenon-dropdown>
+            <div>{{person.LastName}}</div>
+        </div>
+
+        <div class="section">
+            <xenon-dropdown id="test" label="This One Is Preselected" selected="3">
+                <div value="1">First</div>
+                <div value="2">Second</div>
+                <div value="3">Third</div>
+            </xenon-dropdown>
+        </div>
+
+        <div class="section">
+            <xenon-dropdown label="Set Selection" selected="{{setselection}}">
+                <div value="1">First</div>
+                <div value="2">Second</div>
+                <div value="3">Third</div>
+            </xenon-dropdown>
+            <button on-click="setthird">Third</button>
+            <button on-click="setnone">none</button>
+        </div>
+
+        <div class="section">
+            <form id="validatable" is="iron-form">
+            <xenon-dropdown label="Validate Me" required error-message="please choose something">
+                <div value="1">First</div>
+                <div value="2">Second</div>
+                <div value="3">Third</div>
+            </xenon-dropdown>
+            <button on-click="validate">Validate</button>
+            </form>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "dropdown-demo",
+            ready: function () {
+                this.people = [
+                    { Id: 10, LastName: "Mouse", FirstName: "Minnie" },
+                    { Id: 20, LastName: "Mouse", FirstName: "Mickey" },
+                    { Id: 30, LastName: "Duck", FirstName: "Daffy" }
+                ];
+            },
+            setthird: function () {
+                this.setselection = 3;
+            },
+            setnone: function () {
+                this.setselection = null;
+            }, 
+            validate: function(e) {
+                e.preventDefault();
+                this.$.validatable.validate();
+            }
+        });
+    </script>
+</dom-module>

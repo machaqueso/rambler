@@ -8,6 +8,7 @@
 <link rel="import" href="~/components/rambler-components/rambler-integrations.html" />
 <link rel="import" href="~/components/iron-icons/editor-icons.html" />
 <link rel="import" href="~/components/xenon-layout/xenon-dialog.html" />
+<link rel="import" href="~/components/xenon-dropdown/xenon-dropdown.html" />
 
 <dom-module id="page-module">
     <template>
@@ -55,6 +56,15 @@
                    on-response="_refresh"
                    debounce-duration="300"></iron-ajax>
 
+        <iron-ajax id="ajaxActionType"
+                   auto
+                   url="/api/bot/actionType"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{actionTypes}}"
+                   debounce-duration="300">
+        </iron-ajax>
+
         <xenon-photo-card heading="@ViewData["Title"]">
             <actions>
                 <paper-icon-button icon="icons:add-circle" on-click="_openAdd"></paper-icon-button>
@@ -92,7 +102,13 @@
         <xenon-dialog id="addDialog" heading="Add">
             <main>
                 <paper-input label="Command" value="{{setting.command}}"></paper-input>
-                <paper-input label="Action" value="{{setting.action}}"></paper-input>
+                
+                <xenon-dropdown label="Action" selected="{{setting.action}}">
+                    <template is="dom-repeat" items='[[actionTypes]]' as="actionType">
+                        <paper-item value="[[actionType]]">[[actionType]]</paper-item>
+                    </template>
+                </xenon-dropdown>
+
                 <paper-input label="Parameters" value="{{setting.parameters}}"></paper-input>
                 <template is="dom-if" if="[[errorMessage]]">
                     <div class="text-danger">[[errorMessage]]</div>
@@ -107,7 +123,13 @@
         <xenon-dialog id="editDialog" heading="Edit">
             <main>
                 <paper-input label="Command" value="{{setting.command}}"></paper-input>
-                <paper-input label="Action" value="{{setting.action}}"></paper-input>
+
+                <xenon-dropdown label="Action" selected="{{setting.action}}">
+                    <template is="dom-repeat" items='[[actionTypes]]' as="actionType">
+                        <paper-item value="[[actionType]]">[[actionType]]</paper-item>
+                    </template>
+                </xenon-dropdown>
+
                 <paper-input label="Parameters" value="{{setting.parameters}}"></paper-input>
                 <template is="dom-if" if="[[errorMessage]]">
                     <div class="text-danger">[[errorMessage]]</div>
@@ -129,8 +151,7 @@
                 properties: {
                     setting: { type: Object, notify: true, value: {} },
                     errorMessage: { type: String, notify: true, value: "" },
-                    word: { type: String, notify: true, value: "" },
-                    words: { type: Array, notify: true, value: [] }
+                    actionType: { type: String, notify: true, value: "" }
                 },
                 observers: [
                 ],
@@ -158,9 +179,9 @@
                     this._refresh();
                 },
                 _update: function (e) {
-                    this.$.putSetting.url = "/api/bot/action/" + this.setting.id;
-                    this.$.putSetting.body = JSON.stringify(this.setting);
-                    this.$.putSetting.generateRequest();
+                    this.$.ajaxUpdate.url = "/api/bot/action/" + this.setting.id;
+                    this.$.ajaxUpdate.body = JSON.stringify(this.setting);
+                    this.$.ajaxUpdate.generateRequest();
                 },
                 _updated: function () {
                     this.$.editDialog.close();
@@ -185,6 +206,9 @@
                 _onError: function (e) {
                     this.$.toast.text = "ERROR: " + e.detail.request.xhr.response;
                     this.$.toast.show();
+                },
+                _onActionTypeSelected: function(e) {
+                    console.log(e.detail.item);
                 },
                 ready: function () {
                 }
