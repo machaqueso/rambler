@@ -33,6 +33,7 @@ namespace Rambler.Data
         public DbSet<AuthorFilter> AuthorFilters { get; set; }
         public DbSet<WordFilter> WordFilters { get; set; }
         public DbSet<BotAction> BotActions { get; set; }
+        public DbSet<QueuedMessage> QueuedMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

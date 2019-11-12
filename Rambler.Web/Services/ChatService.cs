@@ -115,6 +115,8 @@ namespace Rambler.Web.Services
                 // check for rule to send to this channel
                 await SendToChannel(channel, message);
             }
+
+            await QueueMessage(message, "Twitch");
         }
 
         public async Task<IEnumerable<string>> AllowedChannels(ChatMessage message)
@@ -219,6 +221,33 @@ namespace Rambler.Web.Services
         public bool IsInList(ChatMessage message, IList<AuthorFilter> authorFilters, string filterType)
         {
             return authorFilters.Any(x => x.FilterType == filterType);
+        }
+
+        public async Task QueueMessage(ChatMessage message, string integrationName)
+        {
+            db.QueuedMessages.Add(new QueuedMessage
+            {
+                Message = message,
+                IntegrationName = integrationName
+            });
+            await db.SaveChangesAsync();
+        }
+
+        public IQueryable<QueuedMessage> GetQueuedMessages(string integrationName)
+        {
+            return db.QueuedMessages.Where(x => x.IntegrationName == integrationName);
+        }
+
+        public async Task DequeueMessage(int itemId)
+        {
+            var entity = await db.QueuedMessages.FirstOrDefaultAsync(x => x.Id == itemId);
+            if (entity == null)
+            {
+                throw new InvalidOperationException($"Queued message id {itemId} not found");
+            }
+
+            db.QueuedMessages.Remove(entity);
+            await db.SaveChangesAsync();
         }
     }
 }

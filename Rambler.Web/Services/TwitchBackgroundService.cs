@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,7 +21,8 @@ namespace Rambler.Web.Services
 
         private DashboardService dashboardService;
         private TwitchService twitchService;
-        private  TwitchManager twitchManager;
+        private TwitchManager twitchManager;
+        private ChatService chatService;
 
         private const int sendChunkSize = 510;
         private const int receiveChunkSize = 510; // RFC-2812
@@ -50,6 +53,7 @@ namespace Rambler.Web.Services
                 twitchService = scope.ServiceProvider.GetRequiredService<TwitchService>();
                 dashboardService = scope.ServiceProvider.GetRequiredService<DashboardService>();
                 twitchManager = scope.ServiceProvider.GetRequiredService<TwitchManager>();
+                chatService = scope.ServiceProvider.GetRequiredService<ChatService>();
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -160,7 +164,8 @@ namespace Rambler.Web.Services
         private async Task<WebSocketReceiveResult> ReceiveAsync(ClientWebSocket webSocket, CancellationToken cancellationToken, byte[] buffer)
         {
             //var loopToken = new CancellationTokenSource();
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var timeoutToken = new CancellationTokenSource(5000).Token;
+            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutToken);
 
             // TODO: Potential memory leak?
             integrationManager.IntegrationChanged += (s, e) =>
@@ -190,6 +195,7 @@ namespace Rambler.Web.Services
             {
                 throw new InvalidOperationException($"[TwitchBackgroundService] Twitch socket {webSocket.State.ToString()}");
             }
+            var user = await twitchManager.GetUser();
 
             var encoder = new UTF8Encoding();
             var partial = string.Empty;
@@ -235,6 +241,14 @@ namespace Rambler.Web.Services
                     partial = text.Substring(text.LastIndexOf('\r'));
                 }
 
+                foreach (var item in chatService.GetQueuedMessages("Twitch").Include(x => x.Message).ToList())
+                {
+                    if (!string.IsNullOrWhiteSpace(item.Message?.Message))
+                    {
+                        await Send(webSocket, cancellationToken, $"PRIVMSG #{user.name} :{item.Message.Message}" );
+                    }
+                    await chatService.DequeueMessage(item.Id);
+                }
                 await Task.Delay(delay, cancellationToken);
             }
         }

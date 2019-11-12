@@ -10,7 +10,6 @@
     <template>
         <form id="form" is="iron-form">
             <div class="sendrow">
-                <paper-input id="author" label="Author" value="{{message.author}}"></paper-input>
                 <paper-input style="flex: 1 1 0;" label="Message" value="{{message.message}}"></paper-input>
                 <div id="button">
                     <paper-button raised noink on-click="_send">Send</paper-button>
@@ -28,8 +27,7 @@
                     connection: { Type: Object }
                 },
                 _send: function () {
-                    console.log("SendMessage", this.message.author, this.message.message);
-                    this.connection.invoke("SendMessage", this.message.author, this.message.message)
+                    this.connection.invoke("SendMessage", "", this.message.message)
                         .catch(function (err) {
                             return console.error(err.toString());
                         });

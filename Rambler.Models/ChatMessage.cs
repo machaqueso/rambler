@@ -19,5 +19,4 @@ namespace Rambler.Models
         [NotMapped] public string DisplayDate => DateTime.Now.DayOfYear != Date.ToLocalTime().DayOfYear ? Date.ToLocalTime().ToString("d") : "";
         [NotMapped] public string DisplayTime => Date.ToLocalTime().ToString("t");
     }
-
 }

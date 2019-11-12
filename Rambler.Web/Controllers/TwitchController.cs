@@ -41,7 +41,16 @@ namespace Rambler.Web.Controllers
 
             var clientId = configurationService.GetValue("Authentication:Twitch:ClientId").Result;
             var redirectUrl = Url.Action("Callback", "Twitch", null, Request.Scheme, null).ToLower();
-            var oauthRequest = $"https://id.twitch.tv/oauth2/authorize?client_id={clientId}&redirect_uri={redirectUrl}&response_type=code&scope=chat:read+user_read";
+
+            var scopeList = new List<string>
+            {
+                "chat:read",
+                "chat:edit",
+                "user_read"
+            };
+            var scopes = string.Join('+', scopeList);
+
+            var oauthRequest = $"https://id.twitch.tv/oauth2/authorize?client_id={clientId}&redirect_uri={redirectUrl}&response_type=code&scope={scopes}";
 
             return Redirect(oauthRequest);
         }
