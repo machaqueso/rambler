@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -30,6 +32,7 @@ namespace Rambler.Web.Services
         private const int defaultDelay = 1000;
 
         private int delay;
+        private ConcurrentQueue<string> messageQueue;
 
         public TwitchBackgroundService(ILogger<TwitchBackgroundService> logger,
             IServiceScopeFactory serviceScopeFactory, IntegrationManager integrationManager)
@@ -94,14 +97,13 @@ namespace Rambler.Web.Services
                             if (webSocket.State == WebSocketState.Open)
                             {
                                 await TwitchHandshake(webSocket, cancellationToken);
+                                await Send(webSocket, cancellationToken, $"JOIN :#{user.name}");
+                                await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Connected, cancellationToken);
                             }
                         }
 
                         while (!cancellationToken.IsCancellationRequested && await twitchService.IsEnabled())
                         {
-                            await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Connected,
-                                cancellationToken);
-                            await Send(webSocket, cancellationToken, $"JOIN :#{user.name}");
                             await Receive(webSocket, cancellationToken);
                         }
                     }
@@ -161,7 +163,7 @@ namespace Rambler.Web.Services
                 cancellationToken);
         }
 
-        private async Task<WebSocketReceiveResult> ReceiveAsync(ClientWebSocket webSocket, CancellationToken cancellationToken, byte[] buffer)
+        private async Task<WebSocketReceiveResult> ReceiverTask(ClientWebSocket webSocket, CancellationToken cancellationToken, byte[] buffer)
         {
             //var loopToken = new CancellationTokenSource();
             var timeoutToken = new CancellationTokenSource(5000).Token;
@@ -188,6 +190,26 @@ namespace Rambler.Web.Services
             return new WebSocketReceiveResult(0, WebSocketMessageType.Text, true);
         }
 
+        private async Task<(WebSocketReceiveResult, IEnumerable<byte>)> ReceiveFullMessage(
+            WebSocket socket, CancellationToken cancelToken)
+        {
+            WebSocketReceiveResult response;
+            var message = new List<byte>();
+
+            var buffer = new byte[receiveChunkSize];
+            do
+            {
+                response = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancelToken);
+                message.AddRange(new ArraySegment<byte>(buffer, 0, response.Count));
+            } while (!response.EndOfMessage);
+
+            return (response, message);
+        }
+
+        private async Task SenderTask(CancellationToken cancellationToken)
+        {
+
+        }
 
         private async Task Receive(ClientWebSocket webSocket, CancellationToken cancellationToken)
         {
@@ -200,11 +222,12 @@ namespace Rambler.Web.Services
             var encoder = new UTF8Encoding();
             var partial = string.Empty;
 
-            while (webSocket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested &&
-                   await twitchService.IsEnabled())
+            while (webSocket.State == WebSocketState.Open
+                   && !cancellationToken.IsCancellationRequested
+                   && await twitchService.IsEnabled())
             {
                 var buffer = new byte[receiveChunkSize];
-                var result = await ReceiveAsync(webSocket, cancellationToken, buffer);
+                var result = await ReceiverTask(webSocket, cancellationToken, buffer);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -245,7 +268,7 @@ namespace Rambler.Web.Services
                 {
                     if (!string.IsNullOrWhiteSpace(item.Message?.Message))
                     {
-                        await Send(webSocket, cancellationToken, $"PRIVMSG #{user.name} :{item.Message.Message}" );
+                        await Send(webSocket, cancellationToken, $"PRIVMSG #{user.name} :{item.Message.Message}");
                     }
                     await chatService.DequeueMessage(item.Id);
                 }
