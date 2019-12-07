@@ -48,15 +48,13 @@
             <nav-item icon="social:people" href="@Url.Action("Index", "Author")">Author</nav-item>
             <nav-item icon="icons:android" href="/Configuration/Bot">Bot</nav-item>
             <nav-item icon="icons:exit-to-app" href="/Account/Logout">Logout</nav-item>
-            @*<spacer></spacer>
-        <img style="align-self: center;" src="ramblerlogo.png" />*@
         </nav>
         <main>
             <div style="display: flex; align-content: stretch; flex-direction: column;">
                 @RenderBody()
                 <div style="flex: 1 1 auto;"></div>
                 <footer>
-                    <p>Rambler @(Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute> ().InformationalVersion) | &copy; 2019 - Machaqueso</p>
+                    <p>Rambler @(Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion) | &copy; 2019 - Machaqueso</p>
                 </footer>
             </div>
         </main>
