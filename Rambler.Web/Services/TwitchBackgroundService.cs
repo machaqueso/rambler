@@ -40,11 +40,13 @@ namespace Rambler.Web.Services
             this.logger = logger;
             this.serviceScopeFactory = serviceScopeFactory;
             this.integrationManager = integrationManager;
+
+            messageQueue = new ConcurrentQueue<string>();
         }
 
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken originalCancellationToken)
         {
-            cancellationToken.Register(() =>
+            originalCancellationToken.Register(() =>
             {
                 logger.LogDebug($"[TwitchBackgroundService] background task is stopping.");
             });
@@ -58,28 +60,41 @@ namespace Rambler.Web.Services
                 twitchManager = scope.ServiceProvider.GetRequiredService<TwitchManager>();
                 chatService = scope.ServiceProvider.GetRequiredService<ChatService>();
 
-                while (!cancellationToken.IsCancellationRequested)
+                while (!originalCancellationToken.IsCancellationRequested)
                 {
+                    logger.LogDebug($"[TwitchBackgroundService] entering primary loop");
                     try
                     {
                         if (!await twitchService.IsEnabled())
                         {
                             await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Disabled,
-                                cancellationToken);
-                            await Task.Delay(delay, cancellationToken);
+                                originalCancellationToken);
+                            logger.LogDebug($"[TwitchBackgroundService] twitch disabled, waiting for {delay}ms");
+                            await Task.Delay(delay, originalCancellationToken);
                             continue;
                         }
 
                         if (!twitchService.IsConfigured())
                         {
                             await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.NotConfigured,
-                                cancellationToken);
-                            await Task.Delay(delay, cancellationToken);
+                                originalCancellationToken);
+                            logger.LogDebug($"[TwitchBackgroundService] twitch not configured, waiting for {delay}ms");
+                            await Task.Delay(delay, originalCancellationToken);
                             continue;
                         }
 
-                        await CheckToken(cancellationToken);
+                        await CheckToken(originalCancellationToken);
                         var user = await twitchManager.GetUser();
+
+                        var cancellationTokenSource = new CancellationTokenSource();
+                        integrationManager.IntegrationChanged += (s, e) =>
+                        {
+                            if (e.Name == ApiSource.Twitch && !e.IsEnabled)
+                            {
+                                cancellationTokenSource.Cancel();
+                            }
+                        };
+                        var cancellationToken = cancellationTokenSource.Token;
 
                         var webSocket = new ClientWebSocket();
                         if (webSocket.State != WebSocketState.Open)
@@ -97,24 +112,32 @@ namespace Rambler.Web.Services
                             if (webSocket.State == WebSocketState.Open)
                             {
                                 await TwitchHandshake(webSocket, cancellationToken);
-                                await Send(webSocket, cancellationToken, $"JOIN :#{user.name}");
-                                await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Connected, cancellationToken);
+                                Send($"JOIN :#{user.name}");
+                                await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Connected,
+                                    cancellationToken);
                             }
                         }
 
-                        while (!cancellationToken.IsCancellationRequested && await twitchService.IsEnabled())
-                        {
-                            await Receive(webSocket, cancellationToken);
-                        }
+                        var receiveTask = Receive(webSocket, cancellationToken);
+                        var sendTask = SenderTask(webSocket, cancellationToken);
+                        await Task.WhenAll(receiveTask, sendTask);
+
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Ok", cancellationToken);
+                    }
+                    catch (TaskCanceledException tce)
+                    {
+                        logger.LogInformation("Task canceled: " + tce.GetBaseException().Message);
                     }
                     catch (Exception ex)
                     {
                         logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
-                        await dashboardService.UpdateStatus(ApiSource.Twitch, "Error", cancellationToken);
+                        await dashboardService.UpdateStatus(ApiSource.Twitch, "Error", originalCancellationToken);
                     }
 
-                    await Task.Delay(delay, cancellationToken);
+                    logger.LogDebug($"[TwitchBackgroundService] waiting for {delay}ms, cancellation requested: {originalCancellationToken.IsCancellationRequested}");
+                    await Task.Delay(delay, originalCancellationToken);
                 }
+                logger.LogDebug($"[TwitchBackgroundService] me voy pal carajo");
             }
         }
 
@@ -145,70 +168,36 @@ namespace Rambler.Web.Services
             var token = await twitchService.GetToken();
             var user = await twitchManager.GetUser();
 
-            await Send(webSocket, cancellationToken, $"PASS oauth:{token.access_token}");
-            await Send(webSocket, cancellationToken, $"NICK {user.name}"); // TODO: get nick from twitch API
+            Send($"PASS oauth:{token.access_token}");
+            Send($"NICK {user.name}"); // TODO: get nick from twitch API
         }
 
-        private async Task Send(ClientWebSocket webSocket, CancellationToken cancellationToken, string message)
+        private void Send(string message)
         {
-            if (webSocket.State != WebSocketState.Open)
-            {
-                throw new InvalidOperationException($"Twitch socket {webSocket.State.ToString()}");
-            }
-
-            logger.LogDebug($"[TwitchBackgroundService] Twitch Chat > {message}");
-            var encoder = new UTF8Encoding();
-            var buffer = encoder.GetBytes(message);
-            await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
-                cancellationToken);
+            messageQueue.Enqueue(message);
         }
 
-        private async Task<WebSocketReceiveResult> ReceiverTask(ClientWebSocket webSocket, CancellationToken cancellationToken, byte[] buffer)
+        private async Task SenderTask(ClientWebSocket webSocket, CancellationToken cancellationToken)
         {
-            //var loopToken = new CancellationTokenSource();
-            var timeoutToken = new CancellationTokenSource(5000).Token;
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutToken);
-
-            // TODO: Potential memory leak?
-            integrationManager.IntegrationChanged += (s, e) =>
+            while (!cancellationToken.IsCancellationRequested)
             {
-                if (e.Name == ApiSource.Twitch && !e.IsEnabled)
+                if (!messageQueue.TryDequeue(out var message))
                 {
-                    linkedToken.Cancel();
+                    await Task.Delay(TimeSpan.FromMilliseconds(1000));
+                    continue;
                 }
-            };
 
-            try
-            {
-                return await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), linkedToken.Token);
+                if (webSocket.State != WebSocketState.Open)
+                {
+                    throw new InvalidOperationException($"Twitch socket {webSocket.State.ToString()}");
+                }
+
+                logger.LogDebug($"[TwitchBackgroundService] Twitch Chat > {message}");
+                var encoder = new UTF8Encoding();
+                var buffer = encoder.GetBytes(message);
+                await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
+                    cancellationToken);
             }
-            catch (TaskCanceledException)
-            {
-                // YUM!
-            }
-
-            return new WebSocketReceiveResult(0, WebSocketMessageType.Text, true);
-        }
-
-        private async Task<(WebSocketReceiveResult, IEnumerable<byte>)> ReceiveFullMessage(
-            WebSocket socket, CancellationToken cancelToken)
-        {
-            WebSocketReceiveResult response;
-            var message = new List<byte>();
-
-            var buffer = new byte[receiveChunkSize];
-            do
-            {
-                response = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancelToken);
-                message.AddRange(new ArraySegment<byte>(buffer, 0, response.Count));
-            } while (!response.EndOfMessage);
-
-            return (response, message);
-        }
-
-        private async Task SenderTask(CancellationToken cancellationToken)
-        {
-
         }
 
         private async Task Receive(ClientWebSocket webSocket, CancellationToken cancellationToken)
@@ -227,7 +216,9 @@ namespace Rambler.Web.Services
                    && await twitchService.IsEnabled())
             {
                 var buffer = new byte[receiveChunkSize];
-                var result = await ReceiverTask(webSocket, cancellationToken, buffer);
+                logger.LogDebug($"[TwitchBackgroundService] Listening to socket");
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                logger.LogDebug($"[TwitchBackgroundService] Receive status {result.MessageType}");
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -252,7 +243,7 @@ namespace Rambler.Web.Services
                         if (line.Contains("PING"))
                         {
                             var host = line.Substring(line.IndexOf(':'));
-                            await Send(webSocket, cancellationToken, $"PONG :{host}");
+                            Send($"PONG :{host}");
                             await dashboardService.UpdateStatus(ApiSource.Twitch, BackgroundServiceStatus.Connected,
                                 cancellationToken);
                             continue;
@@ -268,12 +259,13 @@ namespace Rambler.Web.Services
                 {
                     if (!string.IsNullOrWhiteSpace(item.Message?.Message))
                     {
-                        await Send(webSocket, cancellationToken, $"PRIVMSG #{user.name} :{item.Message.Message}");
+                        Send($"PRIVMSG #{user.name} :{item.Message.Message}");
                     }
                     await chatService.DequeueMessage(item.Id);
                 }
                 await Task.Delay(delay, cancellationToken);
             }
         }
+
     }
 }
