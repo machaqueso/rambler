@@ -46,27 +46,29 @@
             <main>
                 <table class="table table-bordered table-striped">
                     <thead>
-                        <tr>
-                            <th>Id</th>
-                            <th>Name</th>
-                            <th>Key</th>
-                            <th>Configured?</th>
-                            <th></th>
-                        </tr>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Key</th>
+                        <th>Configured?</th>
+                        <th></th>
+                    </tr>
                     </thead>
                     <tbody>
-                        <template is="dom-repeat" items="{{settings}}">
-                            <tr>
-                                <td>{{item.id}}</td>
-                                <td>{{item.name}}</td>
-                                <td>{{item.key}}</td>
-                                <td>{{item.status}}</td>
-                                <td><paper-icon-button icon="editor:mode-edit" on-click="_openEditor"></paper-icon-button></td>
-                            </tr>
-                        </template>
+                    <template is="dom-repeat" items="{{settings}}">
+                        <tr>
+                            <td>{{item.id}}</td>
+                            <td>{{item.name}}</td>
+                            <td>{{item.key}}</td>
+                            <td>{{item.status}}</td>
+                            <td><paper-icon-button icon="editor:mode-edit" on-click="_openEditor"></paper-icon-button></td>
+                        </tr>
+                    </template>
                     </tbody>
-
                 </table>
+                <div>
+                    @Html.ActionLink("Shutdown", "Shutdown")
+                </div>
             </main>
         </xenon-photo-card>
 

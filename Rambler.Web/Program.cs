@@ -1,15 +1,17 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Serilog;
-using Serilog.Events;
 
 namespace Rambler.Web
 {
     public class Program
     {
+        private static readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
         public static int Main(string[] args)
         {
             var configuration = new ConfigurationBuilder()
@@ -24,7 +26,8 @@ namespace Rambler.Web
             try
             {
                 Log.Information("Starting web host");
-                CreateWebHostBuilder(args).Build().Run();
+                var host = CreateWebHostBuilder(args).Build();
+                host.RunAsync(cancellationTokenSource.Token).GetAwaiter().GetResult();
                 return 0;
             }
             catch (Exception ex)
@@ -49,5 +52,10 @@ namespace Rambler.Web
                 })
                 .UseSerilog((ctx, config) => { config.ReadFrom.Configuration(ctx.Configuration); })
                 .UseStartup<Startup>();
+
+        public static void Shutdown()
+        {
+            cancellationTokenSource.Cancel();
+        }
     }
 }

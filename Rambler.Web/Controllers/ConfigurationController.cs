@@ -39,5 +39,11 @@ namespace Rambler.Web.Controllers
             return View();
         }
 
+        public IActionResult Shutdown()
+        {
+            Program.Shutdown();
+            return RedirectToAction("Index", "Home");
+        }
+
     }
 }
