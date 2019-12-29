@@ -22,14 +22,43 @@
         #sender {
             max-height: 80px;
         }
-
     </style>
 }
 
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
 <link rel="import" href="/components/rambler-components/rambler-chat-send.html" />
 
-<div id="container">
-    <rambler-chat id="reader" channel="Reader" show-date timeout="0" max-lines="20" speak-enabled></rambler-chat>
-    <rambler-chat-send id="sender"></rambler-chat-send>
-</div>
+<dom-module id="page-module">
+    <template>
+        <div id="container">
+            <rambler-chat id="chat" channel="Reader" show-date timeout="0" max-lines="20" speak-enabled></rambler-chat>
+            <rambler-chat-send id="sender"></rambler-chat-send>
+        </div>
+    </template>
+    <script>
+        addEventListener('WebComponentsReady',
+            function () {
+
+                Polymer({
+                    is: "page-module",
+                    properties: {
+                    },
+                    listeners: {
+                        "chatChanged": '_onMessageReceived'
+                    },
+                    _onMessageReceived: function () {
+                        this._onChatChanged();
+                    },
+                    _onChatChanged: function () {
+                        window.setTimeout(() => {
+                            var element = document.getElementById("chat");
+                            element.scrollTop = element.scrollHeight;
+                        }, 1000);
+                    }
+                });
+
+            })
+    </script>
+</dom-module>
+
+<page-module></page-module>

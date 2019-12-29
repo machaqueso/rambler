@@ -1,5 +1,22 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
+    Layout = "_Layout";
+}
+
+@section Styles{
+    <style>
+        #chat {
+            background-color: black;
+            flex: 1;
+            height: 45vh;
+            max-height: 45vh;
+            overflow-y: scroll;
+        }
+
+        #sender {
+            max-height: 80px;
+        }
+    </style>
 }
 
 <link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
@@ -53,34 +70,40 @@
                     </a>
                 </actions>
                 <main>
-                    <div style="background-color: black;">
-                        <rambler-chat show-date timeout="0" speak-enabled="[[speakEnabled]]"></rambler-chat>
-                    </div>
-                    <div>
-                        <rambler-chat-send></rambler-chat-send>
-                    </div>
+                    <rambler-chat id="ramblerChat" show-date timeout="0" speak-enabled="[[speakEnabled]]"></rambler-chat>
+                    <rambler-chat-send id="sender"></rambler-chat-send>
                 </main>
             </xenon-photo-card>
         </div>
 
     </template>
     <script>
-    addEventListener('WebComponentsReady', function() {
+        addEventListener('WebComponentsReady',
+            function() {
 
-        Polymer({
-            is: "page-module",
-            properties: {
-                speakEnabled: { type: Boolean, notify: true, value: false }
-            },
-            observers: [
-            ],
-            _openReader: function() {
-                window.open("@Url.Action("Reader", "Chat")", "Rambler reader", "innerWidth=640,innerHeight=540,menubar=0,toolbar=1,location=1,resizable=yes,scrollbars=yes,status=yes");
-            },
-            ready: function () {
-            }
-        });
-        })
+                Polymer({
+                    is: "page-module",
+                    properties: {
+                        speakEnabled: { type: Boolean, notify: true, value: false }
+                    },
+                    listeners: {
+                        "chatChanged": '_onChatChanged'
+                    },
+                    _openReader: function() {
+                        window.open("@Url.Action("Reader", "Chat")",
+                            "Rambler reader",
+                            "innerWidth=640,innerHeight=540,menubar=0,toolbar=1,location=1,resizable=yes,scrollbars=yes,status=yes");
+                    },
+                    _onChatChanged: function () {
+                        window.setTimeout(() => {
+                            console.log('height', document.documentElement.scrollHeight);
+                            var element = document.getElementById("chat");
+                            element.scrollTop = element.scrollHeight;
+                            console.log('chat height', element.scrollTop, element.scrollHeight);
+                        }, 1000);
+                    }
+                });
+            })
     </script>
 </dom-module>
 

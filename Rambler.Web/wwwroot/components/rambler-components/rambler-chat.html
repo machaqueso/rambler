@@ -22,13 +22,13 @@
                 .authorContext li:hover {
                     background-color: gainsboro;
                 }
-
         </style>
         <iron-ajax auto id="ajax"
                    url="/api/chat?maxItems=[[maxLines]]"
                    handle-as="json"
                    loading="{{loading}}"
-                   last-response="{{messages}}"></iron-ajax>
+                   last-response="{{messages}}"
+                   on-response="_onAjaxResponse"></iron-ajax>
 
         <iron-ajax id="putAction"
                    handle-as="json"
@@ -39,7 +39,7 @@
                    debounce-duration="300"></iron-ajax>
 
         <div class="chat" id="chat">
-            <template is="dom-repeat" items="{{messages}}" restamp>
+            <template is="dom-repeat" items="{{messages}}" restamp on-dom-change="_chatChanged">
                 <template is="dom-if" if="[[showDate]]">
                     <chat-message item="{{item}}" show-date timeout="[[timeout]]" on-click="_onChatClick"></chat-message>
                 </template>
@@ -78,13 +78,11 @@
                 _onMessageReceived: function (message) {
                     if (!message) return;
 
-                    console.log(message, this.maxLines);
                     this.push("messages", message);
-                    var element = document.getElementById("chat");
-                    element.scrollIntoView({ block: "end" });
                     if (this.maxLines > 0 && this.messages.length > this.maxLines) {
                         this.shift("messages");
                     }
+
                     this.fire("messageReceived");
                 },
                 _onChatClick: function (e) {
@@ -115,6 +113,12 @@
                 },
                 _onActionError: function (e) {
                     console.log(e.detail.request.xhr.response);
+                },
+                _onAjaxResponse: function (e) {
+                    this._chatChanged();
+                },
+                _chatChanged: function () {
+                    this.fire("chatChanged");
                 },
                 ready: function () {
                     var _this = this;

@@ -54,21 +54,18 @@
                 return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
             },
             _onAuthorClick: function (e) {
-                //console.log(e.layerX, e.layerY);
                 this.fire('author-click',
                     {
                         author: e.model.item,
                         x: e.layerX,
                         y: e.layerY
                     });
-                //this.author = e.model.item;
             },
             ready: function () {
                 var _this = this;
 
                 if (this.timeout > 0) {
                     window.setTimeout(function () {
-                        console.log("timeout");
                         _this.set("hideRow", true)
                     }, _this.timeout);
                 }

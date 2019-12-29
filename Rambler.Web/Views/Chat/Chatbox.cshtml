@@ -31,7 +31,7 @@
 <dom-module id="page-module">
     <template>
         <div id="container">
-            <rambler-chat channel="OBS" max-lines="@Model.MaxLines"></rambler-chat>
+            <rambler-chat id="chat" channel="OBS" max-lines="@Model.MaxLines"></rambler-chat>
         </div>
     </template>
     <script>
@@ -39,13 +39,14 @@
 
             Polymer({
                 is: "page-module",
-                listeners: [
-                    "messageReceived", '_onMessageReceived'
-                ],
+                listeners: {
+                    "chatChanged": '_onMessageReceived'
+                },
                 _onMessageReceived: function () {
-                    console.log("Chatbox_onMessageReceived");
-                    var container = document.querySelector('#container');
-                    container.scroller.scrollTop = container.scrollHeight;
+                    console.log('chatChanged');
+                    window.setTimeout(() => {
+                        document.documentElement.scrollTop = document.documentElement.scrollHeight;
+                    }, 1000);
                 }
             });
         })
