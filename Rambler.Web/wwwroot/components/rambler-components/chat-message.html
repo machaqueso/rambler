@@ -1,6 +1,7 @@
 ﻿
 <link rel="import" href="rambler-chat-date.html" />
 <link rel="import" href="../paper-listbox/paper-listbox.html" />
+<link rel="import" href="../iron-ajax/iron-ajax.html" />
 
 <dom-module id="chat-message">
     <template>
@@ -24,7 +25,34 @@
                 paper-item:hover {
                     background-color: gainsboro;
                 }
+
+            #authorContext {
+                position: absolute;
+                z-index: 10;
+                display: flex;
+                color: dimgray;
+                background-color: gainsboro;
+                font-size: 12px;
+            }
+
+                #authorContext .action {
+                    padding: 2px 5px;
+                }
+
+                    #authorContext .action:hover {
+                        color: gainsboro;
+                        background-color: dimgray;
+                    }
         </style>
+
+        <iron-ajax id="putAction"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="PUT"
+                   on-response="_onActionResponse"
+                   on-error="_onActionError"
+                   debounce-duration="300"></iron-ajax>
 
         <template is="dom-if" if="[[!hideRow]]">
             <div class="row">
@@ -34,32 +62,58 @@
                 <template is="dom-if" if="[[item.source]]">
                     <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
                 </template>
-                <div class="author" on-click="_onAuthorClick">{{item.author}}</div>
+                <div on-mouseover="_showContext" on-mouseout="_hideContext">
+                    <div class="author">{{item.author}}</div>
+                    <template is="dom-if" if="[[showAuthorContext]]">
+                        <div id="authorContext">
+                            <template is="dom-repeat" items="[[actions]]" restamp>
+                                <div class="action" on-click="_authorAction">{{item}}</div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
                 <div class="message">{{item.message}}</div>
             </div>
         </template>
 
+        <paper-toast id="toast"></paper-toast>
     </template>
     <script>
         Polymer({
             is: "chat-message",
             properties: {
-                author: { type: Object, value: {} },
                 showDate: { type: Boolean, value: false },
                 hideRow: { type: Boolean, notify: true, value: false },
                 timeout: { type: Number, value: 30000 },
-                actions: { type: Array }
+                actions: { type: Array, notify: true, value: [] },
+                showAuthorContext: { type: Boolean, notify: true, value: false },
+                action: { type: String },
             },
             _getIcon: function (source) {
                 return 'fab fa-' + source.toLowerCase() + ' ' + source.toLowerCase();
             },
-            _onAuthorClick: function (e) {
-                this.fire('author-click',
-                    {
-                        author: e.model.item,
-                        x: e.layerX,
-                        y: e.layerY
-                    });
+            _showContext: function (e) {
+                this.showAuthorContext = true;
+                this.set("actions", ["Upvote", "Downvote", "Whitelist", "Ignore", "Blacklist", "Ban"]);
+                console.log("selected author", this.item);
+            },
+            _hideContext: function (e) {
+                this.showAuthorContext = false;
+            },
+            _authorAction: function (e) {
+                this.action = e.model.item;
+                this.$.putAction.url = "/api/author/" + this.item.authorId + "/" + e.model.item;
+                this.$.putAction.generateRequest();
+                this.showAuthorContext = false;
+            },
+            _onActionResponse: function (e) {
+                this.$.toast.text = this.item.author + " " + this.action + " successful";
+                this.$.toast.show();
+            },
+            _onActionError: function (e) {
+                this.$.toast.text = this.item.author + " " + this.action + " failed";
+                this.$.toast.show();
+                console.log(e.detail.request.xhr.response);
             },
             ready: function () {
                 var _this = this;

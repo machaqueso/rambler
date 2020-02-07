@@ -30,14 +30,6 @@
                    last-response="{{messages}}"
                    on-response="_onAjaxResponse"></iron-ajax>
 
-        <iron-ajax id="putAction"
-                   handle-as="json"
-                   content-type="application/json"
-                   loading="{{loading}}"
-                   method="PUT"
-                   on-error="_onActionError"
-                   debounce-duration="300"></iron-ajax>
-
         <div class="chat" id="chat">
             <template is="dom-repeat" items="{{messages}}" restamp on-dom-change="_chatChanged">
                 <template is="dom-if" if="[[showDate]]">
@@ -48,13 +40,6 @@
                 </template>
             </template>
         </div>
-        <template is="dom-if" if="[[showAuthorContext]]">
-            <ul id="context-menu" class="authorContext">
-                <template is="dom-repeat" items="[[actions]]">
-                    <li value="{{item}}" on-click="_authorAction">{{item}}</li>
-                </template>
-            </ul>
-        </template>
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
@@ -92,24 +77,7 @@
                     }
                 },
                 _onAuthorClick: function (e) {
-                    //console.log('_onAuthorClick', e.detail.author);
-
-                    this.author = e.detail.author;
-
-                    this.showAuthorContext = !this.showAuthorContext;
-                    if (!this.showAuthorContext) {
-                        //console.log(e.detail.x, e.detail.y, e.target.offsetLeft, e.target.offsetTop);
-
-                        var menu = document.querySelector("#context-menu");
-                        menu.style.left = e.detail.x + "px";
-                        menu.style.top = e.detail.y + "px";
-                    }
-                },
-                _authorAction: function (e) {
-                    console.log("_authorAction", e.model.item, this.author.authorId);
-                    this.$.putAction.url = "/api/author/" + this.author.authorId + "/" + e.model.item;
-                    this.$.putAction.generateRequest();
-                    this.showAuthorContext = false;
+                    //console.log('_onAuthorClick', e);
                 },
                 _onActionError: function (e) {
                     console.log(e.detail.request.xhr.response);
