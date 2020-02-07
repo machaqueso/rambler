@@ -12,7 +12,7 @@
             height: 95vh;
         }
 
-        #reader {
+        #chat {
             background-color: black;
             flex: 1;
             max-height: 80vh;
@@ -31,7 +31,7 @@
 <dom-module id="page-module">
     <template>
         <div id="container">
-            <rambler-chat id="chat" channel="Reader" show-date timeout="0" max-lines="20" speak-enabled></rambler-chat>
+            <rambler-chat id="readerChat" channel="Reader" show-date timeout="0" max-lines="20" speak-enabled></rambler-chat>
             <rambler-chat-send id="sender"></rambler-chat-send>
         </div>
     </template>
@@ -51,8 +51,10 @@
                     },
                     _onChatChanged: function () {
                         window.setTimeout(() => {
+                            console.log('height', document.documentElement.scrollHeight);
                             var element = document.getElementById("chat");
                             element.scrollTop = element.scrollHeight;
+                            console.log('chat height', element.scrollTop, element.scrollHeight);
                         }, 1000);
                     }
                 });
