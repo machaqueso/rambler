@@ -24,4 +24,5 @@ namespace Rambler.Models
         public string Status { get; set; }
         public DateTime UpdateDate { get; set; }
     }
+
 }

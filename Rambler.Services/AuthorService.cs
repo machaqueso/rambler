@@ -141,5 +141,11 @@ namespace Rambler.Services
             db.AuthorFilters.Remove(entity);
             await db.SaveChangesAsync();
         }
+
+        public async Task Create(Author messageAuthor)
+        {
+            await db.Authors.AddAsync(messageAuthor);
+            await db.SaveChangesAsync();
+        }
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Rambler.Data;
 using Rambler.Models;
 
-namespace Rambler.Web.Services
+namespace Rambler.Services
 {
     public class ChannelService
     {

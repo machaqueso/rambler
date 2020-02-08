@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Rambler.Data;
 using Rambler.Models;
-using Rambler.Models.Exceptions;
 using Rambler.Services;
 using Rambler.Web.Hubs;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Rambler.Web.Services
 {
@@ -16,27 +14,27 @@ namespace Rambler.Web.Services
     {
         private readonly DataContext db;
         private readonly IHubContext<ChatHub> chatHubContext;
-        private readonly ChannelService channelService;
         private readonly AuthorService authorService;
-        private readonly WordFilterService wordFilterService;
         private readonly BotService botService;
         private readonly IntegrationManager integrationManager;
+        private readonly ChatRulesService chatRulesService;
+        private readonly ChatMessageService chatMessageService;
 
-        public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, ChannelService channelService,
-            AuthorService authorService, WordFilterService wordFilterService, BotService botService, IntegrationManager integrationManager)
+        public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, AuthorService authorService,
+            BotService botService, IntegrationManager integrationManager, ChatRulesService chatRulesService, ChatMessageService chatMessageService)
         {
             this.db = db;
             this.chatHubContext = chatHubContext;
-            this.channelService = channelService;
             this.authorService = authorService;
-            this.wordFilterService = wordFilterService;
             this.botService = botService;
             this.integrationManager = integrationManager;
+            this.chatRulesService = chatRulesService;
+            this.chatMessageService = chatMessageService;
         }
 
         public IQueryable<ChatMessage> GetMessages()
         {
-            return db.Messages;
+            return chatMessageService.GetMessages();
         }
 
         public async Task CreateMessage(ChatMessage message)
@@ -48,21 +46,6 @@ namespace Rambler.Web.Services
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(message.Author.Name))
-            {
-                throw new UnprocessableEntityException("Author's name cannot be empty");
-            }
-
-            if (string.IsNullOrWhiteSpace(message.Author.Source))
-            {
-                throw new UnprocessableEntityException("Author's source cannot be empty");
-            }
-
-            if (string.IsNullOrWhiteSpace(message.Author.SourceAuthorId))
-            {
-                throw new UnprocessableEntityException("Author's source id cannot be empty");
-            }
-
             // Tries to match author to existing one coming from same source and id
             var author = await authorService.GetAuthors()
                 .Where(x => string.IsNullOrWhiteSpace(x.Source))
@@ -70,7 +53,12 @@ namespace Rambler.Web.Services
                 .SingleOrDefaultAsync(x => x.Source == message.Author.Source
                                            && x.SourceAuthorId == message.Author.SourceAuthorId);
 
-            if (author != null)
+            if (author == null)
+            {
+                await authorService.Create(message.Author);
+                message.AuthorId = message.Author.Id;
+            }
+            else
             {
                 // Housekeeping: syncs author's name changes
                 if (author.Name != message.Author.Name)
@@ -79,13 +67,19 @@ namespace Rambler.Web.Services
                     await db.SaveChangesAsync();
                 }
 
-                message.Author = null;
-                message.AuthorId = author.Id;
+                //TODO: might need this if duplicate authors get inserted
+                //message.Author = null;
+                //message.AuthorId = author.Id;
+
+                // apply infraction penalty
+                if (chatRulesService.HasInfractions(message))
+                {
+                    author.Score -= 1;
+                    await db.SaveChangesAsync();
+                }
             }
 
-            db.Messages.Add(message);
-            await db.SaveChangesAsync();
-
+            await chatMessageService.CreateMessage(message);
             await SendToChannels(message);
 
             // sends message to integrations if local
@@ -161,7 +155,7 @@ namespace Rambler.Web.Services
         {
             await SendToChannel("All", message);
 
-            foreach (var channel in await AllowedChannels(message))
+            foreach (var channel in await chatRulesService.AllowedChannels(message))
             {
                 // check for rule to send to this channel
                 await SendToChannel(channel, message);
@@ -171,110 +165,6 @@ namespace Rambler.Web.Services
             {
                 message.Author = null;
             }
-        }
-
-        public async Task<IEnumerable<string>> AllowedChannels(ChatMessage message)
-        {
-            var channels = await channelService.GetChannels()
-                .Where(x => x.Name != "All")
-                .ToListAsync();
-
-            var channelNames = new List<string>();
-            var authorFilters = await authorService.GetFilters()
-                .Where(x => x.Author.SourceAuthorId == message.Author.SourceAuthorId)
-                .ToListAsync();
-
-            foreach (var channel in channels)
-            {
-                if (AllowedMessage(message, channel.Name, authorFilters))
-                {
-                    channelNames.Add(channel.Name);
-                }
-            }
-
-            return channelNames;
-        }
-
-        public bool AllowedMessage(ChatMessage message, string channel, IList<AuthorFilter> authorFilters)
-        {
-            switch (channel)
-            {
-                case "Reader":
-                    return ReaderRules(message, authorFilters);
-                case "OBS":
-                    return OBSRules(message, authorFilters);
-                case "TTS":
-                    return TTSRules(message, authorFilters);
-                default:
-                    return GlobalRules(message, authorFilters);
-            }
-        }
-
-        private bool TTSRules(ChatMessage message, IList<AuthorFilter> authorFilters)
-        {
-            if (IsInList(message, authorFilters, FilterTypes.Whitelist))
-            {
-                return true;
-            }
-
-            if (wordFilterService.GetWordFilters().Any(x => message.Message.Contains(x.Word)))
-            {
-                return false;
-            }
-
-            if (message.Author.Score >= 0)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool OBSRules(ChatMessage message, IList<AuthorFilter> authorFilters)
-        {
-            if (IsInList(message, authorFilters, FilterTypes.Whitelist))
-            {
-                return true;
-            }
-
-            if (wordFilterService.GetWordFilters().Any(x => message.Message.Contains(x.Word)))
-            {
-                return false;
-            }
-
-            if (message.Author.Score >= 0)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool ReaderRules(ChatMessage message, IList<AuthorFilter> authorFilters)
-        {
-            if (IsInList(message, authorFilters, FilterTypes.Banlist)
-                || IsInList(message, authorFilters, FilterTypes.Blacklist)
-                || message.Author.Score < -10)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        public bool GlobalRules(ChatMessage message, IList<AuthorFilter> authorFilters)
-        {
-            if (IsInList(message, authorFilters, FilterTypes.Whitelist))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool IsInList(ChatMessage message, IList<AuthorFilter> authorFilters, string filterType)
-        {
-            return authorFilters.Any(x => x.FilterType == filterType);
         }
 
     }
