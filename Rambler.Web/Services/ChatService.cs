@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Rambler.Data;
 using Rambler.Models;
+using Rambler.Models.Exceptions;
 using Rambler.Services;
 using Rambler.Web.Hubs;
 
@@ -38,17 +39,44 @@ namespace Rambler.Web.Services
 
         public async Task CreateMessage(ChatMessage message)
         {
+            // Ignore duplicate messages from apis
             if (!string.IsNullOrEmpty(message.SourceMessageId) &&
                 db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
             {
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(message.Author.Name))
+            {
+                throw new UnprocessableEntityException("Author's name cannot be empty");
+            }
+
+            if (string.IsNullOrWhiteSpace(message.Author.Source))
+            {
+                throw new UnprocessableEntityException("Author's source cannot be empty");
+            }
+
+            if (string.IsNullOrWhiteSpace(message.Author.SourceAuthorId))
+            {
+                throw new UnprocessableEntityException("Author's source id cannot be empty");
+            }
+
+            // Tries to match author to existing one coming from same source and id
             var author = await authorService.GetAuthors()
+                .Where(x => string.IsNullOrWhiteSpace(x.Source))
+                .Where(x => string.IsNullOrWhiteSpace(x.SourceAuthorId))
                 .SingleOrDefaultAsync(x => x.Source == message.Author.Source
                                            && x.SourceAuthorId == message.Author.SourceAuthorId);
+
             if (author != null)
             {
+                // Housekeeping: syncs author's name changes
+                if (author.Name != message.Author.Name)
+                {
+                    author.Name = message.Author.Name;
+                    await db.SaveChangesAsync();
+                }
+
                 message.Author = null;
                 message.AuthorId = author.Id;
             }
@@ -83,7 +111,6 @@ namespace Rambler.Web.Services
                 default:
                     break;
             }
-
         }
 
         public async Task SendToChannel(string channel, ChatMessage message)

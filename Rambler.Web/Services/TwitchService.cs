@@ -194,6 +194,7 @@ namespace Rambler.Web.Services
             {
                 chatMessage.Author.Source = ApiSource.Twitch;
                 chatMessage.Author.SourceAuthorId = twitchUser._id.ToString();
+                chatMessage.Author.Name = twitchUser.name;
             }
 
             await chatService.CreateMessage(chatMessage);

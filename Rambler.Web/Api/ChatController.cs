@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rambler.Models;
 using Rambler.Web.Services;
+using Serilog.Events;
 
 namespace Rambler.Web.Api
 {

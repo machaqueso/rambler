@@ -23,7 +23,9 @@ namespace Rambler.Web.Api
         public IActionResult GetAuthors()
         {
             var authors = authorService.GetAuthors()
-                .Include(x => x.AuthorFilters);
+                .Include(x => x.AuthorFilters)
+                .Where(x => x.Source != null)
+                .OrderBy(x => x.Name);
 
             return Ok(authors.Select(x => new
             {

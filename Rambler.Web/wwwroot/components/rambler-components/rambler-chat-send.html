@@ -29,6 +29,7 @@
                 _send: function () {
                     this.connection.invoke("SendMessage", "", this.message.message)
                         .catch(function (err) {
+                            console.log("error", err);
                             return console.error(err.toString());
                         });
                 },
