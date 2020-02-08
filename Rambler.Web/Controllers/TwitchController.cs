@@ -87,12 +87,11 @@ namespace Rambler.Web.Controllers
             return RedirectToAction("Index");
         }
 
-
-        public async Task<IActionResult> User()
+        public async Task<IActionResult> Account()
         {
             var user = await twitchManager.GetUser();
 
-            return View(user);
+            return View("User", user);
         }
 
         public IActionResult Author()

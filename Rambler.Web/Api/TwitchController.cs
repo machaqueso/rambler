@@ -18,7 +18,7 @@ namespace Rambler.Web.Api
         }
 
         [Route("author")]
-        public async Task<IActionResult> GetAuthors()
+        public IActionResult GetAuthors()
         {
             return Ok(twitchManager.GetAuthors());
         }
