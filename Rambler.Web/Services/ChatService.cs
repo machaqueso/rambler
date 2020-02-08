@@ -20,9 +20,10 @@ namespace Rambler.Web.Services
         private readonly AuthorService authorService;
         private readonly WordFilterService wordFilterService;
         private readonly BotService botService;
+        private readonly IntegrationManager integrationManager;
 
         public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, ChannelService channelService,
-            AuthorService authorService, WordFilterService wordFilterService, BotService botService)
+            AuthorService authorService, WordFilterService wordFilterService, BotService botService, IntegrationManager integrationManager)
         {
             this.db = db;
             this.chatHubContext = chatHubContext;
@@ -30,6 +31,7 @@ namespace Rambler.Web.Services
             this.authorService = authorService;
             this.wordFilterService = wordFilterService;
             this.botService = botService;
+            this.integrationManager = integrationManager;
         }
 
         public IQueryable<ChatMessage> GetMessages()
@@ -86,6 +88,12 @@ namespace Rambler.Web.Services
 
             await SendToChannels(message);
 
+            // sends message to integrations if local
+            if (message.Source == ApiSource.Rambler)
+            {
+                integrationManager.MessageSentEvent(message.Message);
+            }
+
             var action = botService.Process(message);
             if (action == null)
             {
@@ -122,6 +130,7 @@ namespace Rambler.Web.Services
                     botMessage.Author = ramblerBot;
 
                     await SendToChannels(botMessage);
+
                     break;
                 default:
                     break;
@@ -162,7 +171,6 @@ namespace Rambler.Web.Services
             {
                 message.Author = null;
             }
-            await QueueMessage(message, "Twitch");
         }
 
         public async Task<IEnumerable<string>> AllowedChannels(ChatMessage message)
@@ -269,31 +277,5 @@ namespace Rambler.Web.Services
             return authorFilters.Any(x => x.FilterType == filterType);
         }
 
-        public async Task QueueMessage(ChatMessage message, string integrationName)
-        {
-            db.QueuedMessages.Add(new QueuedMessage
-            {
-                Message = message,
-                IntegrationName = integrationName
-            });
-            await db.SaveChangesAsync();
-        }
-
-        public IQueryable<QueuedMessage> GetQueuedMessages(string integrationName)
-        {
-            return db.QueuedMessages.Where(x => x.IntegrationName == integrationName);
-        }
-
-        public async Task DequeueMessage(int itemId)
-        {
-            var entity = await db.QueuedMessages.FirstOrDefaultAsync(x => x.Id == itemId);
-            if (entity == null)
-            {
-                throw new InvalidOperationException($"Queued message id {itemId} not found");
-            }
-
-            db.QueuedMessages.Remove(entity);
-            await db.SaveChangesAsync();
-        }
     }
 }

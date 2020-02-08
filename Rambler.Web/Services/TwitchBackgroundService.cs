@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rambler.Models;
 using Rambler.Services;
+using System;
+using System.Collections.Concurrent;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rambler.Web.Services
 {
@@ -95,6 +92,14 @@ namespace Rambler.Web.Services
                             }
                         };
                         var cancellationToken = cancellationTokenSource.Token;
+
+                        integrationManager.MessageSent += (s, e) =>
+                        {
+                            if (!string.IsNullOrWhiteSpace(e.Message))
+                            {
+                                Send($"PRIVMSG #{user.name} :{e.Message}");
+                            }
+                        };
 
                         var webSocket = new ClientWebSocket();
                         if (webSocket.State != WebSocketState.Open)
@@ -255,14 +260,6 @@ namespace Rambler.Web.Services
                     partial = text.Substring(text.LastIndexOf('\r'));
                 }
 
-                foreach (var item in chatService.GetQueuedMessages("Twitch").Include(x => x.Message).ToList())
-                {
-                    if (!string.IsNullOrWhiteSpace(item.Message?.Message))
-                    {
-                        Send($"PRIVMSG #{user.name} :{item.Message.Message}");
-                    }
-                    await chatService.DequeueMessage(item.Id);
-                }
                 await Task.Delay(delay, cancellationToken);
             }
         }
