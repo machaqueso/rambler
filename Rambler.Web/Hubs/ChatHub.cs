@@ -93,7 +93,8 @@ namespace Rambler.Web.Hubs
             {
                 Date = DateTime.UtcNow,
                 Message = message,
-                Source = ApiSource.Rambler
+                Source = ApiSource.Rambler,
+                SourceMessageId = Guid.NewGuid().ToString()
             };
 
             if (!string.IsNullOrWhiteSpace(author))

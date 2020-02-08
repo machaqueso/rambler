@@ -7,6 +7,7 @@ using Rambler.Web.Hubs;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Rambler.Models.Exceptions;
 
 namespace Rambler.Web.Services
 {
@@ -39,6 +40,11 @@ namespace Rambler.Web.Services
 
         public async Task CreateMessage(ChatMessage message)
         {
+            if (string.IsNullOrWhiteSpace(message.SourceMessageId))
+            {
+                throw new UnprocessableEntityException("message.SourceMessageId cannot be null");
+            }
+
             // Ignore duplicate messages from apis
             if (!string.IsNullOrEmpty(message.SourceMessageId) &&
                 db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
@@ -48,8 +54,9 @@ namespace Rambler.Web.Services
 
             // Tries to match author to existing one coming from same source and id
             var author = await authorService.GetAuthors()
-                .Where(x => string.IsNullOrWhiteSpace(x.Source))
-                .Where(x => string.IsNullOrWhiteSpace(x.SourceAuthorId))
+                .Where(x => !string.IsNullOrWhiteSpace(x.Source))
+                .Where(x => !string.IsNullOrWhiteSpace(x.SourceAuthorId))
+                .Where(x => !string.IsNullOrWhiteSpace(x.Name))
                 .SingleOrDefaultAsync(x => x.Source == message.Author.Source
                                            && x.SourceAuthorId == message.Author.SourceAuthorId);
 
