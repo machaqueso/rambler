@@ -98,14 +98,29 @@ namespace Rambler.Web.Services
                     var botMessage = new ChatMessage
                     {
                         Date = DateTime.UtcNow,
-                        Author = new Author
-                        {
-                            Name = "RamblerBot",
-                            Source = ApiSource.Rambler
-                        },
                         Message = action.Parameters,
                         Source = ApiSource.RamblerBot
                     };
+
+                    var ramblerBot = await authorService.GetAuthors()
+                        .FirstOrDefaultAsync(x => x.Source == ApiSource.RamblerBot
+                                                  && x.Name == "RamblerBot"
+                                                  && !string.IsNullOrWhiteSpace(x.SourceAuthorId));
+                    if (ramblerBot == null)
+                    {
+                        ramblerBot = new Author
+                        {
+                            Name = "RamblerBot",
+                            Source = ApiSource.RamblerBot,
+                            SourceAuthorId = Guid.NewGuid().ToString()
+                        };
+                    }
+                    else
+                    {
+                        botMessage.AuthorId = ramblerBot.Id;
+                    }
+                    botMessage.Author = ramblerBot;
+
                     await SendToChannels(botMessage);
                     break;
                 default:
@@ -143,6 +158,10 @@ namespace Rambler.Web.Services
                 await SendToChannel(channel, message);
             }
 
+            if (message.AuthorId > 0)
+            {
+                message.Author = null;
+            }
             await QueueMessage(message, "Twitch");
         }
 
