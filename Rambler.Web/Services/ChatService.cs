@@ -58,7 +58,7 @@ namespace Rambler.Web.Services
             if (author == null)
             {
                 await authorService.Create(message.Author);
-                message.AuthorId = message.Author.Id;
+                author = message.Author;
             }
             else
             {
@@ -69,10 +69,6 @@ namespace Rambler.Web.Services
                     await db.SaveChangesAsync();
                 }
 
-                //TODO: might need this if duplicate authors get inserted
-                //message.Author = null;
-                //message.AuthorId = author.Id;
-
                 // apply infraction penalty
                 if (chatRulesService.HasInfractions(message))
                 {
@@ -80,6 +76,7 @@ namespace Rambler.Web.Services
                     await db.SaveChangesAsync();
                 }
             }
+            message.AuthorId = author.Id;
 
             await chatMessageService.CreateMessage(message);
             await SendToChannels(message);

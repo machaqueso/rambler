@@ -44,6 +44,12 @@ namespace Rambler.Services
                 throw new ConflictException("Duplicate message");
             }
 
+            // Prevents existing authors from being added as duplicates
+            if (message.AuthorId > 0)
+            {
+                message.Author = null;
+            }
+
             db.Messages.Add(message);
             await db.SaveChangesAsync();
         }
