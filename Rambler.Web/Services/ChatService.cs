@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Rambler.Data;
 using Rambler.Models;
 using Rambler.Services;
 using Rambler.Web.Hubs;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Rambler.Models.Exceptions;
 
 namespace Rambler.Web.Services
 {
@@ -22,7 +21,8 @@ namespace Rambler.Web.Services
         private readonly ChatMessageService chatMessageService;
 
         public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, AuthorService authorService,
-            BotService botService, IntegrationManager integrationManager, ChatRulesService chatRulesService, ChatMessageService chatMessageService)
+            BotService botService, IntegrationManager integrationManager, ChatRulesService chatRulesService,
+            ChatMessageService chatMessageService)
         {
             this.db = db;
             this.chatHubContext = chatHubContext;
@@ -40,9 +40,19 @@ namespace Rambler.Web.Services
 
         public async Task CreateMessage(ChatMessage message)
         {
+            //var dupes = db.Messages
+            //    .Where(x => !string.IsNullOrWhiteSpace(x.Source))
+            //    .Where(x => !string.IsNullOrWhiteSpace(x.SourceMessageId))
+            //    .Where(x => x.SourceMessageId == message.SourceMessageId
+            //                && x.Source == message.Source);
+            //if (dupes.Any())
+            //{
+            //    return;
+            //}
+
             // Ignore duplicate messages from apis
-            if (!string.IsNullOrEmpty(message.SourceMessageId) &&
-                db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
+            if (!string.IsNullOrWhiteSpace(message.SourceMessageId)
+                && db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
             {
                 return;
             }
@@ -76,6 +86,7 @@ namespace Rambler.Web.Services
                     await db.SaveChangesAsync();
                 }
             }
+
             message.AuthorId = author.Id;
 
             await chatMessageService.CreateMessage(message);
@@ -120,6 +131,7 @@ namespace Rambler.Web.Services
                     {
                         botMessage.AuthorId = ramblerBot.Id;
                     }
+
                     botMessage.Author = ramblerBot;
 
                     await SendToChannels(botMessage);
@@ -165,6 +177,5 @@ namespace Rambler.Web.Services
                 message.Author = null;
             }
         }
-
     }
 }

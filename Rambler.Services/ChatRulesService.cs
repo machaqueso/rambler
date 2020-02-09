@@ -122,7 +122,7 @@ namespace Rambler.Services
             }
 
             // Only messages from readers with positive score
-            if (message.Author.Score >= 0)
+            if (message.Author.Score < 0)
             {
                 return false;
             }
@@ -257,7 +257,7 @@ namespace Rambler.Services
                 return HasInfractions(message);
             }
 
-            return message.Infractions.Any();
+            return !message.Infractions.Any();
         }
 
     }

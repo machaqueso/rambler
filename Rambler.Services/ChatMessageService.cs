@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Rambler.Data;
 using Rambler.Models;
 using Rambler.Models.Exceptions;
@@ -10,10 +11,12 @@ namespace Rambler.Services
     public class ChatMessageService
     {
         private readonly DataContext db;
+        private readonly ILogger<ChatMessageService> logger;
 
-        public ChatMessageService(DataContext db)
+        public ChatMessageService(DataContext db, ILogger<ChatMessageService> logger)
         {
             this.db = db;
+            this.logger = logger;
         }
 
         public IQueryable<ChatMessage> GetMessages()
@@ -25,22 +28,26 @@ namespace Rambler.Services
         {
             if (string.IsNullOrWhiteSpace(message.Author.Name))
             {
+                logger.LogWarning("Author's name cannot be empty");
                 throw new UnprocessableEntityException("Author's name cannot be empty");
             }
 
             if (string.IsNullOrWhiteSpace(message.Author.Source))
             {
+                logger.LogWarning("Author's source cannot be empty");
                 throw new UnprocessableEntityException("Author's source cannot be empty");
             }
 
             if (string.IsNullOrWhiteSpace(message.Author.SourceAuthorId))
             {
+                logger.LogWarning("Author's source id cannot be empty");
                 throw new UnprocessableEntityException("Author's source id cannot be empty");
             }
 
             if (db.Messages.Any(x => !string.IsNullOrWhiteSpace(message.SourceMessageId)
                                      && x.SourceMessageId == message.SourceMessageId))
             {
+                logger.LogWarning($"Duplicate message, {message.Source} SourceMessageId={message.SourceMessageId}");
                 throw new ConflictException("Duplicate message");
             }
 
@@ -50,8 +57,15 @@ namespace Rambler.Services
                 message.Author = null;
             }
 
+            logger.LogInformation($"Source={message.Source}");
+            logger.LogInformation($"SourceMessageId={message.SourceMessageId}");
+            logger.LogInformation($"AuthorId = {message.AuthorId}");
+            logger.LogInformation($"Message={message.Message}");
             db.Messages.Add(message);
             await db.SaveChangesAsync();
+
+            logger.LogInformation($"Message saved? {db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId)}");
+
         }
 
     }
