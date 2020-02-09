@@ -40,11 +40,6 @@ namespace Rambler.Web.Services
 
         public async Task CreateMessage(ChatMessage message)
         {
-            if (string.IsNullOrWhiteSpace(message.SourceMessageId))
-            {
-                throw new UnprocessableEntityException("message.SourceMessageId cannot be null");
-            }
-
             // Ignore duplicate messages from apis
             if (!string.IsNullOrEmpty(message.SourceMessageId) &&
                 db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))

@@ -197,7 +197,14 @@ namespace Rambler.Web.Services
                 chatMessage.Author.Name = twitchUser.name;
             }
 
-            await chatService.CreateMessage(chatMessage);
+            try
+            {
+                await chatService.CreateMessage(chatMessage);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error processing message:", ex.GetBaseException().ToString());
+            }
         }
 
         public bool IsConfigured()

@@ -38,14 +38,15 @@ namespace Rambler.Services
                 throw new UnprocessableEntityException("Author's source id cannot be empty");
             }
 
-            if (db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
+            if (db.Messages.Any(x => !string.IsNullOrWhiteSpace(message.SourceMessageId)
+                                     && x.SourceMessageId == message.SourceMessageId))
             {
                 throw new ConflictException("Duplicate message");
             }
 
             db.Messages.Add(message);
             await db.SaveChangesAsync();
-       }
+        }
 
     }
 }
