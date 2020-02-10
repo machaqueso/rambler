@@ -31,8 +31,12 @@ namespace Rambler.Test.Integration.Web.Api
         {
             var client = _factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
+                builder.ConfigureTestServices(services =>
                 {
+                    services.AddAuthentication("Test")
+                        .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                            "Test", options => { });
+
                     var serviceProvider = services.BuildServiceProvider();
                     services.AddDbContext<DataContext>(options =>
                         options.UseInMemoryDatabase(databaseName: "TestDatabase"));
@@ -43,12 +47,6 @@ namespace Rambler.Test.Integration.Web.Api
                         db?.Database.EnsureDeleted();
                         // No need to call migrate here, it's already been called by regular startup
                     }
-                });
-                builder.ConfigureTestServices(services =>
-                {
-                    services.AddAuthentication("Test")
-                        .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
-                            "Test", options => { });
                 });
             }).CreateClient(new WebApplicationFactoryClientOptions
             {
