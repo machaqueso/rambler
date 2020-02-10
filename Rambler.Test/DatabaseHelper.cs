@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Rambler.Data;
 
 namespace Rambler.Test
@@ -9,7 +10,8 @@ namespace Rambler.Test
         public static void Init(IServiceScope scope)
         {
             var db = scope.ServiceProvider.GetService<DataContext>();
-            db.Database.EnsureCreated();
+            db.Database.EnsureDeleted();
+            db.Database.Migrate();
         }
 
     }
