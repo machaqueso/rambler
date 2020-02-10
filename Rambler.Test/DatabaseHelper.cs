@@ -10,8 +10,8 @@ namespace Rambler.Test
         public static void Init(IServiceScope scope)
         {
             var db = scope.ServiceProvider.GetService<DataContext>();
-            db?.Database?.EnsureDeleted();
-            db?.Database?.Migrate();
+            db?.Database.EnsureDeleted();
+            db?.Database.Migrate();
         }
 
     }

@@ -8,6 +8,7 @@ using AutoFixture;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Rambler.Data;
 using Rambler.Models;
@@ -34,6 +35,8 @@ namespace Rambler.Test.Integration.Web.Api
                 builder.ConfigureServices(services =>
                 {
                     var serviceProvider = services.BuildServiceProvider();
+                    services.AddDbContext<DataContext>(options =>
+                    options.UseInMemoryDatabase(databaseName: "TestDatabase"));
 
                     using (var scope = serviceProvider.CreateScope())
                     {
