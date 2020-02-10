@@ -2,18 +2,22 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Rambler.Data;
 using Rambler.Models;
+using Rambler.Models.Exceptions;
 
 namespace Rambler.Services
 {
     public class AuthorService
     {
         private readonly DataContext db;
+        private readonly ILogger<AuthorService> logger;
 
-        public AuthorService(DataContext db)
+        public AuthorService(DataContext db, ILogger<AuthorService> logger)
         {
             this.db = db;
+            this.logger = logger;
         }
 
         public IQueryable<Author> GetAuthors()
@@ -142,10 +146,62 @@ namespace Rambler.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task Create(Author messageAuthor)
+        public async Task Create(Author author)
         {
-            await db.Authors.AddAsync(messageAuthor);
+            await db.Authors.AddAsync(author);
             await db.SaveChangesAsync();
+        }
+
+        public bool IsValid(Author author)
+        {
+            if (author == null)
+            {
+                return false;
+            }
+
+            if (author.Id > 0)
+            {
+                return true;
+            }
+
+            return string.IsNullOrWhiteSpace(author.Source)
+                   || string.IsNullOrWhiteSpace(author.SourceAuthorId)
+                || string.IsNullOrWhiteSpace(author.Name);
+
+        }
+
+        public async Task<Author> EnsureAuthor(int id, Author author)
+        {
+            if (id > 0)
+            {
+                return await GetAuthors().SingleOrDefaultAsync(x => x.Id == id);
+            }
+
+            if (!IsValid(author))
+            {
+                throw new UnprocessableEntityException("Author's Source, SourceAuthorId and/or Name are not defined");
+            }
+
+            var authors = GetAuthors().Where(x =>
+                x.Source == author.Source
+                && x.SourceAuthorId == author.SourceAuthorId
+                && x.Name == author.Name);
+
+            if (authors.Count() > 1)
+            {
+                // workaround to my previous terrible coding: warns about duplicate authors and keeps going
+                // TODO: add a way to cleanup these from database
+                logger.LogWarning($"Author has multiple records in database: Source='{author.Source}', SourceAuthorId='{author.SourceAuthorId}', Name='{author.Name}'");
+                return await authors.FirstOrDefaultAsync();
+            }
+
+            if (await authors.AnyAsync())
+            {
+                return await authors.SingleOrDefaultAsync();
+            }
+
+            await Create(author);
+            return author;
         }
     }
 }

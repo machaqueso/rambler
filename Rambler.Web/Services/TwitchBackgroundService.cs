@@ -21,7 +21,7 @@ namespace Rambler.Web.Services
         private DashboardService dashboardService;
         private TwitchService twitchService;
         private TwitchManager twitchManager;
-        private ChatService chatService;
+        private ChatProcessor chatService;
 
         private const int sendChunkSize = 510;
         private const int receiveChunkSize = 510; // RFC-2812
@@ -55,7 +55,7 @@ namespace Rambler.Web.Services
                 twitchService = scope.ServiceProvider.GetRequiredService<TwitchService>();
                 dashboardService = scope.ServiceProvider.GetRequiredService<DashboardService>();
                 twitchManager = scope.ServiceProvider.GetRequiredService<TwitchManager>();
-                chatService = scope.ServiceProvider.GetRequiredService<ChatService>();
+                chatService = scope.ServiceProvider.GetRequiredService<ChatProcessor>();
 
                 while (!originalCancellationToken.IsCancellationRequested)
                 {

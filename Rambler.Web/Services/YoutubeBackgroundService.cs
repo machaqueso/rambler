@@ -17,7 +17,7 @@ namespace Rambler.Web.Services
     {
         private readonly ILogger<YoutubeBackgroundService> logger;
         private YoutubeService youtubeService;
-        private ChatService chatService;
+        private ChatProcessor chatService;
         private DashboardService dashboardService;
         private readonly IServiceScopeFactory serviceScopeFactory;
 
@@ -50,7 +50,7 @@ namespace Rambler.Web.Services
             using (var scope = serviceScopeFactory.CreateScope())
             {
                 youtubeService = scope.ServiceProvider.GetRequiredService<YoutubeService>();
-                chatService = scope.ServiceProvider.GetRequiredService<ChatService>();
+                chatService = scope.ServiceProvider.GetRequiredService<ChatProcessor>();
                 dashboardService = scope.ServiceProvider.GetRequiredService<DashboardService>();
 
                 while (!cancellationToken.IsCancellationRequested)
@@ -135,7 +135,7 @@ namespace Rambler.Web.Services
 
                             foreach (var item in liveChatMessages.items)
                             {
-                                await chatService.CreateMessage(youtubeService.MapToChatMessage(item));
+                                await chatService.ProcessMessage(youtubeService.MapToChatMessage(item));
                             }
                             nextPageToken = liveChatMessages.nextPageToken;
 

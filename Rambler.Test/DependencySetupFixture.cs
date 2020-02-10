@@ -1,10 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Claims;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Rambler.Data;
-using Rambler.Services;
-using Rambler.Web.Services;
 
 namespace Rambler.Test
 {
@@ -21,33 +24,37 @@ namespace Rambler.Test
                 return configurationBuilder.Build();
             });
 
-            serviceCollection.AddDbContext<DataContext>(options => options.UseInMemoryDatabase(databaseName: "TestDatabase"));
+            serviceCollection.AddDbContext<DataContext>(options =>
+                options.UseInMemoryDatabase(databaseName: "TestDatabase"));
 
-            serviceCollection.AddTransient<UserService>();
-            serviceCollection.AddTransient<YoutubeService>();
-            serviceCollection.AddTransient<ChatService>();
-            serviceCollection.AddTransient<DashboardService>();
-            serviceCollection.AddTransient<TwitchService>();
-            serviceCollection.AddTransient<ConfigurationService>();
-            serviceCollection.AddTransient<IntegrationService>();
-            serviceCollection.AddTransient<ChannelService>();
-            serviceCollection.AddTransient<AccountService>();
-            serviceCollection.AddTransient<PasswordService>();
-            serviceCollection.AddTransient<BotService>();
-
-            serviceCollection.AddTransient<TwitchAPIv5>();
-            serviceCollection.AddTransient<TwitchManager>();
-            serviceCollection.AddTransient<AuthorService>();
-            serviceCollection.AddTransient<WordFilterService>();
-            serviceCollection.AddTransient<ChatRulesService>();
-
-            serviceCollection.AddSingleton<IHostedService, YoutubeBackgroundService>();
-            serviceCollection.AddSingleton<IHostedService, TwitchBackgroundService>();
-            serviceCollection.AddSingleton<IntegrationManager>();
+            Rambler.Web.DependencyInjection.ConfigureDependencies(serviceCollection);
+            Rambler.Data.DependencyInjection.ConfigureDependencies(serviceCollection);
+            Rambler.Services.DependencyInjection.ConfigureDependencies(serviceCollection);
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
 
         public ServiceProvider ServiceProvider { get; private set; }
+    }
+
+    public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    {
+        public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
+            ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
+        {
+        }
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var claims = new[] {new Claim(ClaimTypes.Name, "Test user")};
+            var identity = new ClaimsIdentity(claims, "Test");
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, "Test");
+
+            var result = AuthenticateResult.Success(ticket);
+
+            return Task.FromResult(result);
+        }
     }
 }

@@ -3,14 +3,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Rambler.Data;
 using Rambler.Models;
+using Rambler.Models.Exceptions;
 using Rambler.Services;
 using Rambler.Web.Hubs;
 
 namespace Rambler.Web.Services
 {
-    public class ChatService
+    public class ChatProcessor
     {
         private readonly DataContext db;
         private readonly IHubContext<ChatHub> chatHubContext;
@@ -19,10 +21,11 @@ namespace Rambler.Web.Services
         private readonly IntegrationManager integrationManager;
         private readonly ChatRulesService chatRulesService;
         private readonly ChatMessageService chatMessageService;
+        private readonly ILogger<ChatMessageService> logger;
 
-        public ChatService(DataContext db, IHubContext<ChatHub> chatHubContext, AuthorService authorService,
+        public ChatProcessor(DataContext db, IHubContext<ChatHub> chatHubContext, AuthorService authorService,
             BotService botService, IntegrationManager integrationManager, ChatRulesService chatRulesService,
-            ChatMessageService chatMessageService)
+            ChatMessageService chatMessageService, ILogger<ChatMessageService> logger)
         {
             this.db = db;
             this.chatHubContext = chatHubContext;
@@ -31,65 +34,71 @@ namespace Rambler.Web.Services
             this.integrationManager = integrationManager;
             this.chatRulesService = chatRulesService;
             this.chatMessageService = chatMessageService;
+            this.logger = logger;
         }
 
-        public IQueryable<ChatMessage> GetMessages()
+        public async Task ProcessMessage(ChatMessage message)
         {
-            return chatMessageService.GetMessages();
-        }
-
-        public async Task CreateMessage(ChatMessage message)
-        {
-            //var dupes = db.Messages
-            //    .Where(x => !string.IsNullOrWhiteSpace(x.Source))
-            //    .Where(x => !string.IsNullOrWhiteSpace(x.SourceMessageId))
-            //    .Where(x => x.SourceMessageId == message.SourceMessageId
-            //                && x.Source == message.Source);
-            //if (dupes.Any())
-            //{
-            //    return;
-            //}
-
-            // Ignore duplicate messages from apis
-            if (!string.IsNullOrWhiteSpace(message.SourceMessageId)
-                && db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId))
+            if (message == null)
             {
+                throw new UnprocessableEntityException("Cannot process null message");
+            }
+
+            // check if message from same source with same SourceMessageId already in database
+            if (await chatMessageService.MessageExists(message))
+            {
+                logger.LogInformation($"{message.Source} message id {message.SourceMessageId} already in database, skipping");
                 return;
             }
 
-            // Tries to match author to existing one coming from same source and id
-            var author = await authorService.GetAuthors()
-                .Where(x => !string.IsNullOrWhiteSpace(x.Source))
-                .Where(x => !string.IsNullOrWhiteSpace(x.SourceAuthorId))
-                .Where(x => !string.IsNullOrWhiteSpace(x.Name))
-                .SingleOrDefaultAsync(x => x.Source == message.Author.Source
-                                           && x.SourceAuthorId == message.Author.SourceAuthorId);
-
-            if (author == null)
+            // - check for author
+            if (message.Author == null)
             {
-                await authorService.Create(message.Author);
-                author = message.Author;
-            }
-            else
-            {
-                // Housekeeping: syncs author's name changes
-                if (author.Name != message.Author.Name)
+                if (message.AuthorId == 0)
                 {
-                    author.Name = message.Author.Name;
-                    await db.SaveChangesAsync();
+                    throw new UnprocessableEntityException("Author not defined");
                 }
 
+                message.Author = await authorService.GetAuthors().SingleOrDefaultAsync(x => x.Id == message.AuthorId);
+            }
+
+            if (message.Author == null)
+            {
+                logger.LogWarning($"Message without author... skipping");
+                return;
+            }
+
+            if (authorService.IsValid(message.Author))
+            {
+                logger.LogInformation($"invalid author, skipping: Source='{message.Author.Source}', SourceAuthorId='{message.Author.SourceAuthorId}', Name='{message.Author.Name}'");
+                return;
+            }
+
+            var author = await authorService.EnsureAuthor(message.AuthorId, message.Author);
+
+            // Housekeeping: syncs author's name changes
+            if (author.Name != message.Author.Name)
+            {
+                author.Name = message.Author.Name;
+                await db.SaveChangesAsync();
+            }
+
+            // - check infractions
+            if (chatRulesService.HasInfractions(message))
+            {
                 // apply infraction penalty
-                if (chatRulesService.HasInfractions(message))
-                {
-                    author.Score -= 1;
-                    await db.SaveChangesAsync();
-                }
+                author.Score -= 1;
+                await db.SaveChangesAsync();
             }
 
-            message.AuthorId = author.Id;
-
+            // save message
+            if (message.AuthorId == 0)
+            {
+                message.AuthorId = author.Id;
+            }
             await chatMessageService.CreateMessage(message);
+
+            // broadcast message
             await SendToChannels(message);
 
             // sends message to integrations if local

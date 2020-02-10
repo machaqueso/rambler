@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rambler.Models;
+using Rambler.Services;
 using Rambler.Web.Services;
 using Serilog.Events;
 
@@ -14,18 +15,21 @@ namespace Rambler.Web.Api
     [Area("api")]
     public class ChatController : ControllerBase
     {
-        private readonly ChatService chatService;
+        private readonly ChatMessageService chatMessageService;
+        private readonly ChatProcessor chatProcessor;
 
-        public ChatController(ChatService chatService)
+        public ChatController(ChatMessageService chatMessageService, ChatProcessor chatProcessor)
         {
-            this.chatService = chatService;
+            this.chatMessageService = chatMessageService;
+            this.chatProcessor = chatProcessor;
         }
 
         [Route("")]
+        [HttpGet]
         [AllowAnonymous]
         public IActionResult GetMessages(int maxItems = 10)
         {
-            var messages = chatService.GetMessages()
+            var messages = chatMessageService.GetMessages()
                 .OrderByDescending(x => x.Date)
                 .Take(maxItems)
                 .OrderBy(x => x.Date);
@@ -45,10 +49,11 @@ namespace Rambler.Web.Api
             }));
         }
 
-        [Route("{id}")]
+        [Route("{id}", Name = "GetMessage")]
+        [HttpGet]
         public IActionResult GetMessage(int id)
         {
-            var message = chatService.GetMessages()
+            var message = chatMessageService.GetMessages()
                 .FirstOrDefault(x => x.Id == id);
 
             if (message == null)
@@ -68,7 +73,7 @@ namespace Rambler.Web.Api
                 return BadRequest();
             }
 
-            await chatService.CreateMessage(message);
+            await chatProcessor.ProcessMessage(message);
             return CreatedAtRoute("GetMessage", new { id = message.Id }, message);
         }
 

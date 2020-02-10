@@ -10,9 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Rambler.Data;
-using Rambler.Services;
 using Rambler.Web.Hubs;
-using Rambler.Web.Services;
 using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
@@ -38,31 +36,12 @@ namespace Rambler.Web
             });
 
             services.AddDbContext<DataContext>();
+
+            DependencyInjection.ConfigureDependencies(services);
+            Data.DependencyInjection.ConfigureDependencies(services);
+            Rambler.Services.DependencyInjection.ConfigureDependencies(services);
+
             services.AddHttpContextAccessor();
-
-            services.AddTransient<UserService>();
-            services.AddTransient<YoutubeService>();
-            services.AddTransient<ChatService>();
-            services.AddTransient<DashboardService>();
-            services.AddTransient<TwitchService>();
-            services.AddTransient<ConfigurationService>();
-            services.AddTransient<IntegrationService>();
-            services.AddTransient<ChannelService>();
-            services.AddTransient<AccountService>();
-            services.AddTransient<PasswordService>();
-            services.AddTransient<BotService>();
-
-            services.AddTransient<TwitchAPIv5>();
-            services.AddTransient<TwitchManager>();
-            services.AddTransient<AuthorService>();
-            services.AddTransient<WordFilterService>();
-            services.AddTransient<ChatRulesService>();
-            services.AddTransient<ChatMessageService>();
-
-            services.AddSingleton<IHostedService, YoutubeBackgroundService>();
-            services.AddSingleton<IHostedService, TwitchBackgroundService>();
-            services.AddSingleton<IntegrationManager>();
-
             services.AddMvc(options =>
             {
                 options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));

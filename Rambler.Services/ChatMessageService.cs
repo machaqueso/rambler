@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Rambler.Data;
 using Rambler.Models;
@@ -26,6 +27,11 @@ namespace Rambler.Services
 
         public async Task CreateMessage(ChatMessage message)
         {
+            if (message.Author == null && message.AuthorId == 0)
+            {
+                throw new UnprocessableEntityException("Author property cannot be null");
+            }
+
             if (string.IsNullOrWhiteSpace(message.Author.Name))
             {
                 logger.LogWarning("Author's name cannot be empty");
@@ -66,6 +72,16 @@ namespace Rambler.Services
 
             logger.LogInformation($"Message saved? {db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId)}");
 
+        }
+
+        public async Task<bool> MessageExists(ChatMessage message)
+        {
+            if (string.IsNullOrWhiteSpace(message.SourceMessageId) || string.IsNullOrWhiteSpace(message.Source))
+            {
+                return false;
+            }
+
+            return await db.Messages.AnyAsync(x => x.Source == message.Source && x.SourceMessageId == message.SourceMessageId);
         }
 
     }

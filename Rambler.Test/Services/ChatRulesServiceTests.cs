@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using AutoFixture;
+using Microsoft.Extensions.DependencyInjection;
 using Rambler.Models;
 using Rambler.Services;
+using Rambler.Web.Services;
 using Xunit;
 
 namespace Rambler.Test.Services
@@ -8,9 +10,11 @@ namespace Rambler.Test.Services
     public class ChatRulesServiceTest : IClassFixture<DependencySetupFixture>
     {
         private readonly ServiceProvider serviceProvider;
+        private IFixture autoFixture;
 
         public ChatRulesServiceTest(DependencySetupFixture fixture)
         {
+            autoFixture = new Fixture();
             serviceProvider = fixture.ServiceProvider;
         }
 

@@ -15,12 +15,12 @@ namespace Rambler.Web.Services
     {
         private readonly UserService userService;
         private readonly ILogger<TwitchService> logger;
-        private readonly ChatService chatService;
+        private readonly ChatProcessor chatService;
         private readonly ConfigurationService configurationService;
         private readonly IntegrationService integrationService;
         private readonly TwitchManager twitchManager;
 
-        public TwitchService(UserService userService, ILogger<TwitchService> logger, ChatService chatService,
+        public TwitchService(UserService userService, ILogger<TwitchService> logger, ChatProcessor chatService,
             ConfigurationService configurationService, IntegrationService integrationService, TwitchManager twitchManager)
         {
             this.userService = userService;
@@ -199,7 +199,7 @@ namespace Rambler.Web.Services
 
             try
             {
-                await chatService.CreateMessage(chatMessage);
+                await chatService.ProcessMessage(chatMessage);
             }
             catch (Exception ex)
             {

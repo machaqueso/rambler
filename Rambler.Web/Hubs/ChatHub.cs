@@ -13,11 +13,11 @@ namespace Rambler.Web.Hubs
 {
     public class ChatHub : Hub
     {
-        private readonly ChatService chatService;
+        private readonly ChatProcessor chatService;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly AuthorService authorService;
 
-        public ChatHub(ChatService chatService, IHttpContextAccessor httpContextAccessor, AuthorService authorService)
+        public ChatHub(ChatProcessor chatService, IHttpContextAccessor httpContextAccessor, AuthorService authorService)
         {
             this.chatService = chatService;
             this.httpContextAccessor = httpContextAccessor;
@@ -107,7 +107,7 @@ namespace Rambler.Web.Hubs
                 chatMessage.Author = await GetOrBuildAuthorFromClaims();
             }
 
-            await chatService.CreateMessage(chatMessage);
+            await chatService.ProcessMessage(chatMessage);
         }
 
         public async Task DirectMessage(string author, string message)
