@@ -164,9 +164,9 @@ namespace Rambler.Services
                 return true;
             }
 
-            return string.IsNullOrWhiteSpace(author.Source)
-                   || string.IsNullOrWhiteSpace(author.SourceAuthorId)
-                || string.IsNullOrWhiteSpace(author.Name);
+            return !string.IsNullOrWhiteSpace(author.Source)
+                   && !string.IsNullOrWhiteSpace(author.SourceAuthorId)
+                && !string.IsNullOrWhiteSpace(author.Name);
 
         }
 
@@ -202,6 +202,18 @@ namespace Rambler.Services
 
             await Create(author);
             return author;
+        }
+
+        public async Task Update(Author author)
+        {
+            var entity = db.Authors.Find(author.Id);
+            if (entity == null)
+            {
+                return;
+            }
+
+            db.Entry(entity).CurrentValues.SetValues(author);
+            await db.SaveChangesAsync();
         }
     }
 }

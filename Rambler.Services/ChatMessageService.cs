@@ -27,27 +27,30 @@ namespace Rambler.Services
 
         public async Task CreateMessage(ChatMessage message)
         {
-            if (message.Author == null && message.AuthorId == 0)
+            if (message.AuthorId == 0)
             {
-                throw new UnprocessableEntityException("Author property cannot be null");
-            }
+                if (message.Author == null)
+                {
+                    throw new UnprocessableEntityException("Author property cannot be null");
+                }
 
-            if (string.IsNullOrWhiteSpace(message.Author.Name))
-            {
-                logger.LogWarning("Author's name cannot be empty");
-                throw new UnprocessableEntityException("Author's name cannot be empty");
-            }
+                if (string.IsNullOrWhiteSpace(message.Author.Name))
+                {
+                    logger.LogWarning("Author's name cannot be empty");
+                    throw new UnprocessableEntityException("Author's name cannot be empty");
+                }
 
-            if (string.IsNullOrWhiteSpace(message.Author.Source))
-            {
-                logger.LogWarning("Author's source cannot be empty");
-                throw new UnprocessableEntityException("Author's source cannot be empty");
-            }
+                if (string.IsNullOrWhiteSpace(message.Author.Source))
+                {
+                    logger.LogWarning("Author's source cannot be empty");
+                    throw new UnprocessableEntityException("Author's source cannot be empty");
+                }
 
-            if (string.IsNullOrWhiteSpace(message.Author.SourceAuthorId))
-            {
-                logger.LogWarning("Author's source id cannot be empty");
-                throw new UnprocessableEntityException("Author's source id cannot be empty");
+                if (string.IsNullOrWhiteSpace(message.Author.SourceAuthorId))
+                {
+                    logger.LogWarning("Author's source id cannot be empty");
+                    throw new UnprocessableEntityException("Author's source id cannot be empty");
+                }
             }
 
             if (db.Messages.Any(x => !string.IsNullOrWhiteSpace(message.SourceMessageId)
@@ -67,8 +70,14 @@ namespace Rambler.Services
             logger.LogInformation($"SourceMessageId={message.SourceMessageId}");
             logger.LogInformation($"AuthorId = {message.AuthorId}");
             logger.LogInformation($"Message={message.Message}");
-            db.Messages.Add(message);
-            await db.SaveChangesAsync();
+
+            // wrapping into transaction trying to solve concurrency problems
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                await db.Messages.AddAsync(message);
+                await db.SaveChangesAsync();
+                transaction.Commit();
+            }
 
             logger.LogInformation($"Message saved? {db.Messages.Any(x => x.SourceMessageId == message.SourceMessageId)}");
 

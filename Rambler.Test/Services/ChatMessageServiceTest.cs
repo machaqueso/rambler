@@ -48,6 +48,49 @@ namespace Rambler.Test.Services
             }
         }
 
+        [Fact]
+        public async Task Given_existing_message_MessageExists_returns_true()
+        {
+            /*
+             * 2020-02-09T21:43:09.4454971-06:00 [INF] Source=Youtube
+2020-02-09T21:43:09.4455346-06:00 [INF] SourceMessageId=LCC.CkwSIQoYVUNtVWZrYWlEbEEzSVpCaWJuTXR5cWx3EgUvbGl2ZSonChhVQ21VZmthaURsQTNJWkJpYm5NdHlxbHcSCzNIM3c2azRGbWI0EjkKGkNQcnZxWW1DeHVjQ0ZRY01oQW9kZTEwTFh3EhtDUDYxN3VlQnh1Y0NGY1EwWkFvZDFGZ0d2ZzA
+2020-02-09T21:43:09.4455476-06:00 [INF] AuthorId = 7
+2020-02-09T21:43:09.4455566-06:00 [INF] Message=quack yt
+2020-02-09T21:43:09.4661660-06:00 [INF] Message saved? True
+             */
+
+            var author = autoFixture
+                .Build<Author>()
+                .Without(x => x.ChatMessages)
+                .Without(x => x.AuthorFilters)
+                .Without(x => x.AuthorScoreHistories)
+                .With(x => x.Id, 7)
+                .Create();
+
+            var message = new ChatMessage
+            {
+                Source = "Youtube",
+                SourceMessageId =
+                    "LCC.CkwSIQoYVUNtVWZrYWlEbEEzSVpCaWJuTXR5cWx3EgUvbGl2ZSonChhVQ21VZmthaURsQTNJWkJpYm5NdHlxbHcSCzNIM3c2azRGbWI0EjkKGkNQcnZxWW1DeHVjQ0ZRY01oQW9kZTEwTFh3EhtDUDYxN3VlQnh1Y0NGY1EwWkFvZDFGZ0d2ZzA",
+                Message = "quack yt",
+                AuthorId = 7
+            };
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                DatabaseHelper.Init(scope);
+                var service = scope.ServiceProvider.GetService<ChatMessageService>();
+                var authorService = scope.ServiceProvider.GetService<AuthorService>();
+
+                await authorService.Create(author);
+
+                Assert.False(await service.MessageExists(message));
+                await service.CreateMessage(message);
+                Assert.True(await service.MessageExists(message));
+
+            }
+
+        }
 
     }
 }

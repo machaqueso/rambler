@@ -15,8 +15,6 @@ namespace Rambler.Web
             services.AddTransient<TwitchService>();
             services.AddTransient<IntegrationService>();
 
-            services.AddSingleton<IHostedService, YoutubeBackgroundService>();
-            services.AddSingleton<IHostedService, TwitchBackgroundService>();
             services.AddSingleton<IntegrationManager>();
         }
 

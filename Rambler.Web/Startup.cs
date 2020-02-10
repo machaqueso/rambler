@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Rambler.Data;
 using Rambler.Web.Hubs;
+using Rambler.Web.Services;
 using Serilog;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
@@ -40,6 +41,9 @@ namespace Rambler.Web
             DependencyInjection.ConfigureDependencies(services);
             Data.DependencyInjection.ConfigureDependencies(services);
             Rambler.Services.DependencyInjection.ConfigureDependencies(services);
+
+            services.AddSingleton<IHostedService, YoutubeBackgroundService>();
+            services.AddSingleton<IHostedService, TwitchBackgroundService>();
 
             services.AddHttpContextAccessor();
             services.AddMvc(options =>

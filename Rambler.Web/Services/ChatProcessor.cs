@@ -1,20 +1,17 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Rambler.Data;
 using Rambler.Models;
 using Rambler.Models.Exceptions;
 using Rambler.Services;
 using Rambler.Web.Hubs;
+using System;
+using System.Threading.Tasks;
 
 namespace Rambler.Web.Services
 {
     public class ChatProcessor
     {
-        private readonly DataContext db;
         private readonly IHubContext<ChatHub> chatHubContext;
         private readonly AuthorService authorService;
         private readonly BotService botService;
@@ -23,11 +20,10 @@ namespace Rambler.Web.Services
         private readonly ChatMessageService chatMessageService;
         private readonly ILogger<ChatMessageService> logger;
 
-        public ChatProcessor(DataContext db, IHubContext<ChatHub> chatHubContext, AuthorService authorService,
+        public ChatProcessor(IHubContext<ChatHub> chatHubContext, AuthorService authorService,
             BotService botService, IntegrationManager integrationManager, ChatRulesService chatRulesService,
             ChatMessageService chatMessageService, ILogger<ChatMessageService> logger)
         {
-            this.db = db;
             this.chatHubContext = chatHubContext;
             this.authorService = authorService;
             this.botService = botService;
@@ -68,7 +64,7 @@ namespace Rambler.Web.Services
                 return;
             }
 
-            if (authorService.IsValid(message.Author))
+            if (!authorService.IsValid(message.Author))
             {
                 logger.LogInformation($"invalid author, skipping: Source='{message.Author.Source}', SourceAuthorId='{message.Author.SourceAuthorId}', Name='{message.Author.Name}'");
                 return;
@@ -80,7 +76,6 @@ namespace Rambler.Web.Services
             if (author.Name != message.Author.Name)
             {
                 author.Name = message.Author.Name;
-                await db.SaveChangesAsync();
             }
 
             // - check infractions
@@ -88,8 +83,9 @@ namespace Rambler.Web.Services
             {
                 // apply infraction penalty
                 author.Score -= 1;
-                await db.SaveChangesAsync();
             }
+
+            await authorService.Update(author);
 
             // save message
             if (message.AuthorId == 0)
