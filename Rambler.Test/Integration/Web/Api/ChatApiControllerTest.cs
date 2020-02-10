@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -8,13 +9,13 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Rambler.Data;
 using Rambler.Models;
 using Xunit;
 
 namespace Rambler.Test.Integration.Web.Api
 {
-    public class ChatApiControllerTest
-        : IClassFixture<WebApplicationFactory<Rambler.Web.Startup>>
+    public class ChatApiControllerTest : IClassFixture<WebApplicationFactory<Rambler.Web.Startup>>
     {
         private readonly WebApplicationFactory<Rambler.Web.Startup> _factory;
         private IFixture fixture;
@@ -30,6 +31,15 @@ namespace Rambler.Test.Integration.Web.Api
         {
             var client = _factory.WithWebHostBuilder(builder =>
             {
+                builder.ConfigureServices(services =>
+                {
+                    var serviceProvider = services.BuildServiceProvider();
+
+                    using (var scope = serviceProvider.CreateScope())
+                    {
+                        DatabaseHelper.Init(scope);
+                    }
+                });
                 builder.ConfigureTestServices(services =>
                 {
                     services.AddAuthentication("Test")
