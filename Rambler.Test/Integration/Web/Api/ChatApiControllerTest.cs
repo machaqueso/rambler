@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -36,11 +35,13 @@ namespace Rambler.Test.Integration.Web.Api
                 {
                     var serviceProvider = services.BuildServiceProvider();
                     services.AddDbContext<DataContext>(options =>
-                    options.UseInMemoryDatabase(databaseName: "TestDatabase"));
+                        options.UseInMemoryDatabase(databaseName: "TestDatabase"));
 
                     using (var scope = serviceProvider.CreateScope())
                     {
-                        DatabaseHelper.Init(scope);
+                        var db = scope.ServiceProvider.GetService<DataContext>();
+                        db?.Database.EnsureDeleted();
+                        // No need to call migrate here, it's already been called by regular startup
                     }
                 });
                 builder.ConfigureTestServices(services =>
