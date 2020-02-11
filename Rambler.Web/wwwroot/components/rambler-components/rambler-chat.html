@@ -19,21 +19,18 @@
                 padding: 5px;
             }
 
-                .authorContext li:hover {
-                    background-color: gainsboro;
-                }
+            .authorContext li:hover {
+                background-color: gainsboro;
+            }
         </style>
-        <iron-ajax auto id="ajax"
-                   url="/api/chat?maxItems=[[maxLines]]"
-                   handle-as="json"
-                   loading="{{loading}}"
-                   last-response="{{messages}}"
-                   on-response="_onAjaxResponse"></iron-ajax>
+        <iron-ajax auto id="ajax" url="/api/chat?maxItems=[[maxLines]]" handle-as="json" loading="{{loading}}"
+            last-response="{{messages}}" on-response="_onAjaxResponse"></iron-ajax>
 
         <div class="chat" id="chat">
             <template is="dom-repeat" items="{{messages}}" restamp on-dom-change="_chatChanged">
                 <template is="dom-if" if="[[showDate]]">
-                    <chat-message item="{{item}}" show-date timeout="[[timeout]]" on-click="_onChatClick"></chat-message>
+                    <chat-message item="{{item}}" show-date timeout="[[timeout]]" on-click="_onChatClick">
+                    </chat-message>
                 </template>
                 <template is="dom-if" if="[[!showDate]]">
                     <chat-message item="{{item}}" timeout="[[timeout]]" on-click="_onChatClick"></chat-message>
@@ -104,10 +101,12 @@
 
                     this.set("actions", ["Upvote", "Downvote", "Whitelist", "Ignore", "Blacklist", "Ban"])
 
-                    setInterval( 
-                        function () {
-                            _this.splice('messages', 0, 1);
-                        }, _this.timeout);
+                    if (this.timeout > 0) {
+                        setInterval(
+                            function () {
+                                _this.splice('messages', 0, 1);
+                            }, _this.timeout);
+                    }
                 }
             });
         });
