@@ -54,27 +54,25 @@
                    on-error="_onActionError"
                    debounce-duration="300"></iron-ajax>
 
-        <template is="dom-if" if="[[!hideRow]]">
-            <div class="row">
-                <template is="dom-if" if="[[showDate]]">
-                    <div>{{item.displayDate}} {{item.displayTime}}</div>
+        <div class="row">
+            <template is="dom-if" if="[[showDate]]">
+                <div>{{item.displayDate}} {{item.displayTime}}</div>
+            </template>
+            <template is="dom-if" if="[[item.source]]">
+                <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
+            </template>
+            <div on-mouseover="_showContext" on-mouseout="_hideContext">
+                <div class="author">{{item.author}}</div>
+                <template is="dom-if" if="[[showAuthorContext]]">
+                    <div id="authorContext">
+                        <template is="dom-repeat" items="[[actions]]" restamp>
+                            <div class="action" on-click="_authorAction">{{item}}</div>
+                        </template>
+                    </div>
                 </template>
-                <template is="dom-if" if="[[item.source]]">
-                    <i class$="[[_getIcon(item.source)]]" title="[[item.source]]"></i>
-                </template>
-                <div on-mouseover="_showContext" on-mouseout="_hideContext">
-                    <div class="author">{{item.author}}</div>
-                    <template is="dom-if" if="[[showAuthorContext]]">
-                        <div id="authorContext">
-                            <template is="dom-repeat" items="[[actions]]" restamp>
-                                <div class="action" on-click="_authorAction">{{item}}</div>
-                            </template>
-                        </div>
-                    </template>
-                </div>
-                <div class="message">{{item.message}}</div>
             </div>
-        </template>
+            <div class="message">{{item.message}}</div>
+        </div>
 
         <paper-toast id="toast"></paper-toast>
     </template>
@@ -83,8 +81,6 @@
             is: "chat-message",
             properties: {
                 showDate: { type: Boolean, value: false },
-                hideRow: { type: Boolean, notify: true, value: false },
-                timeout: { type: Number, value: 30000 },
                 actions: { type: Array, notify: true, value: [] },
                 showAuthorContext: { type: Boolean, notify: true, value: false },
                 action: { type: String },
@@ -117,13 +113,6 @@
             },
             ready: function () {
                 var _this = this;
-
-                if (this.timeout > 0) {
-                    window.setTimeout(function () {
-                        _this.set("hideRow", true)
-                    }, _this.timeout);
-                }
-
             }
         });
     </script>

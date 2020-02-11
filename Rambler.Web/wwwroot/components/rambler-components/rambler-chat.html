@@ -53,11 +53,8 @@
                     showDate: { type: Boolean, value: false },
                     maxLines: { type: Number, value: 10 },
                     showAuthorContext: { type: Boolean, notify: true, value: false },
-                    actions: { type: Array }
-                },
-
-                listeners: {
-                    'author-click': '_onAuthorClick',
+                    actions: { type: Array },
+                    timeout: { type: Number, value: 10000 }
                 },
 
                 _onMessageReceived: function (message) {
@@ -71,13 +68,9 @@
                     this.fire("messageReceived");
                 },
                 _onChatClick: function (e) {
-                    //console.log(e);
                     if (this.speakEnabled) {
                         this._speak(e.model.item.message);
                     }
-                },
-                _onAuthorClick: function (e) {
-                    //console.log('_onAuthorClick', e);
                 },
                 _onActionError: function (e) {
                     console.log(e.detail.request.xhr.response);
@@ -94,7 +87,6 @@
                     if (this.maxLines === undefined || this.maxLines === 0) {
                         this.maxLines = 10;
                     }
-                    //this.showAuthorContext = false;
 
                     this.connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
@@ -112,6 +104,10 @@
 
                     this.set("actions", ["Upvote", "Downvote", "Whitelist", "Ignore", "Blacklist", "Ban"])
 
+                    setInterval( 
+                        function () {
+                            _this.splice('messages', 0, 1);
+                        }, _this.timeout);
                 }
             });
         });
