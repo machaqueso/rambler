@@ -1,4 +1,7 @@
-﻿using AutoFixture;
+﻿using System.Collections.Generic;
+using System.Linq;
+using AutoFixture;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Rambler.Models;
 using Rambler.Services;
@@ -60,6 +63,47 @@ namespace Rambler.Test.Services
                 var service = scope.ServiceProvider.GetService<ChatRulesService>();
                 Assert.True(service.ContainsWordTooLong(new ChatMessage { Message = message }) == result);
             }
+        }
+
+        [Theory]
+        [InlineData("", false)]
+        [InlineData("this is a test message", true)]
+        public void Given_valid_message_GlobalRules_returns_true(string message, bool expectedResult)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetService<ChatRulesService>();
+                var chatMessage = new ChatMessage
+                {
+                    Message = message
+                };
+
+                var result = service.GlobalRules(chatMessage);
+                result.Should().Be(expectedResult, $"Infractions: {chatMessage.Infractions?.Count}");
+            }
+        }
+
+        [Theory]
+        [InlineData("", 0, false)]
+        [InlineData("this is a test message", 0, true)]
+        public void Given_valid_message_TTSRules_allows_it(string message, int score, bool expectedResult)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetService<ChatRulesService>();
+                var chatMessage = new ChatMessage
+                {
+                    Message = message,
+                    Author = new Author
+                    {
+                        Score = score
+                    }
+                };
+
+                var authorFilters = new List<AuthorFilter>();
+                Assert.True(service.TTSRules(chatMessage, authorFilters) == expectedResult);
+            }
+
         }
     }
 }

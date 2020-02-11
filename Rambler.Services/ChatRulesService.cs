@@ -59,7 +59,7 @@ namespace Rambler.Services
                 case "TTS":
                     return TTSRules(message, authorFilters);
                 default:
-                    return GlobalRules(message, authorFilters);
+                    return GlobalRules(message);
             }
         }
 
@@ -89,7 +89,7 @@ namespace Rambler.Services
         /// <param name="message"></param>
         /// <param name="authorFilters"></param>
         /// <returns></returns>
-        private bool TTSRules(ChatMessage message, IList<AuthorFilter> authorFilters)
+        public bool TTSRules(ChatMessage message, IList<AuthorFilter> authorFilters)
         {
             // Unless whitelisted ...
             if (IsInList(message, authorFilters, FilterTypes.Whitelist))
@@ -104,7 +104,7 @@ namespace Rambler.Services
             }
 
             // Apply global rules
-            return GlobalRules(message, authorFilters);
+            return GlobalRules(message);
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Rambler.Services
         /// <param name="message"></param>
         /// <param name="authorFilters"></param>
         /// <returns></returns>
-        private bool OBSRules(ChatMessage message, IList<AuthorFilter> authorFilters)
+        public bool OBSRules(ChatMessage message, IList<AuthorFilter> authorFilters)
         {
             // Unless whitelisted ...
             if (IsInList(message, authorFilters, FilterTypes.Whitelist))
@@ -128,11 +128,11 @@ namespace Rambler.Services
             }
 
             // Apply global rules
-            return GlobalRules(message, authorFilters);
+            return GlobalRules(message);
         }
 
         // Reader shows everything except banned/blacklisted and low score
-        private bool ReaderRules(ChatMessage message, IList<AuthorFilter> authorFilters)
+        public bool ReaderRules(ChatMessage message, IList<AuthorFilter> authorFilters)
         {
             if (IsInList(message, authorFilters, FilterTypes.Banlist)
                 || IsInList(message, authorFilters, FilterTypes.Blacklist)
@@ -202,7 +202,7 @@ namespace Rambler.Services
         public bool MessageRepeatedTooOften(ChatMessage message)
         {
             var startDate = DateTime.UtcNow.AddMinutes(-60);
-            
+
             var isInfraction = db.Messages
                                    .Where(x => x.Date > startDate)
                                    .Count(x => x.AuthorId == message.AuthorId && x.Message == message.Message) > 5;
@@ -249,12 +249,22 @@ namespace Rambler.Services
         }
 
 
-        public bool GlobalRules(ChatMessage message, IList<AuthorFilter> authorFilters)
+        public bool GlobalRules(ChatMessage message)
         {
+            if (message == null)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(message.Message))
+            {
+                return false;
+            }
+
             if (message.Infractions == null)
             {
                 message.Infractions = new List<MessageInfraction>();
-                return HasInfractions(message);
+                return !HasInfractions(message);
             }
 
             return !message.Infractions.Any();
