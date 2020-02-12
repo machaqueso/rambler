@@ -102,8 +102,8 @@
                 this.$.putAction.generateRequest();
                 this.showAuthorContext = false;
             },
-            _onActionResponse: function (e) {
-                this.$.toast.text = this.item.author + " " + this.action + " successful";
+            _onActionResponse: function (e, item) {
+                this.$.toast.text = item.xhr.response;
                 this.$.toast.show();
             },
             _onActionError: function (e) {

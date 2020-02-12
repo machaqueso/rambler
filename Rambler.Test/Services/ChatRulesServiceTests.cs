@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AutoFixture;
+﻿using AutoFixture;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Rambler.Models;
 using Rambler.Services;
-using Rambler.Web.Services;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Rambler.Test.Services
@@ -40,10 +38,11 @@ namespace Rambler.Test.Services
         [Theory]
         [InlineData("rabble", false)]
         [InlineData("raabble", false)]
-        [InlineData("raaabble", false)]
         [InlineData("raaaabble", false)]
-        [InlineData("raaaaabble", false)]
-        [InlineData("raaaaaabble", true)]
+        [InlineData("raaaaaabble", false)]
+        [InlineData("raaaaaaaabble", false)]
+        [InlineData("raaaaaaaaaabble", false)]
+        [InlineData("raaaaaaaaaaaabble", true)]
         public void Given_message_with_duplicate_words_HasTooManyDuplicateCharacters_returns_true(string message, bool result)
         {
             using (var scope = serviceProvider.CreateScope())

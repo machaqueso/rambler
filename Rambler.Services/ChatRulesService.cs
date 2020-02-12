@@ -98,7 +98,7 @@ namespace Rambler.Services
             }
 
             // Only messages from readers with positive score
-            if (message.Author.Score < 0)
+            if (message.Author.Score < -5)
             {
                 return false;
             }
@@ -122,7 +122,7 @@ namespace Rambler.Services
             }
 
             // Only messages from readers with positive score
-            if (message.Author.Score < 0)
+            if (message.Author.Score < -10)
             {
                 return false;
             }
@@ -136,7 +136,7 @@ namespace Rambler.Services
         {
             if (IsInList(message, authorFilters, FilterTypes.Banlist)
                 || IsInList(message, authorFilters, FilterTypes.Blacklist)
-                || message.Author.Score < -10)
+                || message.Author.Score < -15)
             {
                 return false;
             }
@@ -166,7 +166,7 @@ namespace Rambler.Services
 
         public bool HasTooManyDuplicateCharacters(ChatMessage message)
         {
-            var isInfraction = Regex.IsMatch(message.Message, @"(.)\1{5,}");
+            var isInfraction = Regex.IsMatch(message.Message, @"(.)\1{10,}");
 
             if (isInfraction)
             {

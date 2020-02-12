@@ -69,11 +69,12 @@ namespace Rambler.Services
             return db.AuthorFilters;
         }
 
-        public async Task AuthorAction(int id, string action)
+        public async Task<string> AuthorAction(int id, string action)
         {
             var author = await GetAuthors()
                 .Include(x => x.AuthorFilters)
                 .SingleOrDefaultAsync(x => x.Id == id);
+
             if (author == null)
             {
                 throw new InvalidOperationException($"Author Id {id} not found.");
@@ -83,14 +84,14 @@ namespace Rambler.Services
             {
                 author.Score += 1;
                 await db.SaveChangesAsync();
-                return;
+                return $"{author.Name} upvoted to {author.Score}";
             }
 
             if (action == ActionTypes.Downvote)
             {
                 author.Score -= 1;
                 await db.SaveChangesAsync();
-                return;
+                return $"{author.Name} downvoted to {author.Score}";
             }
 
             if (action == ActionTypes.Whitelist)
@@ -98,9 +99,10 @@ namespace Rambler.Services
                 if (author.AuthorFilters.Any(x => x.FilterType == FilterTypes.Whitelist))
                 {
                     await RemoveFilter(id, FilterTypes.Whitelist);
+                    return $"{author.Name} removed from {action}";
                 }
                 await AddFilter(id, FilterTypes.Whitelist);
-                return;
+                return $"{author.Name} added to {action}";
             }
 
             if (action == ActionTypes.Ignore)
@@ -108,9 +110,10 @@ namespace Rambler.Services
                 if (author.AuthorFilters.Any(x => x.FilterType == FilterTypes.Ignorelist))
                 {
                     await RemoveFilter(id, FilterTypes.Ignorelist);
+                    return $"{author.Name} removed from {action}";
                 }
                 await AddFilter(id, FilterTypes.Ignorelist);
-                return;
+                return $"{author.Name} added to {action}";
             }
 
             if (action == ActionTypes.Blacklist)
@@ -118,9 +121,10 @@ namespace Rambler.Services
                 if (author.AuthorFilters.Any(x => x.FilterType == FilterTypes.Blacklist))
                 {
                     await RemoveFilter(id, FilterTypes.Blacklist);
+                    return $"{author.Name} removed from {action}";
                 }
                 await AddFilter(id, FilterTypes.Blacklist);
-                return;
+                return $"{author.Name} added to {action}";
             }
 
             if (action == ActionTypes.Ban)
@@ -128,9 +132,13 @@ namespace Rambler.Services
                 if (author.AuthorFilters.Any(x => x.FilterType == FilterTypes.Banlist))
                 {
                     await RemoveFilter(id, FilterTypes.Banlist);
+                    return $"{author.Name} removed from {action}";
                 }
                 await AddFilter(id, FilterTypes.Banlist);
+                return $"{author.Name} added to {action}";
             }
+
+            throw new NotImplementedException($"Action '{action}' is not implemented.");
         }
 
         public async Task DeleteFilter(int id)

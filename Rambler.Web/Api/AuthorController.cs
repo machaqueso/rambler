@@ -49,8 +49,8 @@ namespace Rambler.Web.Api
         [Route("{id}/{command}")]
         public async Task<IActionResult> AuthorAction(int id, string command)
         {
-            await authorService.AuthorAction(id, command);
-            return Ok();
+            var result = await authorService.AuthorAction(id, command);
+            return Ok(result);
         }
     }
 }
