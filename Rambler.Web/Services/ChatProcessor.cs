@@ -84,6 +84,10 @@ namespace Rambler.Web.Services
                 // apply infraction penalty
                 author.Score -= 1;
             }
+            else
+            {
+                author.Score += 1;
+            }
 
             await authorService.Update(author);
 
