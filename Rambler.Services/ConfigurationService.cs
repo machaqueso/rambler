@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Rambler.Data;
 using Rambler.Models;
+using Rambler.Models.Exceptions;
 
 namespace Rambler.Services
 {
@@ -58,6 +59,17 @@ namespace Rambler.Services
                    db.ConfigurationSettings.Any(x => x.Key == key && !string.IsNullOrEmpty(x.Value));
         }
 
+        public async Task CreateSetting(ConfigurationSetting setting)
+        {
+            if (GetSettings().Any(x => x.Name == setting.Name))
+            {
+                throw new ConflictException($"Setting {setting.Name} already exists");
+            }
+
+            await db.ConfigurationSettings.AddAsync(setting);
+            await db.SaveChangesAsync();
+        }
+
         public IEnumerable<ConfigurationSetting> GetSettings()
         {
             var settings = db.ConfigurationSettings.ToList();
@@ -79,6 +91,23 @@ namespace Rambler.Services
             }
             db.Entry(entity).CurrentValues.SetValues(setting);
             await db.SaveChangesAsync();
+        }
+
+        public async Task DeleteSetting(int id)
+        {
+            var entity = GetSettings().FirstOrDefault(x => x.Id == id);
+            if (entity == null)
+            {
+                throw new InvalidOperationException("Not found");
+            }
+
+            db.ConfigurationSettings.Remove(entity);
+            await db.SaveChangesAsync();
+        }
+
+        public IEnumerable<string> GetConfigurationSettingNames()
+        {
+            return ConfigurationSettingNames.All;
         }
     }
 }

@@ -18,6 +18,7 @@
                 height: 20px;
             }
         </style>
+
         <iron-ajax id="ajax"
                    auto
                    url="/api/configuration"
@@ -26,6 +27,26 @@
                    last-response="{{settings}}"
                    debounce-duration="300">
         </iron-ajax>
+
+        <iron-ajax id="settingNames"
+                   auto
+                   url="/api/configuration/names"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{settingNames}}"
+                   on-response="_onSettingNamesLoaded"
+                   debounce-duration="300">
+        </iron-ajax>
+
+        <iron-ajax id="addSetting"
+                   method="POST"
+                   url="/api/configuration"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   on-error="_onError"
+                   on-response="_onCreate"
+                   debounce-duration="300"></iron-ajax>
 
         <iron-ajax id="putSetting"
                    handle-as="json"
@@ -36,34 +57,69 @@
                    on-error="_onError"
                    debounce-duration="300"></iron-ajax>
 
+        <iron-ajax id="deleteSetting"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="DELETE"
+                   on-response="_onDelete"
+                   on-error="_onError"
+                   debounce-duration="300"></iron-ajax>
+
         <xenon-photo-card heading="Enable/Disable Integrations">
             <main>
                 <rambler-integrations></rambler-integrations>
             </main>
         </xenon-photo-card>
 
-        <xenon-photo-card heading="Integration Setting">
+        <xenon-photo-card heading="Configuration Settings">
             <main>
                 <table class="table table-bordered table-striped">
                     <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Name</th>
-                        <th>Key</th>
-                        <th>Configured?</th>
-                        <th></th>
-                    </tr>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Value</th>
+                            <th>Configured?</th>
+                            <th></th>
+                        </tr>
                     </thead>
                     <tbody>
-                    <template is="dom-repeat" items="{{settings}}">
-                        <tr>
-                            <td>{{item.id}}</td>
-                            <td>{{item.name}}</td>
-                            <td>{{item.key}}</td>
-                            <td>{{item.status}}</td>
-                            <td><paper-icon-button icon="editor:mode-edit" on-click="_openEditor"></paper-icon-button></td>
-                        </tr>
-                    </template>
+                        <template is="dom-repeat" items="{{settings}}">
+                            <tr>
+                                <td>{{item.id}}</td>
+                                <td>{{item.name}}</td>
+                                <td>
+                                    [[_maskedValue(item)]]
+                                </td>
+                                <td>{{item.status}}</td>
+                                <td>
+                                    <paper-icon-button icon="editor:mode-edit" on-click="_openEditor"></paper-icon-button>
+                                    <paper-icon-button icon="icons:delete" on-click="_delete"></paper-icon-button>
+                                </td>
+                            </tr>
+                        </template>
+                        <template is="dom-if" if="[[showAdd]]">
+                            <tr>
+                                <form autocomplete="false">
+                                    <td>New</td>
+                                    <td>
+                                        <select id="settingName" value="{{setting.name}}" on-change="_onSettingNameChanged">
+                                            <template is="dom-repeat" items="[[settingNames]]">
+                                                <option value="{{item}}">[[item]]</option>
+                                            </template>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <paper-input type="[[inputType]]" value="{{setting.value}}"></paper-input>
+                                    </td>
+                                    <td>New</td>
+                                    <td>
+                                        <paper-icon-button icon="icons:add" on-click="_add"></paper-icon-button>
+                                    </td>
+                                </form>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
                 <div>
@@ -74,7 +130,7 @@
 
         <xenon-dialog id="dialog" heading="Edit Integration Setting">
             <main>
-                <paper-input label="{{setting.name}}" type="password" value="{{setting.value}}"></paper-input>
+                <paper-input type="password" value="{{setting.value}}"></paper-input>
                 <template is="dom-if" if="[[errorMessage]]">
                     <div class="text-danger">[[errorMessage]]</div>
                 </template>
@@ -88,39 +144,112 @@
         <paper-toast id="toast"></paper-toast>
     </template>
     <script>
-    addEventListener('WebComponentsReady', function() {
+        addEventListener('WebComponentsReady', function () {
 
-        Polymer({
-            is: "page-module",
-            properties: {
-                setting: { type: Object, notify: true, value: {} },
-                errorMessage: { type: String, notify: true, value: "" }
-            },
-            observers: [
-            ],
-            _openEditor: function (e) {
-                console.log(e.model.item);
-                this.set("setting", e.model.item);
-                this.$.dialog.open();
-            },
-            _save: function (e) {
-                this.$.putSetting.url = "/api/configuration/" + this.setting.id;
-                this.$.putSetting.body = JSON.stringify(this.setting);
-                this.$.putSetting.generateRequest();
-            },
-            _cancel: function () {
-                this.$.dialog.close();
-            },
-            _onUpdate: function () {
-                this.$.dialog.close();
-                this.$.ajax.generateRequest();
-            },
-            _onError: function (e) {
-                this.set("errorMessage", e.detail.request.xhr.response);
-            },
-            ready: function () {
-            }
-        });
+            Polymer({
+                is: "page-module",
+                properties: {
+                    setting: { type: Object, notify: true, value: {} },
+                    settingNames: { type: Array, notify: true, value: [] },
+                    errorMessage: { type: String, notify: true, value: "" },
+                    inputType: { type: String, notify: true, value: "text" },
+                    showAdd: { type: Boolean, notify: true, value: false }
+                },
+                observers: [
+                ],
+                _openEditor: function (e) {
+                    //console.log(e.model.item);
+                    this.set("setting", e.model.item);
+                    this.$.dialog.open();
+                },
+                _maskedValue: function (setting) {
+                    if (setting.name.includes("Authentication")) {
+                        return "************";
+                    } else {
+                        return setting.name;
+                    }
+                },
+                _changeInputType: function () {
+
+                    if (this.settingNames.length == 0
+                        || this.$.settingName == undefined) {
+                        return;
+                    }
+
+                    var name = this.$.settingName.value;
+                    //console.log("settingName", name);
+                    if (name.includes("Authentication")) {
+                        //console.log("inputType", "password");
+                        this.set("inputType", "password");
+                        return;
+                    }
+                    this.set("inputType", "text");
+                },
+                _onSettingNamesLoaded: function () {
+                    var _this = this
+                    setTimeout(function () {
+                        _this.set("showAdd", _this.settingNames.length > 0);
+                        _this._changeInputType();
+                    }, 1000);
+                },
+                _onSettingNameChanged: function (e) {
+                    this._changeInputType();
+                },
+                _save: function (e) {
+                    this.$.putSetting.url = "/api/configuration/" + this.setting.id;
+                    this.$.putSetting.body = JSON.stringify(this.setting);
+                    this.$.putSetting.generateRequest();
+                },
+                _cancel: function () {
+                    this.set("setting.value", "");
+                    this.$.dialog.close();
+                },
+                _delete: function (e) {
+                    this.$.deleteSetting.url = "/api/configuration/" + e.model.item.id;
+                    this.$.deleteSetting.generateRequest();
+                },
+                _add: function () {
+                    this.setting.name = this.$.settingName.value;
+
+                    if (this.setting.value === "") {
+                        this._showToast("specify value");
+                        return;
+                    }
+                    console.log(this.setting);
+
+                    this.$.addSetting.body = JSON.stringify(this.setting);
+                    this.$.addSetting.generateRequest();
+                },
+                _refresh: function () {
+                    this.$.ajax.generateRequest();
+                    this.$.settingNames.generateRequest();
+                },
+                _showToast: function (message) {
+                    this.$.toast.text = message;
+                    this.$.toast.show();
+                },
+                _onCreate: function () {
+                    this._showToast("Setting added");
+                    this._refresh();
+                },
+                _onUpdate: function () {
+                    this.$.dialog.close();
+                    this._showToast("Setting updated");
+                    this._refresh();
+                },
+                _onDelete: function () {
+                    this._showToast("Setting deleted");
+                    this._refresh();
+                },
+                _onError: function (e) {
+                    this.$.toast.text = "ERROR: " + e.detail.request.xhr.response;
+                    this.$.toast.show();
+
+                    //this.set("errorMessage", e.detail.request.xhr.response);
+                },
+                ready: function () {
+                }
+            });
         })
     </script>
 </dom-module>
