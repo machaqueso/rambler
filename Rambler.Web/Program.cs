@@ -21,6 +21,7 @@ namespace Rambler.Web
 
             var logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
+                .WriteTo.SQLite("./log.db")
                 .CreateLogger();
 
             try

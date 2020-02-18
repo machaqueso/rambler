@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.11" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Serilog.Sinks.SQLite" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
