@@ -9,5 +9,7 @@ namespace Rambler.Models
         public static string Connected = "Connected";
         public static string Offline = "Offline";
         public static string Error = "Error";
+        public static string Starting = "Starting";
+        public static string Stopping = "Stopping";
     }
 }
