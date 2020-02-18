@@ -1,0 +1,89 @@
+﻿@model Author
+
+@{
+    ViewBag.Title = "Author details";
+    Layout = "_Layout";
+}
+
+@section Styles{
+    <link rel="stylesheet" href="~/css/bootstrap.css" />
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">@ViewBag.Title</h5>
+        <div class="row">
+            <label class="col-sm-4">Id</label>
+            <div class="col-sm-4">@Model.Id</div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4">Name</label>
+            <div class="col-sm-4">@Model.Name</div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4">Source</label>
+            <div class="col-sm-4">@Model.Source</div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4">SourceAuthorId</label>
+            <div class="col-sm-4">@Model.SourceAuthorId</div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4">Score</label>
+            <div class="col-sm-4">@Model.Score</div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4">Points</label>
+            <div class="col-sm-4">@Model.Points</div>
+        </div>
+    </div>
+</div>
+
+@if (Model.ChatMessages.Any())
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Chat history</h5>
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Message</th>
+                        <th>Infractions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var message in Model.ChatMessages)
+                    {
+                        <tr>
+                            <td>@message.DisplayDate</td>
+                            <td>@message.DisplayTime</td>
+                            <td>@message.Message</td>
+                            <td>@message.Infractions?.Count</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.AuthorFilters.Any())
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Filters</h5>
+        </div>
+    </div>
+}
+
+@if (Model.AuthorScoreHistories.Any())
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Score history</h5>
+        </div>
+    </div>
+}
