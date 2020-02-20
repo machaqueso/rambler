@@ -1,0 +1,80 @@
+﻿
+<link rel="import" href="../iron-ajax/iron-ajax.html" />
+<link rel="import" href="../paper-toast/paper-toast.html" />
+
+<dom-module id="author-actions">
+    <template>
+        
+        <style>
+            .action {
+                padding: 2px 5px;
+            }
+
+            .action:hover {
+                color: gainsboro;
+                background-color: dimgray;
+            }
+
+        </style>
+
+        <iron-ajax id="putAction"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="PUT"
+                   on-response="_onActionResponse"
+                   on-error="_onActionError"
+                   debounce-duration="300"></iron-ajax>
+
+        <iron-ajax auto id="getActions"
+                   url="/api/author/action"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{actions}}"
+                   on-response="_onAjaxResponse"
+                   on-error="_onAjaxError"></iron-ajax>
+
+        <div style="display: flex;">
+            <template is="dom-repeat" items="[[actions]]" restamp>
+                <div class="action" on-click="_authorAction">{{item}}</div>
+            </template>
+        </div>
+
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        HTMLImports.whenReady(function () {
+            Polymer({
+                is: "author-actions",
+                properties: {
+                    actions: { type: Array, notify: true, value: [] },
+                    authorId: { type: Number }
+                },
+                _authorAction: function (e) {
+                    this.action = e.model.item;
+                    this.$.putAction.url = "/api/author/" + this.authorId + "/" + e.model.item;
+                    this.$.putAction.generateRequest();
+                },
+                _onActionResponse: function (e, item) {
+                    this.$.toast.text = item.xhr.response;
+                    this.$.toast.show();
+                    this.fire("action");
+                },
+                _onActionError: function (e) {
+                    this.$.toast.text = this.action + " failed";
+                    this.$.toast.show();
+                    console.log(e.detail.request.xhr.response);
+                },
+                _onAjaxResponse: function (e, item) {
+                },
+                _onAjaxError: function (e) {
+                    this.$.toast.text = e.detail.request.xhr.response;
+                    this.$.toast.show();
+                },
+                ready: function () {
+                    var _this = this;
+                }
+            });
+        });
+    </script>
+</dom-module>

@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="~/css/bootstrap.css" />
 }
 
+<link rel="import" href="~/components/rambler-components/author-actions.html" />
+
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">@ViewBag.Title</h5>
@@ -36,6 +38,12 @@
             <label class="col-sm-4">Points</label>
             <div class="col-sm-4">@Model.Points</div>
         </div>
+        <div class="row">
+            <label class="col-sm-4">Lists</label>
+            <div class="col-sm-4">@string.Join(',', Model.AuthorFilters.Select(l => l.FilterType))</div>
+        </div>
+
+        <author-actions author-id="@Model.Id"></author-actions>
     </div>
 </div>
 
@@ -66,15 +74,6 @@
                     }
                 </tbody>
             </table>
-        </div>
-    </div>
-}
-
-@if (Model.AuthorFilters.Any())
-{
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Filters</h5>
         </div>
     </div>
 }
