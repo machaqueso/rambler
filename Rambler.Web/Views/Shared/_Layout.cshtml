@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/components/bootstrap/dist/css/bootstrap-reboot.css" />
     <link rel="stylesheet" href="~/css/bootstrap-base.css" />
     <link rel="stylesheet" href="~/css/bootstrap-tables.css" />
+    <link rel="stylesheet" href="~/css/bootstrap-nav.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/all.css" />
 
@@ -35,35 +36,57 @@
     <link rel="import" href="~/components/paper-input/paper-input.html" />
 </head>
 <body>
-<xenon-layout heading="Rambler: @ViewData["Title"]">
-    <header>
-        <xenon-search></xenon-search>
-        <div>@ViewData["username"]</div>
-    </header>
-    <nav>
-        <nav-item icon="home" href="/">Home</nav-item>
-        <nav-item icon="communication:chat" href="@Url.Action("Index", "Chat")">Chat</nav-item>
-        <nav-item icon="social:people" href="@Url.Action("Index", "User")">Users</nav-item>
-        <nav-item href="@Url.Action("Index", "Youtube")"><i class="fab fa-youtube fa-2x"></i> Youtube</nav-item>
-        <nav-item href="@Url.Action("Index", "Twitch")"><i class="fab fa-twitch fa-2x"></i> Twitch</nav-item>
-        <nav-item icon="settings" href="/Configuration">Configuration</nav-item>
-        <nav-item icon="editor:text-fields" href="/Configuration/WordFilter">Word Filter</nav-item>
-        <nav-item icon="social:people" href="@Url.Action("Index", "Author")">Author</nav-item>
-        <nav-item icon="icons:android" href="/Configuration/Bot">Bot</nav-item>
-        <nav-item icon="icons:exit-to-app" href="/Account/Logout">Logout</nav-item>
-    </nav>
-    <main>
-        <div style="display: flex; align-content: stretch; flex-direction: column;">
-            @RenderBody()
-            <div style="flex: 1 1 auto;"></div>
-            <footer>
-                <p>Rambler @(Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion) | &copy; 2019 - Machaqueso</p>
-            </footer>
-        </div>
-    </main>
-</xenon-layout>
+    <xenon-layout heading="Rambler: @ViewData["Title"]">
+        <header>
+            <xenon-search></xenon-search>
+            <div>@ViewData["username"]</div>
+        </header>
+        <nav>
+            <ul class="nav" style="display: flex; flex-direction: column; ">
+                <li class="nav-item">
+                    <a class="nav-link" href="/"><iron-icon icon="home"></iron-icon>Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Chat")"><iron-icon icon="communication:chat"></iron-icon>Chat</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "User")"><iron-icon icon="social:people"></iron-icon>Users</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Youtube")"><i class="fab fa-youtube"></i> Youtube</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Twitch")"><i class="fab fa-twitch"></i> Twitch</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Configuration")"><iron-icon icon="settings"></iron-icon>Configuration</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("WordFilter", "Configuration")"><iron-icon icon="editor:text-fields"></iron-icon>Word Filter</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Author")"><iron-icon icon="social:people"></iron-icon>Author</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Bot", "Configuration")"><iron-icon icon="icons:android"></iron-icon>Bot</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Logout", "Account")"><iron-icon icon="icons:exit-to-app"></iron-icon>Logout</a>
+                </li>
+            </ul>
+        </nav>
+        <main>
+            <div style="display: flex; align-content: stretch; flex-direction: column;">
+                @RenderBody()
+                <div style="flex: 1 1 auto;"></div>
+                <footer>
+                    <p>Rambler @(Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion) | &copy; 2019 - @DateTime.Now.Year Machaqueso</p>
+                </footer>
+            </div>
+        </main>
+    </xenon-layout>
 
-@RenderSection("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 
 </body>
 </html>
