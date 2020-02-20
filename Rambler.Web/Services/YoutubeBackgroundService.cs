@@ -195,6 +195,10 @@ namespace Rambler.Web.Services
                         await UpdateDashboardStatus(BackgroundServiceStatus.Stopped,
                             cancellationToken);
                     }
+                    catch (TaskCanceledException)
+                    {
+                        await UpdateDashboardStatus(BackgroundServiceStatus.Stopping, cancellationToken);
+                    }
                     catch (Exception ex)
                     {
                         logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
@@ -204,7 +208,8 @@ namespace Rambler.Web.Services
                 }
             }
 
-            logger.LogDebug($"[YoutubeBackgroundService] ExecuteAsync exit");
+            await UpdateDashboardStatus(BackgroundServiceStatus.Stopped, cancellationToken);
+            logger.LogDebug($"[YoutubeBackgroundService] pal carajo");
 
         }
     }
