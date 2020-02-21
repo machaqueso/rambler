@@ -9,7 +9,7 @@
 <dom-module id="rambler-api-status">
     <template>
         <iron-ajax auto id="ajax"
-                   url="/api/dashboard/apiStatus"
+                   url="/api/integration"
                    handle-as="json"
                    last-response="{{items}}"></iron-ajax>
 
@@ -17,11 +17,11 @@
             <template is="dom-repeat" items="{{items}}" restamp>
                 <tr>
                     <td>{{item.name}}</td>
+                    <td>{{item.displayEnabled}}</td>
                     <td>{{item.status}}</td>
                     <td>
                         <rambler-chat-date value="{{item.updateDate}}" show-time></rambler-chat-date>
                     </td>
-                    <td><paper-button class="primary" on-click="_sendTest">Test</paper-button></td>
                 </tr>
             </template>
         </table>
@@ -35,18 +35,15 @@
                 items: { type: Array, notify: true, value: [] },
                 connection: { type: Object, value: {} }
             },
-            _sendTest: function (e) {
-                console.log(e.model.item);
-                this.connection.invoke("UpdateStatus", e.model.item.name, "TEST")
-                    .catch(function (err) {
-                        return console.error(err.toString());
-                    });
+            _refresh: function() {
+                this.$.ajax.generateRequest();
             },
             ready: function () {
                 var _this = this;
                 this.connection = new signalR.HubConnectionBuilder().withUrl("/dashboardHub").build();
 
                 this.connection.on("updateStatus", function (statuses) {
+                    console.log("updateStatus", statuses)
                     _this.items = [];
                     _this.set("items", statuses);
                 });
@@ -59,6 +56,7 @@
                 async function start() {
                     try {
                         await _this.connection.start();
+                        _this._refresh();
                         console.log("connected");
                     } catch (err) {
                         console.log(err);
@@ -72,6 +70,7 @@
                 _this.connection.onclose(async () => {
                     await start();
                 });
+
             }
         });
     </script>

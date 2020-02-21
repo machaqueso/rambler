@@ -1,66 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Rambler.Models;
+using Rambler.Web.Hubs;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
-using Rambler.Web.Hubs;
-using Rambler.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Rambler.Web.Services
 {
     public class DashboardService
     {
         private readonly IHubContext<DashboardHub> dashboardHub;
+        private readonly IntegrationService integrationService;
+        private readonly ILogger<DashboardService> logger;
 
-        private static IList<ApiStatus> apiStatuses;
-
-        public DashboardService(IHubContext<DashboardHub> dashboardHub)
+        public DashboardService(IHubContext<DashboardHub> dashboardHub, IntegrationService integrationService, ILogger<DashboardService> logger)
         {
             this.dashboardHub = dashboardHub;
-
-            if (apiStatuses == null)
-            {
-                Init();
-            }
-        }
-
-        private void Init()
-        {
-            apiStatuses = new List<ApiStatus>();
-            foreach (var apiSource in ApiSource.All.OrderBy(x => x))
-            {
-                apiStatuses.Add(new ApiStatus(apiSource));
-            }
+            this.integrationService = integrationService;
+            this.logger = logger;
         }
 
         public async Task UpdateStatus(string name, string status, CancellationToken cancellationToken)
         {
-            var apiStatus = apiStatuses.FirstOrDefault(x => x.Name == name);
-            if (apiStatus == null)
-            {
-                return;
-            }
-
-            apiStatus.Status = status;
-            apiStatus.UpdateDate = DateTime.UtcNow;
-
-            await dashboardHub.Clients.All.SendAsync("updateStatus", apiStatuses, cancellationToken);
+            await integrationService.UpdateStatus(name, status);
+            await dashboardHub.Clients.All.SendAsync("updateStatus", integrationService.GetIntegrations().OrderBy(x => x.Name), cancellationToken);
         }
 
         public async Task UpdateStatus(string name, string status)
         {
             await UpdateStatus(name, status, CancellationToken.None);
-        }
-
-        public async Task SendStatus()
-        {
-            await dashboardHub.Clients.All.SendAsync("updateStatus", apiStatuses, CancellationToken.None);
-        }
-
-        public IEnumerable<ApiStatus> GetApiStatuses()
-        {
-            return apiStatuses;
         }
     }
 }

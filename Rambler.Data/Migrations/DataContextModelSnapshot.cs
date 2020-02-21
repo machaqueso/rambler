@@ -14,7 +14,7 @@ namespace Rambler.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.11-servicing-32099");
+                .HasAnnotation("ProductVersion", "2.1.14-servicing-32113");
 
             modelBuilder.Entity("Rambler.Models.AccessToken", b =>
                 {
@@ -198,6 +198,10 @@ namespace Rambler.Data.Migrations
                     b.Property<bool>("IsEnabled");
 
                     b.Property<string>("Name");
+
+                    b.Property<string>("Status");
+
+                    b.Property<DateTime?>("UpdateDate");
 
                     b.HasKey("Id");
 

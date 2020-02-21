@@ -14,11 +14,5 @@ namespace Rambler.Web.Api
         {
             this.dashboardService = dashboardService;
         }
-
-        [Route("apiStatus")]
-        public IActionResult GetApiStatus()
-        {
-            return Ok(dashboardService.GetApiStatuses());
-        }
     }
 }

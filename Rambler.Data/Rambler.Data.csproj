@@ -9,6 +9,8 @@
     <Compile Remove="Migrations\20191026171848_AddedBotActions.cs" />
     <Compile Remove="Migrations\20191030005856_AddedChatMessageType.cs" />
     <Compile Remove="Migrations\20191101015036_BotEntities.cs" />
+    <Compile Remove="Migrations\20200222022834_AddedUpdateDateToIntegrationEntity.cs" />
+    <Compile Remove="Migrations\20200222022834_AddedUpdateDateToIntegrationEntity.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

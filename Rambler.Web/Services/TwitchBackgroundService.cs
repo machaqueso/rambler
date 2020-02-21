@@ -72,19 +72,19 @@ namespace Rambler.Web.Services
                 var twitchManager = scope.ServiceProvider.GetRequiredService<TwitchManager>();
 
                 logger.LogDebug($"[TwitchBackgroundService] starting.");
-                await UpdateDashboardStatus(BackgroundServiceStatus.Starting, cancellationToken);
+                await UpdateDashboardStatus(IntegrationStatus.Starting, cancellationToken);
 
                 if (!await twitchService.IsEnabled())
                 {
                     logger.LogWarning($"[TwitchBackgroundService] Twitch disabled.");
-                    await UpdateDashboardStatus(BackgroundServiceStatus.Disabled, cancellationToken);
+                    await UpdateDashboardStatus(IntegrationStatus.Disabled, cancellationToken);
                     return;
                 }
 
                 if (!twitchService.IsConfigured())
                 {
                     logger.LogWarning($"[TwitchBackgroundService] Twitch not configured");
-                    await UpdateDashboardStatus(BackgroundServiceStatus.NotConfigured, cancellationToken);
+                    await UpdateDashboardStatus(IntegrationStatus.NotConfigured, cancellationToken);
                     return;
                 }
 
@@ -119,7 +119,7 @@ namespace Rambler.Web.Services
                         {
                             await TwitchHandshake(webSocket, cancellationToken, twitchService, twitchManager);
                             Send($"JOIN :#{user.name}");
-                            await UpdateDashboardStatus(BackgroundServiceStatus.Connected,
+                            await UpdateDashboardStatus(IntegrationStatus.Connected,
                                 cancellationToken);
                         }
                     }
@@ -132,7 +132,7 @@ namespace Rambler.Web.Services
                 }
                 catch (TaskCanceledException)
                 {
-                    await UpdateDashboardStatus(BackgroundServiceStatus.Stopping, cancellationToken);
+                    await UpdateDashboardStatus(IntegrationStatus.Stopping, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -140,6 +140,7 @@ namespace Rambler.Web.Services
                     await UpdateDashboardStatus("Error", cancellationToken);
                 }
 
+                await UpdateDashboardStatus(IntegrationStatus.Stopped, cancellationToken);
                 logger.LogDebug($"[TwitchBackgroundService] pal carajo");
             }
         }
@@ -149,7 +150,7 @@ namespace Rambler.Web.Services
             var token = await twitchService.GetToken();
             if (token == null)
             {
-                await UpdateDashboardStatus(BackgroundServiceStatus.Forbidden, cancellationToken);
+                await UpdateDashboardStatus(IntegrationStatus.Forbidden, cancellationToken);
                 return;
             }
 
@@ -160,7 +161,7 @@ namespace Rambler.Web.Services
 
             if (token.Status != AccessTokenStatus.Ok)
             {
-                await UpdateDashboardStatus(BackgroundServiceStatus.Forbidden, cancellationToken);
+                await UpdateDashboardStatus(IntegrationStatus.Forbidden, cancellationToken);
                 return;
             }
         }
@@ -249,7 +250,7 @@ namespace Rambler.Web.Services
                         {
                             var host = line.Substring(line.IndexOf(':'));
                             Send($"PONG :{host}");
-                            await UpdateDashboardStatus(BackgroundServiceStatus.Connected,
+                            await UpdateDashboardStatus(IntegrationStatus.Connected,
                                 cancellationToken);
                             continue;
                         }

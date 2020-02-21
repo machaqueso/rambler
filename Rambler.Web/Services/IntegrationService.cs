@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rambler.Data;
 using Rambler.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rambler.Web.Services
 {
@@ -33,6 +32,34 @@ namespace Rambler.Web.Services
             return db.Integrations;
         }
 
+        public async Task Update(Integration integration)
+        {
+            var entity = await GetIntegrations().SingleOrDefaultAsync(x => x.Id == integration.Id);
+
+            if (entity == null)
+            {
+                throw new InvalidOperationException($"Integration id '{integration.Id}' not found.");
+            }
+
+            entity.UpdateDate = DateTime.UtcNow;
+            db.Entry(entity).CurrentValues.SetValues(integration);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task UpdateStatus(string name, string status)
+        {
+            var entity = await GetIntegrations().SingleOrDefaultAsync(x => x.Name == name);
+
+            if (entity == null)
+            {
+                throw new InvalidOperationException($"Integration '{name}' not found.");
+            }
+
+            entity.Status = status;
+            entity.UpdateDate = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+        }
+
         public async Task ToggleService(Integration integration)
         {
             logger.LogDebug($"background services found: {backgroundServices.Count()}");
@@ -51,20 +78,10 @@ namespace Rambler.Web.Services
             await service.StopAsync(new CancellationToken());
         }
 
-        public async Task UpdateIntegration(int id, Integration integration)
+        public async Task Activator(Integration integration)
         {
-            var record = await GetIntegrations().FirstOrDefaultAsync(x => x.Id == id);
-
-            if (record == null)
-            {
-                throw new InvalidOperationException($"Integration id '{id}' not found.");
-            }
-
-            db.Entry(record).CurrentValues.SetValues(integration);
-            await db.SaveChangesAsync();
-
+            await Update(integration);
             integrationManager.IntegrationEvent(integration.Name, integration.IsEnabled);
-
             await ToggleService(integration);
         }
 

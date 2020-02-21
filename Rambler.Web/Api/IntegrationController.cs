@@ -53,7 +53,7 @@ namespace Rambler.Web.Api
                 }
             }
 
-            await integrationService.UpdateIntegration(id, integration);
+            await integrationService.Activator(integration);
             return NoContent();
         }
 
