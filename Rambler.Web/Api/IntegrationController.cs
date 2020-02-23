@@ -28,6 +28,22 @@ namespace Rambler.Web.Api
             return Ok(integrationService.GetIntegrations().OrderBy(x => x.Name));
         }
 
+        [HttpPost]
+        [Route("active")]
+        public async Task<IActionResult> ActivateIntegrations()
+        {
+            var integrations = integrationService.GetIntegrations().OrderBy(x => x.Name);
+            foreach (var integration in integrations)
+            {
+                if (integration.IsEnabled && integration.IsInactive)
+                {
+                    await integrationService.Activator(integration);
+                }
+            }
+
+            return Ok(integrations);
+        }
+
         [Route("{id}")]
         [HttpPut]
         public async Task<IActionResult> UpdateIntegration(int id, [FromBody] Integration integration)

@@ -9,7 +9,8 @@
 <dom-module id="rambler-api-status">
     <template>
         <iron-ajax auto id="ajax"
-                   url="/api/integration"
+                   url="/api/integration/active"
+                   method="POST"
                    handle-as="json"
                    last-response="{{items}}"></iron-ajax>
 
@@ -25,6 +26,7 @@
                 </tr>
             </template>
         </table>
+        
 
         <paper-toast id="toast"></paper-toast>
     </template>
