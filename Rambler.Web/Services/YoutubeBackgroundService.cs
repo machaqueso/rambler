@@ -145,13 +145,15 @@ namespace Rambler.Web.Services
                         logger.LogDebug($"[YoutubeBackgroundService] entering secondary loop.");
                         while (!cancellationToken.IsCancellationRequested
                                && youtubeService.IsEnabled().Result
-                               && token.Status == AccessTokenStatus.Ok)
+                               && token.Status == AccessTokenStatus.Ok
+                               && !shouldExit)
                         {
-
                             logger.LogDebug($"[YoutubeBackgroundService] Secondary loop.");
 
                             var liveChatMessages = await youtubeService.GetLiveChatMessages(liveChatId, nextPageToken);
-                            if (liveChatMessages == null || !liveChatMessages.items.Any())
+                            if (liveChatMessages == null
+                                || liveChatMessages.offlineAt.HasValue
+                                || !liveChatMessages.items.Any())
                             {
                                 logger.LogDebug($"[YoutubeBackgroundService] No messages found.");
                                 await Task.Delay(TimeSpan.FromMilliseconds(pollingInterval), cancellationToken);
@@ -168,8 +170,7 @@ namespace Rambler.Web.Services
                             nextPageToken = liveChatMessages.nextPageToken;
 
                             // TODO: Switch this to Min when going production
-                            logger.LogDebug(
-                                $"[YoutubeBackgroundService] New polling interval: {liveChatMessages.pollingIntervalMillis}");
+                            logger.LogDebug($"[YoutubeBackgroundService] New polling interval: {liveChatMessages.pollingIntervalMillis}");
                             logger.LogDebug($"[YoutubeBackgroundService] Next page: {liveChatMessages.nextPageToken}");
 
                             if (liveBroadcast.status?.lifeCycleStatus == "live")
@@ -184,9 +185,10 @@ namespace Rambler.Web.Services
                                 if (liveBroadcast != null)
                                 {
                                     await UpdateDashboardStatus(liveBroadcast.status?.lifeCycleStatus, cancellationToken);
-                                    if (liveBroadcast.status.lifeCycleStatus != "live")
+                                    if (!goodStatuses.Contains(liveBroadcast.status?.lifeCycleStatus))
                                     {
-                                        pollingInterval = delay;
+                                        shouldExit = true;
+                                        continue;
                                     }
                                 }
                             }
@@ -195,8 +197,7 @@ namespace Rambler.Web.Services
                             await Task.Delay(pollingInterval, cancellationToken);
                         }
 
-                        await UpdateDashboardStatus(IntegrationStatus.Stopped,
-                            cancellationToken);
+                        await UpdateDashboardStatus(IntegrationStatus.Stopped, cancellationToken);
                     }
                     catch (TaskCanceledException)
                     {

@@ -9,7 +9,7 @@ namespace Rambler.Models.Youtube.LiveChat
         public string etag { get; set; }
         public string nextPageToken { get; set; }
         public int pollingIntervalMillis { get; set; }
-
+        public DateTime? offlineAt { get; set; }
         public PageInfo pageInfo { get; set; }
         public IEnumerable<LiveChatMessage> items { get; set; }
     }

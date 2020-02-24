@@ -107,7 +107,7 @@ namespace Rambler.Web.Services
             if (!string.IsNullOrWhiteSpace(nextPageToken))
             {
                 logger.LogDebug($"calling GetLiveChatMessages with nextPageToken='{nextPageToken}'");
-                url += $"&nextPageToken ={nextPageToken}";
+                url += $"&nextPageToken={nextPageToken}";
             }
 
             var response = await Get(url, token.access_token);
@@ -115,8 +115,8 @@ namespace Rambler.Web.Services
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogError($"GetLiveChatMessages error: {(int)response.StatusCode} - {response.ReasonPhrase}",
-                    response);
+                logger.LogError($"GetLiveChatMessages error: {(int)response.StatusCode} - {response.ReasonPhrase}", response);
+                logger.LogDebug($"Content: {content}");
                 return null;
             }
 
