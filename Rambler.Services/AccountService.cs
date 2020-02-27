@@ -115,8 +115,8 @@ namespace Rambler.Services
         public async Task<User> FindByUsername(string username)
         {
             return await GetUsers().FirstOrDefaultAsync(x =>
-                string.Equals(x.UserName, username, StringComparison.CurrentCultureIgnoreCase)
-                || string.Equals(x.Email, username, StringComparison.CurrentCultureIgnoreCase));
+                x.UserName == username
+                || x.Email == username);
         }
 
         public bool VerifyPassword(User user, string password)

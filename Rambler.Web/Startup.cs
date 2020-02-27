@@ -13,7 +13,6 @@ using Rambler.Data;
 using Rambler.Web.Hubs;
 using Rambler.Web.Services;
 using Serilog;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Rambler.Web
 {
@@ -49,7 +48,7 @@ namespace Rambler.Web
             services.AddMvc(options =>
             {
                 options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
-            }).AddJsonOptions(options =>
+            }).AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
             });
@@ -57,10 +56,12 @@ namespace Rambler.Web
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie();
+
+            services.AddControllersWithViews();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, DataContext db)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DataContext db)
         {
             db.Database.Migrate();
 
@@ -74,22 +75,19 @@ namespace Rambler.Web
                 app.UseHsts();
             }
 
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseCors();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseCookiePolicy();
             app.UseSerilogRequestLogging();
 
-            app.UseAuthentication();
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseCookiePolicy();
-            app.UseSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<ChatHub>("/chatHub");
-                routes.MapHub<DashboardHub>("/dashboardHub");
-            });
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHub<ChatHub>("/chatHub");
+                endpoints.MapHub<DashboardHub>("/dashboardHub");
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }
