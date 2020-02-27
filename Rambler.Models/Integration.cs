@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using Microsoft.Extensions.Hosting;
 
 namespace Rambler.Models
 {
