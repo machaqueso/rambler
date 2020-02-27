@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Rambler.Data;
 using Rambler.Models;
 using Rambler.Models.Twitch;
@@ -48,7 +48,7 @@ namespace Rambler.Services
                     $"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
             }
 
-            return JsonConvert.DeserializeObject<TwitchUser>(content);
+            return JsonSerializer.Deserialize<TwitchUser>(content);
         }
 
         public async Task<TwitchUser> FindUser(string username)
@@ -80,7 +80,7 @@ namespace Rambler.Services
                     $"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
             }
 
-            var twitchResponse = JsonConvert.DeserializeObject<TwitchGetUsersResponse>(content);
+            var twitchResponse = JsonSerializer.Deserialize<TwitchGetUsersResponse>(content);
             if (twitchResponse.users.Any())
             {
                 var user = twitchResponse.users.First();

@@ -18,7 +18,7 @@ namespace Rambler.Test.Integration.Web.Api
         }
 
         [Theory]
-        [InlineData("","", HttpStatusCode.UnprocessableEntity)]
+        [InlineData("", "", HttpStatusCode.UnprocessableEntity)]
         [InlineData("foo", "", HttpStatusCode.UnprocessableEntity)]
         [InlineData("", "bar", HttpStatusCode.UnprocessableEntity)]
         [InlineData("foo", "bar", HttpStatusCode.UnprocessableEntity)]

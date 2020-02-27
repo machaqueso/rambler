@@ -107,7 +107,7 @@ namespace Rambler.Data
                 new User()
                 {
                     Id = 1,
-                    UserName = "Admin",
+                    UserName = "admin",
                     MustChangePassword = true
                 }
             );

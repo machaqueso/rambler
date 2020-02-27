@@ -78,10 +78,10 @@ namespace Rambler.Web
             app.UseStaticFiles();
             app.UseRouting();
             app.UseCors();
+            app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseCookiePolicy();
-            app.UseSerilogRequestLogging();
+            //app.UseSerilogRequestLogging();
 
             app.UseEndpoints(endpoints =>
             {

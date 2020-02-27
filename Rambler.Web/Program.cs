@@ -21,7 +21,6 @@ namespace Rambler.Web
 
             var logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
-                .WriteTo.SQLite("./log.db")
                 .CreateLogger();
 
             try
@@ -51,7 +50,6 @@ namespace Rambler.Web
                     // variables to override values from other providers.
                     config.AddEnvironmentVariables(prefix: "Authentication");
                 })
-                .UseSerilog((ctx, config) => { config.ReadFrom.Configuration(ctx.Configuration); })
                 .UseStartup<Startup>();
 
         public static void Shutdown()

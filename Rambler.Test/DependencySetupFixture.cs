@@ -26,11 +26,13 @@ namespace Rambler.Test
             });
 
             serviceCollection.AddDbContext<DataContext>(options =>
-                options.UseInMemoryDatabase(databaseName: "TestDatabase"));
+                options.UseSqlite("DataSource=:memory:"));
 
             Rambler.Web.DependencyInjection.ConfigureDependencies(serviceCollection);
             Rambler.Data.DependencyInjection.ConfigureDependencies(serviceCollection);
             Rambler.Services.DependencyInjection.ConfigureDependencies(serviceCollection);
+
+            serviceCollection.AddLogging();
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
