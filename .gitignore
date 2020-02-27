@@ -238,3 +238,4 @@ _Pvt_Extensions
 .vscode
 **/package-lock.json
 **/_logs
+*.ncrunchsolution
