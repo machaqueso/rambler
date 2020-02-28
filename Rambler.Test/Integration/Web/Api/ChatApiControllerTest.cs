@@ -40,7 +40,7 @@ namespace Rambler.Test.Integration.Web.Api
 
                     var serviceProvider = services.BuildServiceProvider();
                     services.AddDbContext<DataContext>(options =>
-                        options.UseInMemoryDatabase(databaseName: "TestDatabase"));
+                        options.UseSqlite("DataSource=:memory:"));
 
                     using (var scope = serviceProvider.CreateScope())
                     {

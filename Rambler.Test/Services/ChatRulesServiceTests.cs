@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Rambler.Models;
 using Rambler.Services;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Rambler.Data;
 using Xunit;
 
 namespace Rambler.Test.Services
@@ -89,6 +91,9 @@ namespace Rambler.Test.Services
         {
             using (var scope = serviceProvider.CreateScope())
             {
+                var db = scope.ServiceProvider.GetService<DataContext>();
+                db.Database.Migrate();
+
                 var service = scope.ServiceProvider.GetService<ChatRulesService>();
                 var chatMessage = new ChatMessage
                 {
