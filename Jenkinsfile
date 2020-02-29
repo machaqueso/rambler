@@ -19,13 +19,11 @@ pipeline {
                   echo "Last git tag: ${tag}"
                 }
                 sh 'dotnet publish -c Release -r linux-x64 -o publish/linux-x64 /p:VersionSuffix=${tag}-${BUILD_NUMBER}'
-                stash includes: 'publish/linux-x64/**', name: 'release'
             }
         }
         stage('Deploy'){
-            agent { label  'master'}
+            agent { label  'docker' }
             steps {
-                unstash 'release'
                 sh "rsync -avz -e 'ssh' --delete publish/linux-x64/* spectro@webcam.home.lan:/data/dockerdata/rambler-dev.machaqueso.cl/www"
             }
         }
