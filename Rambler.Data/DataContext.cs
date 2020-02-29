@@ -1,6 +1,8 @@
-using System.IO;
+using System;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Rambler.Models;
 using Rambler.Models.Twitch;
@@ -112,20 +114,39 @@ namespace Rambler.Data
                 }
             );
         }
-
-    }
-
-    // This is needed for entity framework migrations to work when configuration is passed to datacontext
-    public class DataContextDbFactory : IDesignTimeDbContextFactory<DataContext>
-    {
-        DataContext IDesignTimeDbContextFactory<DataContext>.CreateDbContext(string[] args)
+        
+        private Exception HandleDbUpdateException(DbUpdateException dbu)
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
+            var builder = new StringBuilder("A DbUpdateException was caught while saving changes. ");
 
-            return new DataContext(configuration);
+            try
+            {
+                foreach (var result in dbu.Entries)
+                {
+                    builder.AppendFormat("Type: {0} was part of the problem. ", result.Entity.GetType().Name);
+                }
+            }
+            catch (Exception e)
+            {
+                builder.Append("Error parsing DbUpdateException: " + e.ToString());
+            }
+
+            string message = builder.ToString();
+            return new Exception(message, dbu);
         }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await base.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException dbex)
+            {
+                var ex = HandleDbUpdateException(dbex);
+                throw ex;
+            }
+        }
+
     }
 }

@@ -11,7 +11,7 @@ namespace Rambler.Test
         {
             var db = scope.ServiceProvider.GetService<DataContext>();
             //db?.Database.EnsureDeleted();
-            db?.Database.Migrate();
+            //db?.Database.Migrate();
         }
 
     }
