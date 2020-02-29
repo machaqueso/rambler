@@ -77,7 +77,6 @@ namespace Rambler.Web
             app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
-            //app.UseSerilogRequestLogging();
 
             app.UseEndpoints(endpoints =>
             {
