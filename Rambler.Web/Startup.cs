@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using Rambler.Data;
 using Rambler.Web.Hubs;
 using Rambler.Web.Services;
-using Serilog;
 
 namespace Rambler.Web
 {

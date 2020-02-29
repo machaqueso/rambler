@@ -1,10 +1,10 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Serilog;
+using System.IO;
+using System.Threading;
 
 namespace Rambler.Web
 {
@@ -12,45 +12,39 @@ namespace Rambler.Web
     {
         private static readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-        public static int Main(string[] args)
+        public static void Main(string[] args)
+        {
+            CreateWebHostBuilder(args).Build().Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            var logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(configuration)
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File(configuration["Logging:FilePath"], rollingInterval: RollingInterval.Day)
+                .WriteTo.SQLite(configuration["ConnectionStrings:DefaultConnection"])
                 .CreateLogger();
 
-            try
-            {
-                Log.Information("Starting web host");
-                var host = CreateWebHostBuilder(args).Build();
-                host.RunAsync(cancellationTokenSource.Token).GetAwaiter().GetResult();
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Host terminated unexpectedly");
-                return 1;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
-        }
+            Log.Information($"Base path: {Directory.GetCurrentDirectory()}");
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+            return WebHost.CreateDefaultBuilder(args)
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddSerilog();
+                })
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    // Call additional providers here as needed.
-                    // Call AddEnvironmentVariables last if you need to allow environment
-                    // variables to override values from other providers.
                     config.AddEnvironmentVariables(prefix: "Authentication");
+                    config.AddConfiguration(configuration);
                 })
                 .UseStartup<Startup>();
+
+        }
 
         public static void Shutdown()
         {
