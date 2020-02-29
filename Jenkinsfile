@@ -17,7 +17,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'dotnet test --logger "trx;LogFileName=UnitTests.trx"'
+                // sh 'dotnet test --logger "trx;LogFileName=UnitTests.trx"'
             }
         }
     }
