@@ -24,8 +24,10 @@ pipeline {
         }
         stage('Deploy'){
             steps {
+                sh "apt-get install rsync"
                 sh "rsync -avz -e 'ssh' --delete publish/linux-x64/* spectro@webcam.home.lan:/data/dockerdata/rambler-dev.machaqueso.cl/www"
             }
         }
     }
 }
+
