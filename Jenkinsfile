@@ -22,7 +22,7 @@ pipeline {
                 archiveArtifacts artifacts: 'publish/linux-x64/*'
             }
         }
-        stage('Deploy){
+        stage('Deploy'){
             steps {
                 sh 'rsync -avz -e ''ssh'' --delete publish/linux-x64/* spectro@webcam.home.lan:/data/dockerdata/rambler-dev.machaqueso.cl/www'
             }
