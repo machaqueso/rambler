@@ -73,8 +73,7 @@ namespace Rambler.Test.Services
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                var db = scope.ServiceProvider.GetService<DataContext>();
-                db.Database.Migrate();
+                DatabaseHelper.Init(scope);
 
                 var service = scope.ServiceProvider.GetService<ChatRulesService>();
                 var chatMessage = new ChatMessage
@@ -94,8 +93,7 @@ namespace Rambler.Test.Services
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                var db = scope.ServiceProvider.GetService<DataContext>();
-                db.Database.Migrate();
+                DatabaseHelper.Init(scope);
 
                 var service = scope.ServiceProvider.GetService<ChatRulesService>();
                 var chatMessage = new ChatMessage
