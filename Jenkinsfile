@@ -13,6 +13,7 @@ pipeline {
                 sh 'dotnet clean'
                 sh "dotnet restore"
                 sh 'dotnet build'
+                sh 'git log --oneline'
                 script {
                   GIT_TAG = sh(returnStdout: true, script: 'git describe --abbrev=0 --tags')
                 }
