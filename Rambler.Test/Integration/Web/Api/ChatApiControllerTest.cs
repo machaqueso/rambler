@@ -4,56 +4,43 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Rambler.Data;
 using Rambler.Models;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Rambler.Test.Integration.Web.Api
 {
-    public class ChatApiControllerTest : IClassFixture<WebApplicationFactory<Rambler.Web.Startup>>
+    public class ChatApiControllerTest : IClassFixture<CustomWebApplicationFactory<Rambler.Web.Startup>>
     {
-        private readonly WebApplicationFactory<Rambler.Web.Startup> _factory;
+        private readonly CustomWebApplicationFactory<Rambler.Web.Startup> factory;
         private IFixture fixture;
+        private readonly HttpClient client;
 
-        public ChatApiControllerTest(WebApplicationFactory<Rambler.Web.Startup> factory)
+        public ChatApiControllerTest(CustomWebApplicationFactory<Rambler.Web.Startup> factory)
         {
-            _factory = factory;
-            fixture = new Fixture();
-        }
-
-        [Fact]
-        public async Task Given_valid_message_CreateMessage_saves_it_to_database()
-        {
-            var client = _factory.WithWebHostBuilder(builder =>
+            this.factory = factory;
+            client = this.factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
                     services.AddAuthentication("Test")
                         .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                             "Test", options => { });
-
-                    var serviceProvider = services.BuildServiceProvider();
-                    services.AddDbContext<DataContext>(options =>
-                        options.UseSqlite("DataSource=:memory:"));
-
-                    using (var scope = serviceProvider.CreateScope())
-                    {
-                        var db = scope.ServiceProvider.GetService<DataContext>();
-                        db?.Database.EnsureDeleted();
-                        // No need to call migrate here, it's already been called by regular startup
-                    }
                 });
             }).CreateClient(new WebApplicationFactoryClientOptions
             {
                 AllowAutoRedirect = false
             });
+            fixture = new Fixture();
+        }
 
+        [Fact]
+        public async Task Given_valid_message_CreateMessage_saves_it_to_database()
+        {
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Test");
 

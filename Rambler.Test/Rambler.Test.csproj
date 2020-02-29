@@ -16,10 +16,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="appsettings.json" />
+    <Compile Remove="Integration\Web\Services\**" />
+    <EmbeddedResource Remove="Integration\Web\Services\**" />
+    <None Remove="Integration\Web\Services\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.json" />
+    <None Remove="xunit.runner.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Include="appsettings.json">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -51,7 +62,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
-    <Folder Include="Integration\Web\Services\" />
   </ItemGroup>
 
 </Project>

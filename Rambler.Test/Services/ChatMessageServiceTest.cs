@@ -56,16 +56,13 @@ namespace Rambler.Test.Services
                 .Without(x => x.ChatMessages)
                 .Without(x => x.AuthorFilters)
                 .Without(x => x.AuthorScoreHistories)
-                .With(x => x.Id, 7)
                 .Create();
 
             var message = new ChatMessage
             {
                 Source = "Youtube",
-                SourceMessageId =
-                    "LCC.CkwSIQoYVUNtVWZrYWlEbEEzSVpCaWJuTXR5cWx3EgUvbGl2ZSonChhVQ21VZmthaURsQTNJWkJpYm5NdHlxbHcSCzNIM3c2azRGbWI0EjkKGkNQcnZxWW1DeHVjQ0ZRY01oQW9kZTEwTFh3EhtDUDYxN3VlQnh1Y0NGY1EwWkFvZDFGZ0d2ZzA",
-                Message = "quack yt",
-                AuthorId = 7
+                SourceMessageId = autoFixture.Create<string>(),
+                Message = autoFixture.Create<string>()
             };
 
             using (var scope = serviceProvider.CreateScope())
@@ -75,6 +72,8 @@ namespace Rambler.Test.Services
                 var authorService = scope.ServiceProvider.GetService<AuthorService>();
 
                 await authorService.Create(author);
+
+                message.AuthorId = author.Id;
 
                 Assert.False(await service.MessageExists(message));
                 await service.CreateMessage(message);
