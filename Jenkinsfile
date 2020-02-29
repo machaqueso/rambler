@@ -24,7 +24,7 @@ pipeline {
         }
         stage('Deploy){
             steps {
-                sh "rsync -avz -e 'ssh' --delete publish/linux-x64/* spectro@webcam.home.lan:/data/dockerdata/rambler-dev.machaqueso.cl/www""
+                sh "rsync -avz -e 'ssh' --delete publish/linux-x64/* spectro@webcam.home.lan:/data/dockerdata/rambler-dev.machaqueso.cl/www"
             }
         }
     }
