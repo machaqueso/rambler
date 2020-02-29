@@ -17,7 +17,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'dotnet test' --logger \"trx;LogFileName=test_results.xml\"
+                sh 'dotnet test' --logger "trx;LogFileName=test_results.xml"
                 step([$class: 'MSTestPublisher', testResultsFile:"**/test_results.xml", failOnError: true, keepLongStdio: true])
             }
         }
