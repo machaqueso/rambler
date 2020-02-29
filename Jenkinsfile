@@ -15,11 +15,6 @@ pipeline {
                 sh 'dotnet build'
             }
         }
-        stage('Test') {
-            steps {
-                // sh 'dotnet test --logger "trx;LogFileName=UnitTests.trx"'
-            }
-        }
     }
     post {
         always {
