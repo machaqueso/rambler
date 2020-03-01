@@ -1,18 +1,17 @@
-﻿using System.Net;
+﻿using Rambler.Models;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Rambler.Models;
 using Xunit;
 
 namespace Rambler.Test.Integration.Web.Api
 {
     public class AccountApiControllerTest
-        : IClassFixture<WebApplicationFactory<Rambler.Web.Startup>>
+        : IClassFixture<CustomWebApplicationFactory<Rambler.Web.Startup>>
     {
-        private readonly WebApplicationFactory<Rambler.Web.Startup> _factory;
+        private readonly CustomWebApplicationFactory<Rambler.Web.Startup> _factory;
 
-        public AccountApiControllerTest(WebApplicationFactory<Rambler.Web.Startup> factory)
+        public AccountApiControllerTest(CustomWebApplicationFactory<Rambler.Web.Startup> factory)
         {
             _factory = factory;
         }
