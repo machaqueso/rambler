@@ -14,6 +14,7 @@ namespace Rambler.Web.Services
     {
         private readonly ILogger<YoutubeBackgroundService> logger;
         private readonly IServiceScopeFactory serviceScopeFactory;
+        private readonly IntegrationManager integrationManager;
 
         private YoutubeService youtubeService;
 
@@ -25,10 +26,11 @@ namespace Rambler.Web.Services
         private int delay;
         private string nextPageToken;
 
-        public YoutubeBackgroundService(ILogger<YoutubeBackgroundService> logger, IServiceScopeFactory serviceScopeFactory)
+        public YoutubeBackgroundService(ILogger<YoutubeBackgroundService> logger, IServiceScopeFactory serviceScopeFactory, IntegrationManager integrationManager)
         {
             this.logger = logger;
             this.serviceScopeFactory = serviceScopeFactory;
+            this.integrationManager = integrationManager;
         }
 
         private async Task UpdateDashboardStatus(string status, CancellationToken cancellationToken)
@@ -88,6 +90,7 @@ namespace Rambler.Web.Services
                 }
 
                 var shouldExit = false;
+                var isSubscribedToMessageSent = false;
                 while (!cancellationToken.IsCancellationRequested && !shouldExit)
                 {
                     try
@@ -138,6 +141,17 @@ namespace Rambler.Web.Services
                         {
                             shouldExit = true;
                             continue;
+                        }
+
+                        if (!isSubscribedToMessageSent)
+                        {
+                            integrationManager.MessageSent += async (s, e) =>
+                            {
+                                if (!string.IsNullOrWhiteSpace(e.Message))
+                                {
+                                    await youtubeService.InsertLiveChatMessages(liveChatId, e.Message);
+                                }
+                            };
                         }
 
                         var liveBroadcastCheckDate = DateTime.UtcNow.AddMinutes(5);

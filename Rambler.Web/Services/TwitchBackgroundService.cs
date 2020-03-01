@@ -90,7 +90,6 @@ namespace Rambler.Web.Services
 
                 try
                 {
-
                     await CheckToken(cancellationToken, twitchService);
                     var user = await twitchManager.GetUser();
 

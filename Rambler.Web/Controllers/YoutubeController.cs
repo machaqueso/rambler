@@ -81,7 +81,7 @@ namespace Rambler.Web.Controllers
             var clientId = await configurationService.GetValue("Authentication:Google:ClientId");
             var redirectUrl = WebUtility.UrlEncode(Url.Action("Callback", "Youtube", null, Request.Scheme, null));
             var oauthRequest =
-                $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUrl}&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline&prompt=consent";
+                $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUrl}&scope=https://www.googleapis.com/auth/youtube&response_type=code&access_type=offline&prompt=consent";
 
             return Redirect(oauthRequest);
         }

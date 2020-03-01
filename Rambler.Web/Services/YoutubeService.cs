@@ -10,6 +10,8 @@ using Rambler.Models;
 using Rambler.Models.Youtube.LiveBroadcast;
 using Rambler.Models.Youtube.LiveChat;
 using Rambler.Services;
+using System.Text.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Rambler.Web.Services
 {
@@ -231,6 +233,62 @@ namespace Rambler.Web.Services
         public async Task<bool> IsEnabled()
         {
             return await IntegrationService.IsEnabled(ApiSource.Youtube);
+        }
+
+        public async Task InsertLiveChatMessages(string liveChatId, string messageText)
+        {
+            if (string.IsNullOrEmpty(liveChatId))
+            {
+                throw new ArgumentNullException(liveChatId);
+            }
+
+            var token = await GetToken();
+            if (token != null && token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
+            {
+                await RefreshToken(token);
+            }
+            if (!IsValidToken(token))
+            {
+                logger.LogWarning($"[YoutubeService:GetLiveChatMessages] Invalid Token");
+                return;
+            }
+
+            var url = $"https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet";
+
+            var liveChatMessage = new
+            {
+                snippet = new
+                {
+                    liveChatId = liveChatId,
+                    type = "textMessageEvent",
+                    textMessageDetails = new
+                    {
+                        messageText = messageText
+                    }
+                }
+            };
+
+            HttpResponseMessage response;
+            using (var client = new HttpClient())
+            {
+                if (!string.IsNullOrEmpty(token.access_token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.access_token);
+                }
+
+                var json = JsonConvert.SerializeObject(liveChatMessage);
+                logger.LogInformation($"InsertLiveChatMessages {url}\n{json}");
+                var data = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                response = await client.PostAsync(url, data);
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogError($"InsertLiveChatMessages error: {(int)response.StatusCode} - {response.ReasonPhrase}", response);
+                logger.LogError($"Content: {content}");
+            }
+
         }
 
     }

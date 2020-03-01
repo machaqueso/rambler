@@ -156,6 +156,21 @@ namespace Rambler.Services
 
         public async Task Create(Author author)
         {
+            if (author == null)
+            {
+                throw new ArgumentNullException(nameof(author));
+            }
+
+            if (await db.Authors.AnyAsync(x => x.Id == author.Id))
+            {
+                throw new ConflictException($"Author id {author.Id} already exists");
+            }
+
+            if (await db.Authors.AnyAsync(x => x.Source == author.Source && x.SourceAuthorId==author.SourceAuthorId))
+            {
+                throw new ConflictException($"Author already exists");
+            }
+
             await db.Authors.AddAsync(author);
             await db.SaveChangesAsync();
         }
@@ -184,6 +199,10 @@ namespace Rambler.Services
             {
                 return await GetAuthors().SingleOrDefaultAsync(x => x.Id == id);
             }
+            if (author.Id > 0)
+            {
+                return await GetAuthors().SingleOrDefaultAsync(x => x.Id == author.Id);
+            }
 
             if (!IsValid(author))
             {
@@ -192,8 +211,7 @@ namespace Rambler.Services
 
             var authors = GetAuthors().Where(x =>
                 x.Source == author.Source
-                && x.SourceAuthorId == author.SourceAuthorId
-                && x.Name == author.Name);
+                && x.SourceAuthorId == author.SourceAuthorId);
 
             if (authors.Count() > 1)
             {
