@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Rambler.Services;
 using Rambler.Web.Services;
 
@@ -7,10 +8,12 @@ namespace Rambler.Web.Controllers
     public class ConfigurationController : Controller
     {
         private readonly ConfigurationService configurationService;
+        private readonly IHostApplicationLifetime applicationLifetime;
 
-        public ConfigurationController(ConfigurationService configurationService)
+        public ConfigurationController(ConfigurationService configurationService, IHostApplicationLifetime applicationLifetime)
         {
             this.configurationService = configurationService;
+            this.applicationLifetime = applicationLifetime;
         }
 
 
@@ -41,7 +44,8 @@ namespace Rambler.Web.Controllers
 
         public IActionResult Shutdown()
         {
-            Program.Shutdown();
+            //Program.Shutdown();
+            applicationLifetime.StopApplication();
             return RedirectToAction("Index", "Home");
         }
 

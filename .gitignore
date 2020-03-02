@@ -239,3 +239,6 @@ _Pvt_Extensions
 **/package-lock.json
 **/_logs
 *.ncrunchsolution
+
+# jetbrains crap
+.idea
