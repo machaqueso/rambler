@@ -6,6 +6,7 @@ using Rambler.Models.Exceptions;
 using Rambler.Services;
 using Rambler.Web.Hubs;
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Rambler.Web.Services
@@ -153,6 +154,15 @@ namespace Rambler.Web.Services
 
         public async Task SendToChannel(string channel, ChatMessage message)
         {
+            var messageText = message.Message;
+
+            // TODO: add rules of what is allowed on channels
+            // Filter emojis out of TTS messages
+            if (channel == "TTS")
+            {
+                messageText = Regex.Replace(messageText, @"\p{Cs}", "");
+            }
+
             // SignalR appears to not like complex objects being passed down, so I changed this to send a dynamic instead of using ChannelMessage
             await chatHubContext.Clients.All.SendAsync("ReceiveChannelMessage", new
             {
@@ -161,7 +171,7 @@ namespace Rambler.Web.Services
                 {
                     message.Id,
                     message.Date,
-                    message.Message,
+                    Message=messageText,
                     message.Source,
                     Author = message.Author.Name,
                     message.Author.SourceAuthorId,
@@ -177,7 +187,6 @@ namespace Rambler.Web.Services
 
             foreach (var channel in await chatRulesService.AllowedChannels(message))
             {
-                // check for rule to send to this channel
                 await SendToChannel(channel, message);
             }
 
