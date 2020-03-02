@@ -36,10 +36,14 @@ namespace Rambler.Data
         public DbSet<WordFilter> WordFilters { get; set; }
         public DbSet<BotAction> BotActions { get; set; }
         public DbSet<MessageInfraction> MessageInfractions { get; set; }
+        public DbSet<Log> Logs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<Log>(entity => { entity.ToView("Logs"); });
+
             builder.Entity<ConfigurationSetting>().HasData(
                 new ConfigurationSetting
                 {
@@ -114,7 +118,7 @@ namespace Rambler.Data
                 }
             );
         }
-        
+
         private Exception HandleDbUpdateException(DbUpdateException dbu)
         {
             var builder = new StringBuilder("A DbUpdateException was caught while saving changes. ");

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,8 @@ namespace Rambler.Web
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
+
+            Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
