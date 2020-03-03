@@ -44,7 +44,6 @@ namespace Rambler.Web.Controllers
 
         public IActionResult Shutdown()
         {
-            //Program.Shutdown();
             applicationLifetime.StopApplication();
             return RedirectToAction("Index", "Home");
         }

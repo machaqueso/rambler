@@ -11,8 +11,6 @@ namespace Rambler.Web
 {
     public class Program
     {
-        private static readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-
         public static void Main(string[] args)
         {
             CreateWebHostBuilder(args).Build().Run();
@@ -30,7 +28,7 @@ namespace Rambler.Web
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .WriteTo.File(configuration["Logging:FilePath"], rollingInterval: RollingInterval.Day)
-                .WriteTo.SQLite(configuration["ConnectionStrings:DefaultConnection"])
+                .WriteTo.SQLite(configuration["ConnectionStrings:DefaultConnection"].Replace("Filename=",string.Empty))
                 .CreateLogger();
 
             Log.Information($"Base path: {Directory.GetCurrentDirectory()}");
@@ -47,11 +45,6 @@ namespace Rambler.Web
                 })
                 .UseStartup<Startup>();
 
-        }
-
-        public static void Shutdown()
-        {
-            cancellationTokenSource.Cancel();
         }
     }
 }
