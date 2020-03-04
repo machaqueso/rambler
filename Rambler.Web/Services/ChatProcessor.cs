@@ -8,6 +8,8 @@ using Rambler.Web.Hubs;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace Rambler.Web.Services
 {
@@ -20,10 +22,11 @@ namespace Rambler.Web.Services
         private readonly ChatRulesService chatRulesService;
         private readonly ChatMessageService chatMessageService;
         private readonly ILogger<ChatMessageService> logger;
+        private readonly MessageTemplateService messageTemplateService;
 
         public ChatProcessor(IHubContext<ChatHub> chatHubContext, AuthorService authorService,
             BotService botService, IntegrationManager integrationManager, ChatRulesService chatRulesService,
-            ChatMessageService chatMessageService, ILogger<ChatMessageService> logger)
+            ChatMessageService chatMessageService, ILogger<ChatMessageService> logger, MessageTemplateService messageTemplateService)
         {
             this.chatHubContext = chatHubContext;
             this.authorService = authorService;
@@ -32,7 +35,9 @@ namespace Rambler.Web.Services
             this.chatRulesService = chatRulesService;
             this.chatMessageService = chatMessageService;
             this.logger = logger;
+            this.messageTemplateService = messageTemplateService;
         }
+
 
         public async Task ProcessMessage(ChatMessage message)
         {
@@ -103,7 +108,7 @@ namespace Rambler.Web.Services
             await SendToChannels(message);
 
             // sends message to integrations if local
-            if (message.Source == ApiSource.Rambler)
+            if (message.Source == ApiSource.Rambler && !message.Message.StartsWith("!"))
             {
                 integrationManager.MessageSentEvent(message.Message);
             }
@@ -120,7 +125,7 @@ namespace Rambler.Web.Services
                     var botMessage = new ChatMessage
                     {
                         Date = DateTime.UtcNow,
-                        Message = action.Parameters,
+                        Message = await messageTemplateService.Interpolate(action.Parameters, author),
                         Source = ApiSource.RamblerBot
                     };
 
@@ -145,6 +150,7 @@ namespace Rambler.Web.Services
                     botMessage.Author = ramblerBot;
 
                     await SendToChannels(botMessage);
+                    integrationManager.MessageSentEvent(botMessage.Message);
 
                     break;
                 default:
@@ -171,7 +177,7 @@ namespace Rambler.Web.Services
                 {
                     message.Id,
                     message.Date,
-                    Message=messageText,
+                    Message = messageText,
                     message.Source,
                     Author = message.Author.Name,
                     message.Author.SourceAuthorId,
