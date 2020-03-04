@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using System.IO;
 using System.Threading;
+using Serilog.Events;
 
 namespace Rambler.Web
 {
@@ -26,6 +27,9 @@ namespace Rambler.Web
             Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
 
             Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Error)
                 .WriteTo.Console()
                 .WriteTo.File(configuration["Logging:FilePath"], rollingInterval: RollingInterval.Day)
                 .WriteTo.SQLite(configuration["ConnectionStrings:DefaultConnection"].Replace("Filename=",string.Empty))
