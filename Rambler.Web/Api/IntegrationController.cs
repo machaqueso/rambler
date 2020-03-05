@@ -25,7 +25,9 @@ namespace Rambler.Web.Api
         [Route("")]
         public IActionResult GetIntegrations()
         {
-            return Ok(integrationService.GetIntegrations().OrderBy(x => x.Name));
+            return Ok(integrationService.GetIntegrations()
+                .Where(x => x.Name != ApiSource.Youtube)
+                .OrderBy(x => x.Name));
         }
 
         [HttpPost]
