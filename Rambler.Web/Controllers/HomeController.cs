@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Rambler.Models;
 using Rambler.Web.Services;
@@ -16,13 +17,15 @@ namespace Rambler.Web.Controllers
             this.twitchService = twitchService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             if ((youtubeService.IsEnabled().Result && !youtubeService.IsConfigured())
                 || (twitchService.IsEnabled().Result && !twitchService.IsConfigured()))
             {
                 return RedirectToAction("Index", "Configuration");
             }
+
+            await youtubeService.PurgeData();
 
             return RedirectToAction("Dashboard");
         }

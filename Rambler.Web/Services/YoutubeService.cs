@@ -20,15 +20,19 @@ namespace Rambler.Web.Services
         private readonly UserService userService;
         private readonly ILogger<YoutubeService> logger;
         public readonly ConfigurationService configurationService;
-        public readonly IntegrationService IntegrationService;
+        public readonly IntegrationService integrationService;
+        public readonly ChatMessageService chatMessageService;
+        public readonly AuthorService authorService;
 
         public YoutubeService(UserService userService, ILogger<YoutubeService> logger,
-            ConfigurationService configurationService, IntegrationService integrationService)
+            ConfigurationService configurationService, IntegrationService integrationService, ChatMessageService chatMessageService, AuthorService authorService)
         {
             this.userService = userService;
             this.logger = logger;
             this.configurationService = configurationService;
-            IntegrationService = integrationService;
+            this.integrationService = integrationService;
+            this.chatMessageService = chatMessageService;
+            this.authorService = authorService;
         }
 
         public async Task<HttpResponseMessage> Get(string request)
@@ -232,7 +236,7 @@ namespace Rambler.Web.Services
 
         public async Task<bool> IsEnabled()
         {
-            return await IntegrationService.IsEnabled(ApiSource.Youtube);
+            return await integrationService.IsEnabled(ApiSource.Youtube);
         }
 
         public async Task InsertLiveChatMessages(string liveChatId, string messageText)
@@ -289,6 +293,15 @@ namespace Rambler.Web.Services
                 logger.LogError($"Content: {content}");
             }
 
+        }
+
+        public async Task PurgeData()
+        {
+            var youtubeAuthors = authorService.GetAuthors().Where(x => x.Source == ApiSource.Youtube);
+            await authorService.RemoveRange(youtubeAuthors);
+
+            var youtubeChat = chatMessageService.GetMessages().Where(x => x.Source == ApiSource.Youtube);
+            await chatMessageService.RemoveRange(youtubeChat);
         }
 
     }

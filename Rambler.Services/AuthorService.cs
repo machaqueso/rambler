@@ -241,5 +241,11 @@ namespace Rambler.Services
             db.Entry(entity).CurrentValues.SetValues(author);
             await db.SaveChangesAsync();
         }
+
+        public async Task RemoveRange(IQueryable<Author> authors)
+        {
+            db.Authors.RemoveRange(authors);
+            await db.SaveChangesAsync();
+        }
     }
 }

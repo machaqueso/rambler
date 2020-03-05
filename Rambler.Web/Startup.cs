@@ -39,7 +39,6 @@ namespace Rambler.Web
             Data.DependencyInjection.ConfigureDependencies(services);
             Rambler.Services.DependencyInjection.ConfigureDependencies(services);
 
-            services.AddSingleton<IHostedService, YoutubeBackgroundService>();
             services.AddSingleton<IHostedService, TwitchBackgroundService>();
 
             services.AddHttpContextAccessor();

@@ -8,8 +8,6 @@ using Rambler.Web.Hubs;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
 
 namespace Rambler.Web.Services
 {

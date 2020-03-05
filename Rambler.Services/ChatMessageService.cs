@@ -93,5 +93,10 @@ namespace Rambler.Services
             return await db.Messages.AnyAsync(x => x.Source == message.Source && x.SourceMessageId == message.SourceMessageId);
         }
 
+        public async Task RemoveRange(IQueryable<ChatMessage> youtubeChat)
+        {
+            db.Messages.RemoveRange(youtubeChat);
+            await db.SaveChangesAsync();
+        }
     }
 }
