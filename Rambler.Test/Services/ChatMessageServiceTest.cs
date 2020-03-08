@@ -24,7 +24,6 @@ namespace Rambler.Test.Services
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                DatabaseHelper.Init(scope);
                 var service = scope.ServiceProvider.GetService<ChatMessageService>();
 
                 var author = autoFixture
@@ -67,7 +66,6 @@ namespace Rambler.Test.Services
 
             using (var scope = serviceProvider.CreateScope())
             {
-                DatabaseHelper.Init(scope);
                 var service = scope.ServiceProvider.GetService<ChatMessageService>();
                 var authorService = scope.ServiceProvider.GetService<AuthorService>();
 

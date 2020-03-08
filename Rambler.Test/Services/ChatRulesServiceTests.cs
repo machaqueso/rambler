@@ -4,8 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Rambler.Models;
 using Rambler.Services;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Rambler.Data;
 using Xunit;
 
 namespace Rambler.Test.Services
@@ -13,11 +11,9 @@ namespace Rambler.Test.Services
     public class ChatRulesServiceTest : IClassFixture<DependencySetupFixture>
     {
         private readonly ServiceProvider serviceProvider;
-        private IFixture autoFixture;
 
         public ChatRulesServiceTest(DependencySetupFixture fixture)
         {
-            autoFixture = new Fixture();
             serviceProvider = fixture.ServiceProvider;
         }
 
@@ -73,8 +69,6 @@ namespace Rambler.Test.Services
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                DatabaseHelper.Init(scope);
-
                 var service = scope.ServiceProvider.GetService<ChatRulesService>();
                 var chatMessage = new ChatMessage
                 {
@@ -93,8 +87,6 @@ namespace Rambler.Test.Services
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                DatabaseHelper.Init(scope);
-
                 var service = scope.ServiceProvider.GetService<ChatRulesService>();
                 var chatMessage = new ChatMessage
                 {
