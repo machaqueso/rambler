@@ -11,6 +11,8 @@ namespace Rambler.Models
         public bool IsEnabled { get; set; }
         public string Status { get; set; }
         public DateTime? UpdateDate { get; set; }
+        public bool IsVisible { get; set; }
+        public int DisplayOrder { get; set; }
 
         [NotMapped] public string DisplayEnabled => IsEnabled ? "Enabled" : "Disabled";
 

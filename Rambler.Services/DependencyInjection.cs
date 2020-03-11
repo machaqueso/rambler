@@ -17,6 +17,7 @@ namespace Rambler.Services
             services.AddTransient<ChatRulesService>();
             services.AddTransient<ChatMessageService>();
             services.AddTransient<MessageTemplateService>();
+            services.AddTransient<DiscordService>();
         }
 
     }

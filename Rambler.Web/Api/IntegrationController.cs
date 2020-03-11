@@ -1,8 +1,10 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Rambler.Models;
+using Rambler.Services;
 using Rambler.Web.Services;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Rambler.Web.Api
 {
@@ -23,11 +25,22 @@ namespace Rambler.Web.Api
         }
 
         [Route("")]
+        [HttpGet]
         public IActionResult GetIntegrations()
         {
             return Ok(integrationService.GetIntegrations()
-                .Where(x => x.Name != ApiSource.Youtube)
-                .OrderBy(x => x.Name));
+                .OrderBy(x => x.DisplayOrder)
+                .ThenBy(x=>x.Name));
+        }
+
+        [Route("{id}", Name="GetIntegration")]
+        [HttpGet]
+        public async Task<IActionResult> GetIntegration(int id)
+        {
+            var integration = await integrationService.GetIntegrations()
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            return Ok(integration);
         }
 
         [HttpPost]
@@ -46,9 +59,9 @@ namespace Rambler.Web.Api
             return Ok(integrations);
         }
 
-        [Route("{id}")]
+        [Route("{id}/enabled")]
         [HttpPut]
-        public async Task<IActionResult> UpdateIntegration(int id, [FromBody] Integration integration)
+        public async Task<IActionResult> EnableIntegration(int id, [FromBody] Integration integration)
         {
             if (integration.IsEnabled)
             {
@@ -72,6 +85,31 @@ namespace Rambler.Web.Api
             }
 
             await integrationService.Activator(integration);
+            return NoContent();
+        }
+
+        [Route("")]
+        [HttpPost]
+        public async Task<IActionResult> CreateIntegration([FromBody] Integration integration)
+        {
+            await integrationService.Create(integration);
+            return CreatedAtRoute("GetIntegration", new { id = integration.Id }, integration);
+        }
+        
+        [Route("{id}")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateIntegration(int id, [FromBody] Integration integration)
+        {
+            await integrationService.Update(integration);
+
+            return NoContent();
+        }
+
+        [Route("{id}")]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteIntegration(int id)
+        {
+            await integrationService.Delete(id);
             return NoContent();
         }
 

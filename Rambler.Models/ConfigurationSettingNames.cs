@@ -6,6 +6,7 @@
         public static string GoogleClientSecret = "Authentication:Google:ClientSecret";
         public static string TwitchClientId = "Authentication:Twitch:ClientId";
         public static string TwitchClientSecret = "Authentication:Twitch:ClientSecret";
+        public static string DiscordToken = "Authentication:Discord:Token";
 
         // Channel rules
         public static string ChannelTTSAuthorThreshold = "TTS Author Threshold";
@@ -25,6 +26,7 @@
             GoogleClientSecret,
             TwitchClientId,
             TwitchClientSecret,
+            DiscordToken,
 
             ChannelTTSAuthorThreshold,
             ChannelOBSAuthorThreshold,

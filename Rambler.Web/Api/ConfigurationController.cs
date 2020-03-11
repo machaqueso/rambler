@@ -29,9 +29,14 @@ namespace Rambler.Web.Api
                 return BadRequest();
             }
 
+            if (string.IsNullOrWhiteSpace(setting.Key))
+            {
+                return UnprocessableEntity($"Setting key is required");
+            }
+
             if (string.IsNullOrWhiteSpace(setting.Name))
             {
-                return UnprocessableEntity($"Setting name is required");
+                setting.Name = setting.Key;
             }
 
             if (string.IsNullOrWhiteSpace(setting.Value))
@@ -96,7 +101,7 @@ namespace Rambler.Web.Api
         public IActionResult GetSettingNames()
         {
             var names = configurationService.GetConfigurationSettingNames()
-                .Where(x => !configurationService.GetSettings().Select(s => s.Name).Contains(x));
+                .Where(x => !configurationService.GetSettings().Select(s => s.Key).Contains(x));
 
             return Ok(names);
         }

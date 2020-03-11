@@ -40,6 +40,7 @@ namespace Rambler.Web
             Rambler.Services.DependencyInjection.ConfigureDependencies(services);
 
             services.AddSingleton<IHostedService, TwitchBackgroundService>();
+            services.AddSingleton<IHostedService, DiscordBackgroundService>();
 
             services.AddHttpContextAccessor();
             services.AddMvc(options =>

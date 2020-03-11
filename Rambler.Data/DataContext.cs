@@ -75,14 +75,26 @@ namespace Rambler.Data
                 new Integration
                 {
                     Id = 1,
-                    Name = "Youtube",
-                    IsEnabled = false
+                    Name = ApiSource.Youtube,
+                    IsEnabled = false,
+                    IsVisible = false,
+                    DisplayOrder = 30
                 },
                 new Integration
                 {
                     Id = 2,
-                    Name = "Twitch",
-                    IsEnabled = false
+                    Name = ApiSource.Twitch,
+                    IsEnabled = false,
+                    IsVisible = true,
+                    DisplayOrder = 10
+                },
+                new Integration
+                {
+                    Id = 3,
+                    Name = ApiSource.Discord,
+                    IsEnabled = false,
+                    IsVisible = true,
+                    DisplayOrder = 20
                 }
             );
 

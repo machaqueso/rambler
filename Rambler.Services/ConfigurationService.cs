@@ -61,6 +61,10 @@ namespace Rambler.Services
 
         public async Task CreateSetting(ConfigurationSetting setting)
         {
+            if (GetSettings().Any(x => x.Key == setting.Key))
+            {
+                throw new ConflictException($"Setting {setting.Key} already exists");
+            }
             if (GetSettings().Any(x => x.Name == setting.Name))
             {
                 throw new ConflictException($"Setting {setting.Name} already exists");

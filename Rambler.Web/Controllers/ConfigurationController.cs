@@ -41,6 +41,10 @@ namespace Rambler.Web.Controllers
         {
             return View();
         }
+        public IActionResult Integration()
+        {
+            return View();
+        }
 
         public IActionResult Shutdown()
         {

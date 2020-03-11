@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Rambler.Services;
 using Rambler.Web.Services;
 
 namespace Rambler.Web

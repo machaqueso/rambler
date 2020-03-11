@@ -6,11 +6,13 @@ namespace Rambler.Models
         public static string Twitch = "Twitch";
         public static string Rambler = "Rambler";
         public static string RamblerBot = "RamblerBot";
+        public static string Discord = "Discord";
 
         public static string[] All =
         {
-            Youtube,
-            Twitch
+            Twitch,
+            Discord
         };
+
     }
 }
