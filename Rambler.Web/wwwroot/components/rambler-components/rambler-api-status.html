@@ -45,7 +45,7 @@
                 this.connection = new signalR.HubConnectionBuilder().withUrl("/dashboardHub").build();
 
                 this.connection.on("updateStatus", function (statuses) {
-                    console.log("updateStatus", statuses)
+                    //console.log("updateStatus", statuses)
                     _this.items = [];
                     _this.set("items", statuses);
                 });
@@ -59,7 +59,7 @@
                     try {
                         await _this.connection.start();
                         _this._refresh();
-                        console.log("connected");
+                        //console.log("connected");
                     } catch (err) {
                         console.log(err);
                         if (retries < 5) {

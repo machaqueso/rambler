@@ -7,6 +7,7 @@ using Rambler.Services;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
 
 namespace Rambler.Web.Services
 {
@@ -76,6 +77,7 @@ namespace Rambler.Web.Services
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             logger.LogDebug($"[DiscordBackgroundService] stopping.");
+            await UpdateDashboardStatus(IntegrationStatus.Stopping, cancellationToken);
             await client.StopAsync();
 
             await base.StopAsync(cancellationToken);
@@ -84,7 +86,6 @@ namespace Rambler.Web.Services
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             await UpdateDashboardStatus(IntegrationStatus.Connected, cancellationToken);
-
             
             integrationManager.MessageSent += (s, e) =>
             {
@@ -94,7 +95,26 @@ namespace Rambler.Web.Services
                 }
             };
 
-            await Task.Delay(-1, cancellationToken);
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await Task.Delay(1000, cancellationToken);
+                }
+            }
+            catch (TaskCanceledException tex)
+            {
+                logger.LogInformation(tex.GetBaseException(), tex.GetBaseException().Message);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
+            }
+            finally
+            {
+                await UpdateDashboardStatus(IntegrationStatus.Stopped, cancellationToken);
+            }
+
         }
 
         private void Send(string messageText)

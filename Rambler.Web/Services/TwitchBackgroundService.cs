@@ -138,9 +138,12 @@ namespace Rambler.Web.Services
                     logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
                     await UpdateDashboardStatus("Error", cancellationToken);
                 }
+                finally
+                {
+                    await UpdateDashboardStatus(IntegrationStatus.Stopped, cancellationToken);
+                    logger.LogDebug($"[TwitchBackgroundService] pal carajo");
+                }
 
-                await UpdateDashboardStatus(IntegrationStatus.Stopped, cancellationToken);
-                logger.LogDebug($"[TwitchBackgroundService] pal carajo");
             }
         }
 

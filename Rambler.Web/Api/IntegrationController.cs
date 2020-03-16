@@ -16,12 +16,15 @@ namespace Rambler.Web.Api
         private readonly IntegrationService integrationService;
         private readonly YoutubeService youtubeService;
         private readonly TwitchService twitchService;
+        private readonly DiscordService discordService;
 
-        public IntegrationController(IntegrationService integrationService, YoutubeService youtubeService, TwitchService twitchService)
+        public IntegrationController(IntegrationService integrationService, YoutubeService youtubeService, 
+            TwitchService twitchService, DiscordService discordService)
         {
             this.integrationService = integrationService;
             this.youtubeService = youtubeService;
             this.twitchService = twitchService;
+            this.discordService = discordService;
         }
 
         [Route("")]
@@ -78,6 +81,13 @@ namespace Rambler.Web.Api
                         if (!twitchService.IsConfigured())
                         {
                             return UnprocessableEntity($"Please configure Twitch integration first.");
+                        }
+
+                        break;
+                    case "Discord":
+                        if (!discordService.IsConfigured())
+                        {
+                            return UnprocessableEntity($"Please configure Discord integration first.");
                         }
 
                         break;
