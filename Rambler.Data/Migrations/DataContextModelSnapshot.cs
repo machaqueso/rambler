@@ -300,7 +300,7 @@ namespace Rambler.Data.Migrations
                         new
                         {
                             Id = 1,
-                            DisplayOrder = 0,
+                            DisplayOrder = 30,
                             IsEnabled = false,
                             IsVisible = false,
                             Name = "Youtube"
@@ -308,10 +308,18 @@ namespace Rambler.Data.Migrations
                         new
                         {
                             Id = 2,
-                            DisplayOrder = 0,
+                            DisplayOrder = 10,
                             IsEnabled = false,
-                            IsVisible = false,
+                            IsVisible = true,
                             Name = "Twitch"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DisplayOrder = 20,
+                            IsEnabled = false,
+                            IsVisible = true,
+                            Name = "Discord"
                         });
                 });
 
