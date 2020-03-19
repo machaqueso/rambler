@@ -200,10 +200,11 @@
                         "settingSelected": "_onSettingNameSelected"
                     },
                     _openEditor: function (e) {
+                        this.setting = e.model.item;
                         this.$.dialog.open();
                     },
                     _maskedValue: function (setting) {
-                        console.log("_maskedValue", setting);
+                        //console.log("_maskedValue", setting);
                         if (setting.key.includes("Authentication")) {
                             return "************";
                         } else {

@@ -67,8 +67,17 @@ namespace Rambler.Web.Services
                     return;
                 }
 
-                await client.LoginAsync(TokenType.Bot, await discordService.GetToken());
-                await client.StartAsync();
+                try
+                {
+                    await client.LoginAsync(TokenType.Bot, await discordService.GetToken());
+                    await client.StartAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.GetBaseException(), ex.GetBaseException().Message);
+                    await UpdateDashboardStatus(IntegrationStatus.Error, cancellationToken);
+                    return;
+                }
             }
 
             await base.StartAsync(cancellationToken);
@@ -86,7 +95,7 @@ namespace Rambler.Web.Services
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             await UpdateDashboardStatus(IntegrationStatus.Connected, cancellationToken);
-            
+
             integrationManager.MessageSent += (s, e) =>
             {
                 if (!string.IsNullOrWhiteSpace(e.Message))
