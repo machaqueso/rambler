@@ -5,7 +5,8 @@
 <link rel="import" href="~/components/xenon-photo-card/xenon-photo-card.html" />
 <link rel="import" href="~/components/paper-toast/paper-toast.html" />
 <link rel="import" href="~/components/iron-ajax/iron-ajax.html" />
-<link rel="import" href="~/components/rambler-components/rambler-integrations.html" />
+<link rel="import" href="/components/rambler-components/rambler-api-status.html" />
+<link rel="import" href="/components/rambler-components/rambler-integrations.html" />
 <link rel="import" href="~/components/iron-icons/editor-icons.html" />
 <link rel="import" href="~/components/xenon-layout/xenon-dialog.html" />
 
@@ -71,6 +72,14 @@
                 width: 20px;
                 height: 20px;
             }
+
+            .row > xenon-photo-card {
+                flex: 1 1 0;
+            }
+
+            .xenon-photo-card actions a {
+                text-decoration: none;
+            }
         </style>
 
         <iron-ajax id="ajax"
@@ -113,13 +122,30 @@
                    debounce-duration="300">
         </iron-ajax>
 
-        <xenon-photo-card heading="Enable/Disable Integrations">
-            <main>
-                <rambler-integrations></rambler-integrations>
-            </main>
-        </xenon-photo-card>
+        <div class="row">
+            <xenon-photo-card heading="Integrations">
+                <main>
+                    <div>
+                        <rambler-integrations></rambler-integrations>
+                    </div>
+                </main>
+            </xenon-photo-card>
+            <xenon-photo-card heading="API Status">
+                <main>
+                    <div>
+                        <rambler-api-status></rambler-api-status>
+                    </div>
+                </main>
+            </xenon-photo-card>
+        </div>
 
         <xenon-photo-card heading="Configuration Settings">
+            <actions>
+                <a href="@Url.Action("Index", "User")"><iron-icon icon="social:people"></iron-icon>Token Accounts</a>
+                <a href="@Url.Action("Index", "Youtube")"><i class="fab fa-youtube"></i> Youtube</a>
+                <a href="@Url.Action("Index", "Twitch")"><i class="fab fa-twitch"></i> Twitch</a>
+                <a href="@Url.Action("Index", "Discord")"><i class="fab fa-discord"></i> Discord</a>
+            </actions>
             <main>
                 <table class="table table-bordered table-striped">
                     <thead>

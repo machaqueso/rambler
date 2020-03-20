@@ -1,0 +1,62 @@
+﻿
+@{
+    ViewData["Title"] = "Discord Servers";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/paper-button/paper-button.html" />
+<link rel="import" href="/components/iron-ajax/iron-ajax.html" />
+
+<dom-module id="page-module">
+    <template>
+        <iron-ajax id="ajax"
+                   auto
+                   url="/api/discord/guild"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{servers}}"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <main>
+                
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Members</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template is="dom-repeat" items="[[servers]]">
+                        <tr>
+                            <td><a href="/Discord/Channel/[[item.id]]">{{item.name}}</a></td>
+                            <td>{{item.memberCount}}</td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+            </main>
+        </xenon-photo-card>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+    addEventListener('WebComponentsReady', function() {
+
+        Polymer({
+            is: "page-module",
+            properties: {
+
+            },
+            observers: [
+            ],
+            ready: function () {
+            }
+        });
+        })
+    </script>
+</dom-module>
+
+<page-module></page-module>
+

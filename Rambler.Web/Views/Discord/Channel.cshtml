@@ -1,0 +1,68 @@
+﻿@model ulong
+
+
+@{
+    ViewData["Title"] = "Channels";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/paper-button/paper-button.html" />
+<link rel="import" href="/components/iron-ajax/iron-ajax.html" />
+
+<dom-module id="page-module">
+    <template>
+        <iron-ajax id="ajax"
+                   auto
+                   url="/api/discord/guild/@Model/textChannel"
+                   handle-as="json"
+                   loading="{{loading}}"
+                   last-response="{{channels}}"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <main>
+
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Name</th>
+                            <th>Topic</th>
+                            <th>NSFW?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="[[channels]]">
+                            <tr>
+                                <td>{{item.position}}</td>
+                                <td><a href="/Discord/Details/{{item.id}}">{{item.name}}</a></td>
+                                <td>{{item.topic}}</td>
+                                <td>{{item.isNsfw}}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </main>
+        </xenon-photo-card>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+        addEventListener('WebComponentsReady', function () {
+
+            Polymer({
+                is: "page-module",
+                properties: {
+
+                },
+                observers: [
+                ],
+                ready: function () {
+                }
+            });
+        })
+    </script>
+</dom-module>
+
+<page-module></page-module>
+
