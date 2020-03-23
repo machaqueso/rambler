@@ -1,4 +1,6 @@
-﻿namespace Rambler.Models
+﻿using System.Net.NetworkInformation;
+
+namespace Rambler.Models
 {
     public class ConfigurationSettingNames
     {
@@ -7,6 +9,7 @@
         public static string TwitchClientId = "Authentication:Twitch:ClientId";
         public static string TwitchClientSecret = "Authentication:Twitch:ClientSecret";
         public static string DiscordToken = "Authentication:Discord:Token";
+        public static string DiscordChannelId = "Discord:ChannelId";
 
         // Channel rules
         public static string ChannelTTSAuthorThreshold = "TTS Author Threshold";
@@ -27,6 +30,7 @@
             TwitchClientId,
             TwitchClientSecret,
             DiscordToken,
+            DiscordChannelId,
 
             ChannelTTSAuthorThreshold,
             ChannelOBSAuthorThreshold,

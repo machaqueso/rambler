@@ -24,7 +24,7 @@ namespace Rambler.Services
 
         public bool IsConfigured()
         {
-            return configurationService.HasValue("Authentication:Discord:Token");
+            return configurationService.HasValue(ConfigurationSettingNames.DiscordToken);
         }
 
         public async Task<bool> IsEnabled()
@@ -39,7 +39,7 @@ namespace Rambler.Services
                 throw new InvalidOperationException($"Discord bot token is not configured");
             }
 
-            return await configurationService.GetValue("Authentication:Discord:Token");
+            return await configurationService.GetValue(ConfigurationSettingNames.DiscordToken);
         }
 
         private bool clientReady;
@@ -108,6 +108,21 @@ namespace Rambler.Services
             };
 
             return chatMessage;
+        }
+
+        public async Task SetActiveTextChannel(ulong id)
+        {
+            if (configurationService.HasValue(ConfigurationSettingNames.DiscordChannelId))
+            {
+                await configurationService.SetValue(ConfigurationSettingNames.DiscordChannelId, id.ToString());
+                return;
+            }
+
+            await configurationService.CreateSetting(new ConfigurationSetting
+            {
+                Key = ConfigurationSettingNames.DiscordChannelId,
+                Value = id.ToString()
+            });
         }
     }
 }

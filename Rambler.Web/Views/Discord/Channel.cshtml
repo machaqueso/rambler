@@ -20,6 +20,17 @@
                    last-response="{{channels}}"
                    debounce-duration="300"></iron-ajax>
 
+
+        <iron-ajax id="putSetting"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="PUT"
+                   on-response="_onUpdate"
+                   on-error="_onError"
+                   debounce-duration="300">
+        </iron-ajax>
+
         <xenon-photo-card heading="@ViewData["Title"]">
             <main>
 
@@ -30,6 +41,7 @@
                             <th>Name</th>
                             <th>Topic</th>
                             <th>NSFW?</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,6 +51,9 @@
                                 <td><a href="/Discord/Details/{{item.id}}">{{item.name}}</a></td>
                                 <td>{{item.topic}}</td>
                                 <td>{{item.isNsfw}}</td>
+                                <td>
+                                    <paper-icon-button icon="icons:check" on-click="_makeDefault" hidden$="[[item.isActive]]"></paper-icon-button>
+                                </td>
                             </tr>
                         </template>
                     </tbody>
@@ -57,6 +72,23 @@
                 },
                 observers: [
                 ],
+                _makeDefault: function (e) {
+                    this.$.putSetting.url = "/api/discord/guild/@Model/textChannel/" + e.model.item.id + "/active";
+                    this.$.putSetting.generateRequest();
+                },
+                _onUpdate: function () {
+                    this._showToast("Setting updated");
+                },
+                _onDelete: function () {
+                    this._showToast("Setting deleted");
+                },
+                _onError: function (e) {
+                    this._showToast("ERROR: " + e.detail.request.xhr.response);
+                },
+                _showToast: function (message) {
+                    this.$.toast.text = message;
+                    this.$.toast.show();
+                },
                 ready: function () {
                 }
             });

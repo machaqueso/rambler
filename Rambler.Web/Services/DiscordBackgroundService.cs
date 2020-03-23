@@ -17,6 +17,7 @@ namespace Rambler.Web.Services
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly IntegrationManager integrationManager;
         private DiscordSocketClient client;
+        private ulong? channelId;
 
         private ConcurrentQueue<string> messageQueue;
 
@@ -51,6 +52,8 @@ namespace Rambler.Web.Services
             using (var scope = serviceScopeFactory.CreateScope())
             {
                 var discordService = scope.ServiceProvider.GetRequiredService<DiscordService>();
+                var configurationService = scope.ServiceProvider.GetRequiredService<ConfigurationService>();
+
                 client.MessageReceived += ProcessMessage;
 
                 if (!await discordService.IsEnabled())
@@ -69,6 +72,11 @@ namespace Rambler.Web.Services
 
                 try
                 {
+                    if (ulong.TryParse(await configurationService.GetValue(ConfigurationSettingNames.DiscordChannelId), out var discordChannelId))
+                    {
+                        channelId = discordChannelId;
+                    }
+
                     await client.LoginAsync(TokenType.Bot, await discordService.GetToken());
                     await client.StartAsync();
                 }
@@ -144,6 +152,12 @@ namespace Rambler.Web.Services
             {
                 var discordService = scope.ServiceProvider.GetRequiredService<DiscordService>();
                 var chatProcessor = scope.ServiceProvider.GetRequiredService<ChatProcessor>();
+
+                // If channelId defined, ignores incoming messages from other channels
+                if (channelId.HasValue && socketMessage.Channel.Id != channelId.Value)
+                {
+                    return;
+                }
 
                 var chatMessage = discordService.ProcessMessage(socketMessage);
                 await chatProcessor.ProcessMessage(chatMessage);
