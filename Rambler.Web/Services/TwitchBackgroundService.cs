@@ -95,7 +95,8 @@ namespace Rambler.Web.Services
 
                     integrationManager.MessageSent += (s, e) =>
                     {
-                        if (!string.IsNullOrWhiteSpace(e.Message))
+                        if (!string.IsNullOrWhiteSpace(e.Message) &&
+                            (string.IsNullOrWhiteSpace(e.Source) || e.Source == ApiSource.Twitch))
                         {
                             Send($"PRIVMSG #{user.name} :{e.Message}");
                         }

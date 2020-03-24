@@ -100,17 +100,13 @@ namespace Rambler.Web.Services
             await base.StopAsync(cancellationToken);
         }
 
+
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             await UpdateDashboardStatus(IntegrationStatus.Connected, cancellationToken);
 
-            integrationManager.MessageSent += (s, e) =>
-            {
-                if (!string.IsNullOrWhiteSpace(e.Message))
-                {
-                    Send(e.Message);
-                }
-            };
+            integrationManager.MessageSent -= MessageSentHandler;
+            integrationManager.MessageSent += MessageSentHandler;
 
             try
             {
@@ -132,6 +128,15 @@ namespace Rambler.Web.Services
                 await UpdateDashboardStatus(IntegrationStatus.Stopped, cancellationToken);
             }
 
+        }
+
+        private void MessageSentHandler(object? sender, MessageSentEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(e.Message) &&
+                (string.IsNullOrWhiteSpace(e.Source) || e.Source == ApiSource.Discord))
+            {
+                Send(e.Message);
+            }
         }
 
         private void Send(string messageText)

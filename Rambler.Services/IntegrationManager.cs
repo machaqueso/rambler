@@ -18,12 +18,12 @@ namespace Rambler.Services
             }
         }
 
-        public void MessageSentEvent(string message)
+        public void MessageSentEvent(string message, string source)
         {
             var handler = MessageSent;
             if (handler != null)
             {
-                var args = new MessageSentEventArgs(message);
+                var args = new MessageSentEventArgs(message, source);
                 handler(this, args);
             }
         }

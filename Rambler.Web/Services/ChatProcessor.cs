@@ -108,7 +108,7 @@ namespace Rambler.Web.Services
             // sends message to integrations if local
             if (message.Source == ApiSource.Rambler && !message.Message.StartsWith("!"))
             {
-                integrationManager.MessageSentEvent(message.Message);
+                integrationManager.MessageSentEvent(message.Message, "");
             }
 
             var action = botService.Process(message);
@@ -148,7 +148,7 @@ namespace Rambler.Web.Services
                     botMessage.Author = ramblerBot;
 
                     await SendToChannels(botMessage);
-                    integrationManager.MessageSentEvent(botMessage.Message);
+                    integrationManager.MessageSentEvent(botMessage.Message, message.Source);
 
                     break;
                 default:
