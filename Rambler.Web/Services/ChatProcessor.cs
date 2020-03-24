@@ -151,6 +151,9 @@ namespace Rambler.Web.Services
                     integrationManager.MessageSentEvent(botMessage.Message, message.Source);
 
                     break;
+                case "Play media":
+                    await chatHubContext.Clients.All.SendAsync("PlayMedia", action.Parameters);
+                    break;
                 default:
                     break;
             }

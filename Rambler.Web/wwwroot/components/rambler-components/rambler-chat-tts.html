@@ -137,10 +137,26 @@
 
                     this.connection.on("ReceiveChannelMessage",
                         function (message) {
-                            console.log("ReceiveChannelMessage", message);
                             if (message.channel === "TTS") {
                                 _this._speak(message.chatMessage.message);
                             }
+                        });
+
+                    this.connection.on("PlayMedia",
+                        function (src) {
+                            console.log("PlayMedia", src);
+
+                            var audio = new Audio(src);
+                            audio.play().then(function () {
+                                console.log("Ok");
+                            })
+                                .catch(function (error) {
+                                    console.log(error);
+                                });
+
+                            //_this.$.audio.src = name;
+                            //_this.$.audio.play()
+
                         });
 
                     this.connection.start().catch(function (err) {
