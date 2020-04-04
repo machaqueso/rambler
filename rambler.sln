@@ -5,10 +5,10 @@ VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{5A22EB54-7799-47F0-8C48-363D5A3C4FE0}"
 	ProjectSection(SolutionItems) = preProject
-		Docs\chat architecture.txt = Docs\chat architecture.txt
-		Jenkinsfile = Jenkinsfile
-		readme.md = readme.md
 		.gitignore = .gitignore
+		Jenkinsfile = Jenkinsfile
+		Docs\rambler chat architecture.xml = Docs\rambler chat architecture.xml
+		readme.md = readme.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rambler.Web", "Rambler.Web\Rambler.Web.csproj", "{8BE018FD-720F-4C0B-B8DC-68BE0E8DD6FF}"

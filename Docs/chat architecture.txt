@@ -1,6 +1,0 @@
-
-
-						<---- Youtube
-	  Chat 		<---- 
-	(signalr)			<---- Twitch
-
