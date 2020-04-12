@@ -19,12 +19,14 @@ namespace Rambler.Services
 
         public async Task<BotAction> Process(ChatMessage message)
         {
+            // cache bot commands to avoid hitting database on each word in the incoming message
+            var commands = await GetBotActions().ToListAsync();
+
             foreach (var word in message.Message.Split(' '))
             {
                 // match first command and return
                 // TODO: handle multiple commands on single line?
-                var command = await GetBotActions()
-                    .FirstOrDefaultAsync(x => String.Equals(x.Command, word, StringComparison.CurrentCultureIgnoreCase));
+                var command = commands.FirstOrDefault(x => String.Equals(x.Command, word, StringComparison.CurrentCultureIgnoreCase));
                 if (command != null)
                 {
                     return new BotAction
