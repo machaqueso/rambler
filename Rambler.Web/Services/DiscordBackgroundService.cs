@@ -141,7 +141,12 @@ namespace Rambler.Web.Services
 
         private void Send(string messageText)
         {
-            var channel = client.GetChannel(686087842421669940) as ISocketMessageChannel;
+            if (!channelId.HasValue)
+            {
+                throw new InvalidOperationException("Unable to send message: discord channel Id not configured.");
+            }
+
+            var channel = client.GetChannel(channelId.Value) as ISocketMessageChannel;
             channel.SendMessageAsync(messageText);
         }
 
@@ -153,6 +158,12 @@ namespace Rambler.Web.Services
 
         private async Task ProcessMessage(SocketMessage socketMessage)
         {
+            // Ignore messages created by myself
+            if (socketMessage.Author.Id == client.CurrentUser.Id)
+            {
+                return;
+            }
+
             using (var scope = serviceScopeFactory.CreateScope())
             {
                 var discordService = scope.ServiceProvider.GetRequiredService<DiscordService>();
