@@ -17,11 +17,15 @@ namespace Rambler.Services
             this.db = db;
         }
 
-        public BotAction Process(ChatMessage message)
+        public async Task<BotAction> Process(ChatMessage message)
         {
-            foreach (var command in GetBotActions().ToList())
+            foreach (var word in message.Message.Split(' '))
             {
-                if (message.Message.ToLowerInvariant().Contains(command.Command.ToLowerInvariant()))
+                // match first command and return
+                // TODO: handle multiple commands on single line?
+                var command = await GetBotActions()
+                    .FirstOrDefaultAsync(x => String.Equals(x.Command, word, StringComparison.CurrentCultureIgnoreCase));
+                if (command != null)
                 {
                     return new BotAction
                     {
@@ -30,7 +34,6 @@ namespace Rambler.Services
                         Parameters = command.Parameters
                     };
                 }
-
             }
 
             return null;
@@ -113,5 +116,9 @@ namespace Rambler.Services
             await db.SaveChangesAsync();
         }
 
+        public async Task<bool> IsBotCommand(ChatMessage message)
+        {
+            return await GetBotActions().AnyAsync(x => message.Message.Contains(x.Command));
+        }
     }
 }

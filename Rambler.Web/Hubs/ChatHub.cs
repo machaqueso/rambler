@@ -107,7 +107,8 @@ namespace Rambler.Web.Hubs
                 chatMessage.Author = await GetOrBuildAuthorFromClaims();
             }
 
-            await chatService.ProcessMessage(chatMessage);
+            await chatService.ProcessIncomingMessage(chatMessage);
+            await chatService.ProcessOutgoingMessage(chatMessage);
         }
 
         public async Task DirectMessage(string author, string message)

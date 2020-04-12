@@ -37,7 +37,7 @@ namespace Rambler.Web.Services
         }
 
 
-        public async Task ProcessMessage(ChatMessage message)
+        public async Task ProcessIncomingMessage(ChatMessage message)
         {
             if (message == null)
             {
@@ -102,16 +102,34 @@ namespace Rambler.Web.Services
             }
             await chatMessageService.CreateMessage(message);
 
-            // broadcast message
-            await SendToChannels(message);
-
-            // sends message to integrations if local
-            if (message.Source == ApiSource.Rambler && !message.Message.StartsWith("!"))
+            await SendToChannel("All", message);
+            if (await botService.IsBotCommand(message))
             {
-                integrationManager.MessageSentEvent(message.Message, "");
+                await ProcessIncomingBotMessage(message);
+                return;
             }
 
-            var action = botService.Process(message);
+            // send message to view channels
+            foreach (var channel in await chatRulesService.AllowedChannels(message))
+            {
+                await SendToChannel(channel, message);
+            }
+
+            //if (message.AuthorId > 0)
+            //{
+            //    message.Author = null;
+            //}
+
+        }
+
+        public async Task ProcessIncomingBotMessage(ChatMessage message)
+        {
+            if (message.Author == null)
+            {
+                throw new InvalidOperationException("Message.Author cannot be null");
+            }
+
+            var action = await botService.Process(message);
             if (action == null)
             {
                 return;
@@ -123,7 +141,7 @@ namespace Rambler.Web.Services
                     var botMessage = new ChatMessage
                     {
                         Date = DateTime.UtcNow,
-                        Message = await messageTemplateService.Interpolate(action.Parameters, author),
+                        Message = await messageTemplateService.Interpolate(action.Parameters, message.Author),
                         Source = ApiSource.RamblerBot
                     };
 
@@ -136,7 +154,7 @@ namespace Rambler.Web.Services
                         ramblerBot = new Author
                         {
                             Name = "RamblerBot",
-                            Source = ApiSource.RamblerBot,
+                            Source = message.Author.Source,
                             SourceAuthorId = Guid.NewGuid().ToString()
                         };
                     }
@@ -147,8 +165,7 @@ namespace Rambler.Web.Services
 
                     botMessage.Author = ramblerBot;
 
-                    await SendToChannels(botMessage);
-                    integrationManager.MessageSentEvent(botMessage.Message, message.Source);
+                    await ProcessOutgoingMessage(botMessage);
 
                     break;
                 case "Play media":
@@ -157,6 +174,11 @@ namespace Rambler.Web.Services
                 default:
                     break;
             }
+        }
+
+        public async Task ProcessOutgoingMessage(ChatMessage message)
+        {
+            integrationManager.MessageSentEvent(message.Message, message.Source == ApiSource.RamblerBot ? message.Author.Source : "");
         }
 
         public async Task SendToChannel(string channel, ChatMessage message)
@@ -186,21 +208,6 @@ namespace Rambler.Web.Services
                     message.DisplayTime
                 }
             });
-        }
-
-        public async Task SendToChannels(ChatMessage message)
-        {
-            await SendToChannel("All", message);
-
-            foreach (var channel in await chatRulesService.AllowedChannels(message))
-            {
-                await SendToChannel(channel, message);
-            }
-
-            if (message.AuthorId > 0)
-            {
-                message.Author = null;
-            }
         }
     }
 }

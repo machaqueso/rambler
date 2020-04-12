@@ -199,7 +199,7 @@ namespace Rambler.Web.Services
 
             try
             {
-                await chatService.ProcessMessage(chatMessage);
+                await chatService.ProcessIncomingMessage(chatMessage);
             }
             catch (Exception ex)
             {

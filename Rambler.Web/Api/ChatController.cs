@@ -72,7 +72,7 @@ namespace Rambler.Web.Api
                 return BadRequest();
             }
 
-            await chatProcessor.ProcessMessage(message);
+            await chatProcessor.ProcessIncomingMessage(message);
             return CreatedAtRoute("GetMessage", new { id = message.Id }, message);
         }
 

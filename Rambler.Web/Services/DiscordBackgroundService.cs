@@ -165,7 +165,7 @@ namespace Rambler.Web.Services
                 }
 
                 var chatMessage = discordService.ProcessMessage(socketMessage);
-                await chatProcessor.ProcessMessage(chatMessage);
+                await chatProcessor.ProcessIncomingMessage(chatMessage);
             }
         }
 
