@@ -90,45 +90,45 @@ namespace Rambler.Web.Services
 
                 try
                 {
-                    await CheckToken(cancellationToken, twitchService);
+                    var accessToken = await CheckToken(cancellationToken, twitchService);
                     var user = await twitchManager.GetUser();
 
-                    integrationManager.MessageSent += (s, e) =>
+                    integrationManager.MessageSent -= MessageSentHandler;
+                    integrationManager.MessageSent += MessageSentHandler;
+
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        if (!string.IsNullOrWhiteSpace(e.Message) &&
-                            (string.IsNullOrWhiteSpace(e.Source) || e.Source == ApiSource.Twitch))
+                        var webSocket = new ClientWebSocket();
+                        if (webSocket.State != WebSocketState.Open)
                         {
-                            Send($"PRIVMSG #{user.name} :{e.Message}");
-                        }
-                    };
+                            await webSocket.ConnectAsync(new Uri("wss://irc-ws.chat.twitch.tv:443"), cancellationToken);
 
-                    var webSocket = new ClientWebSocket();
-                    if (webSocket.State != WebSocketState.Open)
-                    {
-                        await webSocket.ConnectAsync(new Uri("wss://irc-ws.chat.twitch.tv:443"), cancellationToken);
+                            var timeout = 0;
+                            while (webSocket.State == WebSocketState.Connecting && timeout < connectionTimeout &&
+                                   !cancellationToken.IsCancellationRequested)
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                                timeout++;
+                            }
 
-                        var timeout = 0;
-                        while (webSocket.State == WebSocketState.Connecting && timeout < connectionTimeout &&
-                               !cancellationToken.IsCancellationRequested)
-                        {
-                            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-                            timeout++;
+                            if (webSocket.State == WebSocketState.Open)
+                            {
+                                await TwitchHandshake(webSocket, cancellationToken, twitchService, twitchManager);
+                                Send($"JOIN :#{user.name}");
+                                await UpdateDashboardStatus(IntegrationStatus.Connected,
+                                    cancellationToken);
+                            }
                         }
 
-                        if (webSocket.State == WebSocketState.Open)
-                        {
-                            await TwitchHandshake(webSocket, cancellationToken, twitchService, twitchManager);
-                            Send($"JOIN :#{user.name}");
-                            await UpdateDashboardStatus(IntegrationStatus.Connected,
-                                cancellationToken);
-                        }
+                        var receiveTask = Receive(webSocket, cancellationToken, twitchService, twitchManager, accessToken);
+                        var sendTask = SenderTask(webSocket, cancellationToken, accessToken);
+                        await Task.WhenAll(receiveTask, sendTask);
+
+                        accessToken = await CheckToken(cancellationToken, twitchService);
+
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Ok", cancellationToken);
                     }
 
-                    var receiveTask = Receive(webSocket, cancellationToken, twitchService, twitchManager);
-                    var sendTask = SenderTask(webSocket, cancellationToken);
-                    await Task.WhenAll(receiveTask, sendTask);
-
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Ok", cancellationToken);
                 }
                 catch (TaskCanceledException)
                 {
@@ -148,13 +148,28 @@ namespace Rambler.Web.Services
             }
         }
 
-        private async Task CheckToken(CancellationToken cancellationToken, TwitchService twitchService)
+        private void MessageSentHandler(object? sender, MessageSentEventArgs e)
+        {
+            using (var scope = serviceScopeFactory.CreateScope())
+            {
+                var twitchManager = scope.ServiceProvider.GetRequiredService<TwitchManager>();
+                var user = twitchManager.GetUser().Result;
+
+                if (!string.IsNullOrWhiteSpace(e.Message) &&
+                    (string.IsNullOrWhiteSpace(e.Source) || e.Source == ApiSource.Twitch))
+                {
+                    Send($"PRIVMSG #{user.name} :{e.Message}");
+                }
+            }
+        }
+
+        private async Task<AccessToken> CheckToken(CancellationToken cancellationToken, TwitchService twitchService)
         {
             var token = await twitchService.GetToken();
             if (token == null)
             {
                 await UpdateDashboardStatus(IntegrationStatus.Forbidden, cancellationToken);
-                return;
+                return null;
             }
 
             if (token.Status == AccessTokenStatus.Expired && token.HasRefreshToken)
@@ -165,8 +180,10 @@ namespace Rambler.Web.Services
             if (token.Status != AccessTokenStatus.Ok)
             {
                 await UpdateDashboardStatus(IntegrationStatus.Forbidden, cancellationToken);
-                return;
+                return null;
             }
+
+            return token;
         }
 
         private async Task TwitchHandshake(ClientWebSocket webSocket, CancellationToken cancellationToken,
@@ -185,9 +202,10 @@ namespace Rambler.Web.Services
             messageQueue.Enqueue(message);
         }
 
-        private async Task SenderTask(ClientWebSocket webSocket, CancellationToken cancellationToken)
+        private async Task SenderTask(ClientWebSocket webSocket, CancellationToken cancellationToken, AccessToken accessToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested
+                   && accessToken.Status == AccessTokenStatus.Ok)
             {
                 if (!messageQueue.TryDequeue(out var message))
                 {
@@ -209,7 +227,7 @@ namespace Rambler.Web.Services
         }
 
         private async Task Receive(ClientWebSocket webSocket, CancellationToken cancellationToken, TwitchService twitchService,
-            TwitchManager twitchManager)
+            TwitchManager twitchManager, AccessToken accessToken)
         {
             if (webSocket.State != WebSocketState.Open)
             {
@@ -222,7 +240,8 @@ namespace Rambler.Web.Services
 
             while (webSocket.State == WebSocketState.Open
                    && !cancellationToken.IsCancellationRequested
-                   && await twitchService.IsEnabled())
+                   && await twitchService.IsEnabled()
+                   && accessToken.Status == AccessTokenStatus.Ok)
             {
                 var buffer = new byte[receiveChunkSize];
                 logger.LogDebug($"[TwitchBackgroundService] Listening to socket");
@@ -247,7 +266,7 @@ namespace Rambler.Web.Services
 
                     foreach (var line in lines)
                     {
-                        logger.LogDebug($"[TwitchBackgroundService] Twitch Chat < {line}");
+                        //logger.LogDebug($"[TwitchBackgroundService] Twitch Chat < {line}");
 
                         if (line.Contains("PING"))
                         {

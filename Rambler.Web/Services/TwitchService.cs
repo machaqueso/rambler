@@ -124,6 +124,7 @@ namespace Rambler.Web.Services
             {
                 return;
             }
+            logger.LogDebug($"ProcessMessage: '{message}'");
 
             var prefix = string.Empty;
             var command = string.Empty;
@@ -185,7 +186,8 @@ namespace Rambler.Web.Services
                 Source = ApiSource.Twitch,
                 Author = new Author
                 {
-                    Name = authorName
+                    Name = authorName,
+                    Source = ApiSource.Twitch
                 },
                 Type = "textMessageEvent"
             };
@@ -203,7 +205,7 @@ namespace Rambler.Web.Services
             }
             catch (Exception ex)
             {
-                logger.LogError("Error processing message:", ex.GetBaseException().ToString());
+                logger.LogError(ex.GetBaseException(), "Error processing message", null);
             }
         }
 
