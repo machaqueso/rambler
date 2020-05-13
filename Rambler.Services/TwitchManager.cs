@@ -77,7 +77,7 @@ namespace Rambler.Services
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException(
-                    $"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
+                    $"Twitch API error: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
             }
 
             var twitchResponse = JsonConvert.DeserializeObject<TwitchGetUsersResponse>(content);
@@ -94,6 +94,70 @@ namespace Rambler.Services
         public IQueryable<TwitchUser> GetAuthors()
         {
             return db.TwitchUsers;
+        }
+
+        public async Task ImportEmoticons()
+        {
+            var token = await db.AccessTokens.FirstOrDefaultAsync(x => x.ApiSource == ApiSource.Twitch);
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("access token not found");
+            }
+
+            var user = await GetUser();
+
+            var emoticonSetResponse = await api.Get($"https://api.twitch.tv/kraken/users/{user._id}/emotes",
+                token.access_token,
+                configurationService.GetValue("Authentication:Twitch:ClientId").Result);
+
+            var jsonContent = await emoticonSetResponse.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<TwitchUserEmoticonSetResponse>(jsonContent);
+
+            var emoticonSets = new List<string>();
+            foreach (var item in data.emoticon_sets)
+            {
+                emoticonSets.Add(item.Name);
+            }
+
+            var response = await api.GetNoAuth($"https://api.twitch.tv/kraken/chat/emoticons",
+                configurationService.GetValue("Authentication:Twitch:ClientId").Result);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new InvalidOperationException(
+                    $"Twitch API error: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
+            }
+
+            var twitchResponse = JsonConvert.DeserializeObject<TwitchChatEmoticonsResponse>(content);
+
+            db.Emoticons.RemoveRange(db.Emoticons.Where(x => x.ApiSource == ApiSource.Twitch));
+            await db.SaveChangesAsync();
+
+            foreach (var item in twitchResponse.emoticons
+                .Where(x => emoticonSets.Contains(x.images.emoticon_set))
+                .Take(1000))
+            {
+                //var emoticon = await db.Emoticons.SingleOrDefaultAsync(x =>
+                //    x.ApiSource == ApiSource.Twitch && x.SourceId == item.id.ToString());
+
+                //if (emoticon == null)
+                //{
+                db.Emoticons.Add(new Emoticon
+                {
+                    Regex = item.regex,
+                    Url = item.images.url,
+                    SourceId = item.id.ToString(),
+                    ApiSource = ApiSource.Twitch
+                });
+                //    continue;
+                //}
+
+                //emoticon.Regex = item.regex;
+                //emoticon.Url = item.images.url;
+                //await db.SaveChangesAsync();
+            }
+            await db.SaveChangesAsync();
         }
     }
 }

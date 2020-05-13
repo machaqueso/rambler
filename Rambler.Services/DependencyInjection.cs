@@ -18,6 +18,7 @@ namespace Rambler.Services
             services.AddTransient<ChatMessageService>();
             services.AddTransient<MessageTemplateService>();
             services.AddTransient<DiscordService>();
+            services.AddTransient<EmoticonService>();
         }
 
     }

@@ -6,6 +6,7 @@ using Rambler.Models.Exceptions;
 using Rambler.Services;
 using Rambler.Web.Hubs;
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -21,10 +22,11 @@ namespace Rambler.Web.Services
         private readonly ChatMessageService chatMessageService;
         private readonly ILogger<ChatMessageService> logger;
         private readonly MessageTemplateService messageTemplateService;
+        private readonly EmoticonService emoticonService;
 
         public ChatProcessor(IHubContext<ChatHub> chatHubContext, AuthorService authorService,
             BotService botService, IntegrationManager integrationManager, ChatRulesService chatRulesService,
-            ChatMessageService chatMessageService, ILogger<ChatMessageService> logger, MessageTemplateService messageTemplateService)
+            ChatMessageService chatMessageService, ILogger<ChatMessageService> logger, MessageTemplateService messageTemplateService, EmoticonService emoticonService)
         {
             this.chatHubContext = chatHubContext;
             this.authorService = authorService;
@@ -34,6 +36,7 @@ namespace Rambler.Web.Services
             this.chatMessageService = chatMessageService;
             this.logger = logger;
             this.messageTemplateService = messageTemplateService;
+            this.emoticonService = emoticonService;
         }
 
 
@@ -190,6 +193,21 @@ namespace Rambler.Web.Services
             if (channel == "TTS")
             {
                 messageText = Regex.Replace(messageText, @"\p{Cs}", "");
+
+                if (message.Source == ApiSource.Twitch)
+                {
+                    // TODO: optimize this junk
+                    foreach (var emoticon in emoticonService.GetEmoticons().Where(x => x.ApiSource == ApiSource.Twitch))
+                    {
+                        messageText = Regex.Replace(messageText, emoticon.Regex, "");
+                    }
+                }
+
+                messageText = messageText.Trim();
+                if (string.IsNullOrWhiteSpace(messageText))
+                {
+                    return;
+                }
             }
 
             // SignalR appears to not like complex objects being passed down, so I changed this to send a dynamic instead of using ChannelMessage

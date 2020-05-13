@@ -24,6 +24,16 @@ namespace Rambler.Data
             var response = await client.GetAsync(request);
             return response;
         }
+        public async Task<HttpResponseMessage> GetNoAuth(string request, string clientId)
+        {
+            var client = new HttpClient();
+
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.twitchtv.v5+json"));
+            client.DefaultRequestHeaders.Add("Client-ID", clientId);
+
+            var response = await client.GetAsync(request);
+            return response;
+        }
 
         public async Task<HttpResponseMessage> Post(string url, IList<KeyValuePair<string, string>> data)
         {

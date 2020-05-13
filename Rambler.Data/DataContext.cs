@@ -37,6 +37,7 @@ namespace Rambler.Data
         public DbSet<BotAction> BotActions { get; set; }
         public DbSet<MessageInfraction> MessageInfractions { get; set; }
         public DbSet<Log> Logs { get; set; }
+        public DbSet<Emoticon> Emoticons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

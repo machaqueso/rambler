@@ -22,5 +22,13 @@ namespace Rambler.Web.Api
         {
             return Ok(twitchManager.GetAuthors());
         }
+
+        [Route("emoticon/import")]
+        [HttpPost]
+        public async Task<IActionResult> ImportEmoticons()
+        {
+            await twitchManager.ImportEmoticons();
+            return Ok();
+        }
     }
 }

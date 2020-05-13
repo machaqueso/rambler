@@ -32,4 +32,35 @@ namespace Rambler.Models.Twitch
         public ulong _total { get; set; }
         public TwitchUser[] users { get; set; }
     }
+
+    public class TwitchLink
+    {
+        public string self { get; set; }
+    }
+
+    public class TwitchEmoticonImage
+    {
+        public int width { get; set; }
+        public int height { get; set; }
+        public string url { get; set; }
+        public string emoticon_set { get; set; }
+    }
+
+    public class TwitchEmoticon
+    {
+        public ulong id { get; set; }
+        public string regex { get; set; }
+        public TwitchEmoticonImage images { get; set; }
+    }
+
+    public class TwitchChatEmoticonsResponse
+    {
+        public TwitchLink _link { get; set; }
+        public TwitchEmoticon[] emoticons { get; set; }
+    }
+
+    public class TwitchUserEmoticonSetResponse
+    {
+        public dynamic emoticon_sets { get; set; }
+    }
 }

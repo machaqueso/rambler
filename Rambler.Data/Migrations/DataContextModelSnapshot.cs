@@ -268,6 +268,34 @@ namespace Rambler.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Rambler.Models.Emoticon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ApiSource")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ChannelId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Regex")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
+
+                    b.ToTable("Emoticons");
+                });
+
             modelBuilder.Entity("Rambler.Models.Integration", b =>
                 {
                     b.Property<int>("Id")
@@ -504,6 +532,13 @@ namespace Rambler.Data.Migrations
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Rambler.Models.Emoticon", b =>
+                {
+                    b.HasOne("Rambler.Models.Channel", "Channel")
+                        .WithMany()
+                        .HasForeignKey("ChannelId");
                 });
 
             modelBuilder.Entity("Rambler.Models.MessageInfraction", b =>

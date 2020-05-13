@@ -46,7 +46,8 @@ namespace Rambler.Web.Controllers
             {
                 "chat:read",
                 "chat:edit",
-                "user_read"
+                "user_read",
+                "user_subscriptions"
             };
             var scopes = string.Join('+', scopeList);
 
@@ -95,6 +96,11 @@ namespace Rambler.Web.Controllers
         }
 
         public IActionResult Author()
+        {
+            return View();
+        }
+        
+        public IActionResult Emoticon()
         {
             return View();
         }
