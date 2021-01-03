@@ -84,6 +84,18 @@ namespace Rambler.Services
             await SetPassword(user);
         }
 
+        public async Task<bool> AdminHasPassword()
+        {
+            var user = await FindByUsername("Admin");
+            if (user == null)
+            {
+                throw new InvalidOperationException("'Admin' account not found");
+            }
+
+            return user.PasswordHash != null;
+        }
+
+
         public async Task SetPassword(User user)
         {
             var entity = await GetUser(user.Id);
@@ -116,7 +128,7 @@ namespace Rambler.Services
         {
             return await GetUsers().FirstOrDefaultAsync(x =>
                 x.UserName.ToUpper().Equals(username.ToUpper())
-                ||x.Email.ToUpper().Equals(username.ToUpper()));
+                || x.Email.ToUpper().Equals(username.ToUpper()));
         }
 
         public bool VerifyPassword(User user, string password)

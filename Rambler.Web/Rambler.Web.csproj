@@ -347,7 +347,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Views\Account\SetPassword.cshtml">
+    <Content Update="Views\Account\Setup.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Account\Login.cshtml">

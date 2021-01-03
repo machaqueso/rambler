@@ -27,6 +27,12 @@ namespace Rambler.Web.Controllers
         public IActionResult Login(string returnUrl)
         {
             ViewData["returnUrl"] = returnUrl;
+
+            if (!accountService.AdminHasPassword().Result)
+            {
+                return RedirectToAction("Setup");
+            }
+
             return View();
         }
 
@@ -45,11 +51,6 @@ namespace Rambler.Web.Controllers
                 throw new UnauthorizedAccessException($"Username '{User.Identity.Name}' not found");
             }
 
-            if (user.UserName == "Admin" && !user.LastLoginDate.HasValue && user.MustChangePassword)
-            {
-                return RedirectToAction("SetPassword", "Account", new { id = user.Id });
-            }
-
             if (user.MustChangePassword)
             {
                 return RedirectToAction("ChangePassword", "Account", new { id = user.Id, returnUrl });
@@ -66,12 +67,18 @@ namespace Rambler.Web.Controllers
             return LocalRedirect(returnUrl);
         }
 
-        public async Task<IActionResult> SetPassword(int id)
+        [AllowAnonymous]
+        public async Task<IActionResult> Setup()
         {
-            var user = await accountService.GetUser(id);
+            if (await accountService.AdminHasPassword())
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var user = await accountService.FindByUsername("Admin");
             if (user == null)
             {
-                throw new UnauthorizedAccessException($"Username '{User.Identity.Name}' not found");
+                throw new InvalidOperationException($"Username 'Admin' not found");
             }
 
             return View(user);

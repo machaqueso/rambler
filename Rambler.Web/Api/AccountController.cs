@@ -29,7 +29,10 @@ namespace Rambler.Web.Api
             identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
 
-            //identity.AddClaim(new Claim(ClaimTypes.Role, RoleNames.Admin));
+            if (user.UserName == "Admin")
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, RoleNames.Admin));
+            }
 
             var principal = new ClaimsPrincipal(identity);
             var authProperties = new AuthenticationProperties
@@ -58,15 +61,6 @@ namespace Rambler.Web.Api
                 return UnprocessableEntity("Account is locked");
             }
 
-            // Bypass password when admin logs in for the first time
-            if (foundUser.UserName.ToLower() == "admin"
-                && !foundUser.LastLoginDate.HasValue
-                && foundUser.MustChangePassword)
-            {
-                await SignIn(foundUser);
-                return Ok();
-            }
-
             // From this point, password is required
             if (string.IsNullOrEmpty(user.Password))
             {
@@ -82,10 +76,30 @@ namespace Rambler.Web.Api
             return Ok();
         }
 
+        [AllowAnonymous]
         [Route("{id}/password")]
         [HttpPost]
         public async Task<IActionResult> SetPassword(int id, [FromBody] User user)
         {
+            if (await accountService.AdminHasPassword())
+            {
+                if (User.Identity.Name == null)
+                {
+                    return Unauthorized();
+                }
+
+                var admin = await accountService.FindByUsername(User.Identity.Name);
+                if (admin == null)
+                {
+                    return Unauthorized();
+                }
+
+                if (!User.HasClaim(ClaimTypes.Role, RoleNames.Admin))
+                {
+                    return Forbid();
+                }
+            }
+
             var foundUser = await accountService.GetUser(id);
             if (foundUser == null)
             {

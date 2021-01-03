@@ -1,0 +1,83 @@
+﻿@model User
+
+@{
+    ViewBag.Title = "Initial Setup";
+    Layout = "_Login";
+}
+
+<link rel="import" href="/components/xenon-photo-card/xenon-photo-card.html" />
+<link rel="import" href="/components/paper-toast/paper-toast.html" />
+<link rel="import" href="/components/iron-form/iron-form.html" />
+<link rel="import" href="/components/paper-input/paper-input.html" />
+<link rel="import" href="/components/paper-button/paper-button.html" />
+
+<dom-module id="page-module">
+    <template>
+
+        <iron-ajax id="ajax"
+                   url="/api/account/@Model.Id/password"
+                   handle-as="json"
+                   content-type="application/json"
+                   loading="{{loading}}"
+                   method="POST"
+                   on-response="_onUpdate"
+                   on-error="_onUpdateError"
+                   debounce-duration="300"></iron-ajax>
+
+        <xenon-photo-card heading="@ViewData["Title"]">
+            <main>
+                <form id="form" is="iron-form">
+                    <paper-input label="New Password" type="password" value="{{user.password}}" required></paper-input>
+                    <paper-input label="Confirm Password" type="password" value="{{user.confirmPassword}}" required></paper-input>
+                </form>
+                <div class="text-danger" hidden$="!error">[[error]]</div>
+            </main>
+            <buttons>
+                <paper-button class="btn btn-primary" on-click="_save">Save Password</paper-button>
+            </buttons>
+        </xenon-photo-card>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+    <script>
+    addEventListener('WebComponentsReady', function() {
+
+        Polymer({
+            is: "page-module",
+            properties: {
+                user: { Type: Object, notify: true, value: {} },
+                returnUrl: { Type: String, value: "@ViewData["returnUrl"]" },
+                error: { Type: String, notify: true, value: "" }
+            },
+            observers: [
+            ],
+            _save: function () {
+                this.set("error", "");
+                if (!this.$.form.validate()) {
+                    return;
+                }
+                this.$.ajax.body = JSON.stringify(this.user);
+                this.$.ajax.generateRequest();
+            },
+            _onUpdate: function () {
+                if (this.returnUrl) {
+                    window.location.href = this.returnUrl;
+                }
+                window.location.href = "/";
+            },
+            _onUpdateError: function (e) {
+                var message = e.detail.error;
+                if (e.detail.request.xhr.response) {
+                    message = e.detail.request.xhr.response;
+                }
+                this.set("error", message);
+                this.$.toast.text = message;
+                this.$.toast.open();
+            },
+            ready: function () {
+            }
+        });
+        })
+    </script>
+</dom-module>
+
+<page-module></page-module>

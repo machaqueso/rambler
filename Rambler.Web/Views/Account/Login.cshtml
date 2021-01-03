@@ -26,8 +26,8 @@
         <xenon-photo-card heading="@ViewData["Title"]">
             <main>
                 <form id="form" is="iron-form">
-                    <paper-input label="Username" value="{{user.userName}}"></paper-input>
-                    <paper-input label="Password" type="password" value="{{user.password}}"></paper-input>
+                    <paper-input label="Username" value="{{user.userName}}" required></paper-input>
+                    <paper-input label="Password" type="password" value="{{user.password}}" required></paper-input>
                 </form>
                 <div class="text-danger" hidden$="!error">[[error]]</div>
             </main>
@@ -50,6 +50,9 @@
             ],
             _login: function () {
                 this.set("error", "");
+                if (!this.$.form.validate()) {
+                    return;
+                }
                 this.$.ajax.body = JSON.stringify(this.user);
                 this.$.ajax.generateRequest();
             },
