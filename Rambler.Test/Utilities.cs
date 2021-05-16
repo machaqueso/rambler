@@ -1,4 +1,7 @@
 using Rambler.Data;
+using Rambler.Services;
+using System;
+using System.Linq;
 
 namespace Rambler.Test
 {
@@ -8,6 +11,15 @@ namespace Rambler.Test
         public static void InitializeDbForTests(DataContext db)
         {
             //db.Messages.AddRange(GetSeedingMessages());
+
+            var admin = db.Users.SingleOrDefault(x => x.UserName == "admin");
+            if (admin != null)
+            {
+                var passwordService = new PasswordService();
+                admin.PasswordHash = Convert.ToBase64String(passwordService.HashPasswordV3("password"));
+                admin.MustChangePassword = false;
+            }
+
             db.SaveChanges();
         }
 

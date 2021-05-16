@@ -32,6 +32,8 @@ namespace Rambler.Test.Integration.Web.Api
                 Password = password
             });
 
+            var content = await response.Content.ReadAsStringAsync();
+
             Assert.Equal(expected, response.StatusCode);
         }
     }
