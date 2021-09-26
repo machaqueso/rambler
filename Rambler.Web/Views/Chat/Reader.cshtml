@@ -7,8 +7,9 @@
     <style>
 
         #container {
+            padding: 5px;
             display: flex;
-            flex-flow: column;
+            flex-direction: column;
             height: 95vh;
         }
 
@@ -27,10 +28,16 @@
 
 <link rel="import" href="/components/rambler-components/rambler-chat.html" />
 <link rel="import" href="/components/rambler-components/rambler-chat-send.html" />
+<link rel="import" href="/components/rambler-components/rambler-chat-tts.html" />
 
 <dom-module id="page-module">
     <template>
         <div id="container">
+            <xenon-photo-card heading="TTS">
+                <main>
+                    <rambler-chat-tts></rambler-chat-tts>
+                </main>
+            </xenon-photo-card>
             <rambler-chat id="readerChat" channel="Reader" show-date timeout="0" max-lines="20" speak-enabled></rambler-chat>
             <rambler-chat-send id="sender"></rambler-chat-send>
         </div>
