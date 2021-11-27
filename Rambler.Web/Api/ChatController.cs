@@ -29,9 +29,21 @@ namespace Rambler.Web.Api
         public IActionResult GetMessages(int maxItems = 10)
         {
             var messages = chatMessageService.GetMessages()
+                .Where(x=>x.Date>DateTime.Now.AddMinutes(-10))
                 .OrderByDescending(x => x.Date)
                 .Take(maxItems)
-                .OrderBy(x => x.Date);
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            if (!messages.Any())
+            {
+                messages.Add(new ChatMessage
+                {
+                    Date=DateTime.Now,
+                    Author = new Author(),
+                    Message = "Rambler ready to display messages"
+                });
+            }
 
             return Ok(messages.Select(x => new
             {
