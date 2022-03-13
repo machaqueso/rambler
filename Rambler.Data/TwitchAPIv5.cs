@@ -16,9 +16,9 @@ namespace Rambler.Data
 
             if (!string.IsNullOrEmpty(accessToken))
             {
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.twitchtv.v5+json"));
+                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.twitchtv.v5+json"));
                 client.DefaultRequestHeaders.Add("Client-ID", clientId);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("OAuth", accessToken);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
 
             var response = await client.GetAsync(request);
@@ -28,7 +28,7 @@ namespace Rambler.Data
         {
             var client = new HttpClient();
 
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.twitchtv.v5+json"));
+            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.twitchtv.v5+json"));
             client.DefaultRequestHeaders.Add("Client-ID", clientId);
 
             var response = await client.GetAsync(request);

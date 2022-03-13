@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Rambler.Models.Twitch
 {
@@ -53,14 +54,24 @@ namespace Rambler.Models.Twitch
         public TwitchEmoticonImage images { get; set; }
     }
 
-    public class TwitchChatEmoticonsResponse
+    public class TwitchUserData
     {
-        public TwitchLink _link { get; set; }
-        public TwitchEmoticon[] emoticons { get; set; }
+        public string id { get; set; }
+        public string login{ get; set; }
+        public string display_name{ get; set; }
+        public string type{ get; set; }
+        public string broadcaster_type{ get; set; }
+        public string description{ get; set; }
+        public string profile_image_url{ get; set; }
+        public string offline_image_url{ get; set; }
+        public ulong view_count{ get; set; }
+        public string email { get; set; }
+        public DateTime created_at { get; set; }
     }
 
-    public class TwitchUserEmoticonSetResponse
+    public class TwitchUserResponse
     {
-        public dynamic emoticon_sets { get; set; }
+        public IEnumerable<TwitchUserData> data { get; set; }
     }
+
 }

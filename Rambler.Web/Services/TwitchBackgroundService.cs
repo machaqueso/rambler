@@ -114,7 +114,7 @@ namespace Rambler.Web.Services
                             if (webSocket.State == WebSocketState.Open)
                             {
                                 await TwitchHandshake(webSocket, cancellationToken, twitchService, twitchManager);
-                                Send($"JOIN :#{user.name}");
+                                Send($"JOIN :#{user.login}");
                                 await UpdateDashboardStatus(IntegrationStatus.Connected,
                                     cancellationToken);
                             }
@@ -158,7 +158,7 @@ namespace Rambler.Web.Services
                 if (!string.IsNullOrWhiteSpace(e.Message) &&
                     (string.IsNullOrWhiteSpace(e.Source) || e.Source == ApiSource.Twitch))
                 {
-                    Send($"PRIVMSG #{user.name} :{e.Message}");
+                    Send($"PRIVMSG #{user.login} :{e.Message}");
                 }
             }
         }
@@ -194,7 +194,7 @@ namespace Rambler.Web.Services
             var user = await twitchManager.GetUser();
 
             Send($"PASS oauth:{token.access_token}");
-            Send($"NICK {user.name}"); // TODO: get nick from twitch API
+            Send($"NICK {user.login}"); // TODO: get nick from twitch API
         }
 
         private void Send(string message)

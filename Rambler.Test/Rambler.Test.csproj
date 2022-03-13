@@ -16,8 +16,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\**" />
     <Compile Remove="Integration\Web\Services\**" />
+    <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Integration\Web\Services\**" />
+    <None Remove="Controllers\**" />
     <None Remove="Integration\Web\Services\**" />
   </ItemGroup>
 
@@ -58,10 +61,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Rambler.Services\Rambler.Services.csproj" />
     <ProjectReference Include="..\Rambler.Web\Rambler.Web.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

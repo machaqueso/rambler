@@ -1,4 +1,4 @@
-﻿@model Rambler.Models.Twitch.TwitchUser
+﻿@model Rambler.Models.Twitch.TwitchUserData
 
 @{
     ViewBag.Title = "title";
@@ -9,11 +9,11 @@
 
 <div class="row">
     <label>Id</label>
-    <div>@Model._id</div>
+    <div>@Model.id</div>
 </div>
 <div class="row">
     <label>Name</label>
-    <div>@Model.name</div>
+    <div>@Model.login</div>
 </div>
 <div class="row">
     <label>Display Name</label>
@@ -24,6 +24,14 @@
     <div>@Model.type</div>
 </div>
 <div class="row">
-    <label>Bio</label>
-    <div>@Model.bio</div>
+    <label>Broadcaster type</label>
+    <div>@Model.broadcaster_type</div>
+</div>
+<div class="row">
+    <label>Description</label>
+    <div>@Model.description</div>
+</div>
+<div class="row">
+    <label>Creation date</label>
+    <div>@Model.created_at</div>
 </div>
