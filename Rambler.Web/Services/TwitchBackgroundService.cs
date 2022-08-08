@@ -98,35 +98,42 @@ namespace Rambler.Web.Services
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        var webSocket = new ClientWebSocket();
-                        if (webSocket.State != WebSocketState.Open)
+                        try
                         {
-                            await webSocket.ConnectAsync(new Uri("wss://irc-ws.chat.twitch.tv:443"), cancellationToken);
-
-                            var timeout = 0;
-                            while (webSocket.State == WebSocketState.Connecting && timeout < connectionTimeout &&
-                                   !cancellationToken.IsCancellationRequested)
+                            var webSocket = new ClientWebSocket();
+                            if (webSocket.State != WebSocketState.Open)
                             {
-                                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-                                timeout++;
+                                await webSocket.ConnectAsync(new Uri("wss://irc-ws.chat.twitch.tv:443"), cancellationToken);
+
+                                var timeout = 0;
+                                while (webSocket.State == WebSocketState.Connecting && timeout < connectionTimeout &&
+                                       !cancellationToken.IsCancellationRequested)
+                                {
+                                    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                                    timeout++;
+                                }
+
+                                if (webSocket.State == WebSocketState.Open)
+                                {
+                                    await TwitchHandshake(webSocket, cancellationToken, twitchService, twitchManager);
+                                    Send($"JOIN :#{user.login}");
+                                    await UpdateDashboardStatus(IntegrationStatus.Connected,
+                                        cancellationToken);
+                                }
                             }
 
-                            if (webSocket.State == WebSocketState.Open)
-                            {
-                                await TwitchHandshake(webSocket, cancellationToken, twitchService, twitchManager);
-                                Send($"JOIN :#{user.login}");
-                                await UpdateDashboardStatus(IntegrationStatus.Connected,
-                                    cancellationToken);
-                            }
+                            var receiveTask = Receive(webSocket, cancellationToken, twitchService, twitchManager, accessToken);
+                            var sendTask = SenderTask(webSocket, cancellationToken, accessToken);
+                            await Task.WhenAll(receiveTask, sendTask);
+
+                            accessToken = await CheckToken(cancellationToken, twitchService);
+
+                            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Ok", cancellationToken);
                         }
-
-                        var receiveTask = Receive(webSocket, cancellationToken, twitchService, twitchManager, accessToken);
-                        var sendTask = SenderTask(webSocket, cancellationToken, accessToken);
-                        await Task.WhenAll(receiveTask, sendTask);
-
-                        accessToken = await CheckToken(cancellationToken, twitchService);
-
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Ok", cancellationToken);
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex.GetBaseException(), "Listener loop error");
+                        }
                     }
 
                 }
@@ -243,47 +250,55 @@ namespace Rambler.Web.Services
                    && await twitchService.IsEnabled()
                    && accessToken.Status == AccessTokenStatus.Ok)
             {
-                var buffer = new byte[receiveChunkSize];
-                logger.LogDebug($"[TwitchBackgroundService] Listening to socket");
-                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-                logger.LogDebug($"[TwitchBackgroundService] Receive status {result.MessageType}");
-
-                if (result.MessageType == WebSocketMessageType.Close)
+                try
                 {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationToken);
-                }
-                else if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    var text = partial + encoder.GetString(buffer).Replace("\0", "");
-                    partial = string.Empty;
+                    var buffer = new byte[receiveChunkSize];
+                    logger.LogDebug($"[TwitchBackgroundService] Listening to socket");
+                    var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                    logger.LogDebug($"[TwitchBackgroundService] Receive status {result.MessageType}");
 
-                    if (string.IsNullOrEmpty(text))
+                    if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        continue;
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationToken);
                     }
-
-                    var lines = (text.Substring(0, text.LastIndexOf('\r'))).Split('\r');
-
-                    foreach (var line in lines)
+                    else if (result.MessageType == WebSocketMessageType.Text)
                     {
-                        //logger.LogDebug($"[TwitchBackgroundService] Twitch Chat < {line}");
+                        var text = partial + encoder.GetString(buffer).Replace("\0", "");
+                        partial = string.Empty;
 
-                        if (line.Contains("PING"))
+                        if (string.IsNullOrEmpty(text))
                         {
-                            var host = line.Substring(line.IndexOf(':'));
-                            Send($"PONG :{host}");
-                            await UpdateDashboardStatus(IntegrationStatus.Connected,
-                                cancellationToken);
                             continue;
                         }
 
-                        await twitchService.ProcessMessage(line);
+                        var lines = (text.Substring(0, text.LastIndexOf('\r'))).Split('\r');
+
+                        foreach (var line in lines)
+                        {
+                            //logger.LogDebug($"[TwitchBackgroundService] Twitch Chat < {line}");
+
+                            if (line.Contains("PING"))
+                            {
+                                var host = line.Substring(line.IndexOf(':'));
+                                Send($"PONG :{host}");
+                                await UpdateDashboardStatus(IntegrationStatus.Connected,
+                                    cancellationToken);
+                                continue;
+                            }
+
+                            await twitchService.ProcessMessage(line);
+                        }
+
+                        partial = text.Substring(text.LastIndexOf('\r'));
                     }
 
-                    partial = text.Substring(text.LastIndexOf('\r'));
-                }
 
-                await Task.Delay(delay, cancellationToken);
+                    await Task.Delay(delay, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.GetBaseException(), "Error receiving from twitch");
+                }
             }
         }
 

@@ -45,14 +45,15 @@ namespace Rambler.Web.Api
                 });
             }
 
+            // New Twitch API screwed us up here. Might have to modify schema.
             return Ok(messages.Select(x => new
             {
                 x.Id,
                 x.Date,
-                Author = x.Author.Name,
-                AuthorId = x.Author.Id,
+                Author = x.Author?.Name,
+                AuthorId = x.Author?.Id,
                 x.Source,
-                SourceAuthorId = x.Author.SourceAuthorId,
+                SourceAuthorId = x.Author?.SourceAuthorId,
                 x.SourceMessageId,
                 x.Message,
                 DisplayDate = DateTime.Now.DayOfYear != x.Date.ToLocalTime().DayOfYear ? x.Date.ToLocalTime().ToString("d") : "",

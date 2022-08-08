@@ -36,15 +36,13 @@ namespace Rambler.Services
             {
                 throw new UnauthorizedAccessException("access token expired");
             }
-            
-            var response = await api.Get("https://api.twitch.tv/helix/users", token.access_token,
-                configurationService.GetValue("Authentication:Twitch:ClientId").Result);
+
+            var response = await api.Get("https://api.twitch.tv/helix/users", token.access_token, configurationService.GetValue("Authentication:Twitch:ClientId").Result);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException(
-                    $"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
+                throw new InvalidOperationException($"Error refreshing token: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
             }
 
             var userData = JsonConvert.DeserializeObject<TwitchUserResponse>(content);
@@ -71,21 +69,28 @@ namespace Rambler.Services
                 throw new UnauthorizedAccessException("access token expired");
             }
 
-            var response = await api.Get($"https://api.twitch.tv/helix/users?login={username}", token.access_token,
-                configurationService.GetValue("Authentication:Twitch:ClientId").Result);
+            var response = await api.Get($"https://api.twitch.tv/helix/users?login={username}", token.access_token, configurationService.GetValue("Authentication:Twitch:ClientId").Result);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException(
-                    $"Twitch API error: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
+                throw new InvalidOperationException($"Twitch API error: {response.StatusCode} - {response.ReasonPhrase}\n{content}");
             }
 
-            var twitchResponse = JsonConvert.DeserializeObject<TwitchGetUsersResponse>(content);
-            if (twitchResponse.users.Any())
+            var twitchResponse = JsonConvert.DeserializeObject<TwitchUserResponse>(content);
+            if (twitchResponse.data != null && twitchResponse.data.Any())
             {
-                var user = twitchResponse.users.First();
-                await db.TwitchUsers.AddAsync(user);
+                var user = twitchResponse.data.First();
+                await db.TwitchUsers.AddAsync(new TwitchUser
+                {
+                    _id = Convert.ToUInt64(user.id),
+                    name = user.login,
+                    display_name = user.display_name,
+                    email = user.email,
+                    type = user.broadcaster_type,
+                    bio = user.description,
+                    created_at = user.created_at
+                });
                 await db.SaveChangesAsync();
             }
 

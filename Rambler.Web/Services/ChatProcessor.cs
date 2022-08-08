@@ -199,7 +199,7 @@ namespace Rambler.Web.Services
                     // TODO: optimize this junk
                     foreach (var emoticon in emoticonService.GetEmoticons().Where(x => x.ApiSource == ApiSource.Twitch))
                     {
-                        messageText = Regex.Replace(messageText, emoticon.Regex, "");
+                        messageText = messageText.Replace(emoticon.Regex, "");
                     }
                 }
 

@@ -9,9 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\images\**" />
     <Compile Remove="wwwroot\lib\moment\**" />
+    <Content Remove="wwwroot\images\**" />
     <Content Remove="wwwroot\lib\moment\**" />
+    <EmbeddedResource Remove="wwwroot\images\**" />
     <EmbeddedResource Remove="wwwroot\lib\moment\**" />
+    <None Remove="wwwroot\images\**" />
     <None Remove="wwwroot\lib\moment\**" />
   </ItemGroup>
 
@@ -42,7 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\media\" />
   </ItemGroup>
 
